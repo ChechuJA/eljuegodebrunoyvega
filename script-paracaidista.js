@@ -22,10 +22,10 @@ let preguntaPendiente = false;
 let preguntaActual = null;
 let mensajeNivel = '';
 
-// Muñeco
+// Muñeco fijo en vertical
 let bruno = {
   x: canvas.width / 2,
-  y: 60,
+  y: canvas.height / 2 + 60,
   size: 30,
   color: '#2196f3',
   dx: 0
@@ -320,7 +320,7 @@ function checkLanding() {
 function reiniciar() {
   altura = 10000;
   bruno.x = canvas.width / 2;
-  bruno.y = 60;
+  bruno.y = canvas.height / 2 + 60;
   obstaculos = [];
   estrellas = [];
   gameOver = false;
@@ -366,7 +366,7 @@ function gameLoop() {
   if (frameCount % obstaculoInterval === 0) crearObstaculo();
   if (frameCount % (obstaculoInterval * 2) === 0) crearEstrella();
   altura -= velocidad * 0.03 + nivel * 0.01;
-  bruno.y += 2 + nivel * 0.3;
+  // Bruno está fijo, los objetos se mueven
   moveBruno();
   updateObstaculos();
   checkColisiones();
