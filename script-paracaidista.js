@@ -35,6 +35,14 @@ let bruno = {
 let leftPressed = false;
 let rightPressed = false;
 
+  // Muñeco fijo en vertical
+  let bruno = {
+    x: canvas.width / 2,
+    y: canvas.height / 2 + 60,
+    size: 30,
+    color: '#2196f3',
+    dx: 0
+  };
 function drawInstructions() {
   ctx.save();
   ctx.globalAlpha = 0.9;
