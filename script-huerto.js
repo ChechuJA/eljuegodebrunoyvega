@@ -44,40 +44,49 @@ function drawParcel(c){ const x=margin + c.c*(size+margin); const y=startY + c.r
  ctx.strokeStyle='#3e2723'; ctx.lineWidth=3; ctx.strokeRect(x,y,size,size); ctx.restore(); }
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);
+ // Cabecera
  ctx.save();
  ctx.font='bold 28px Arial'; ctx.fillStyle='#2e7d32'; ctx.textAlign='center';
  ctx.fillText('Huerto mágico', canvas.width/2,40);
  ctx.font='16px Arial'; ctx.fillStyle='#333';
  ctx.fillText('Dinero: '+dinero+'  Tiempo: '+tiempo+'s   Récord: '+highScore, canvas.width/2,65);
+ ctx.restore();
+ // Parcelas primero
+ for(let c of campos) drawParcel(c);
+ // Overlays encima
  if(showInstructions){
+	ctx.save();
 	ctx.globalAlpha=0.92;
 	ctx.fillStyle='#ffffff';
 	ctx.fillRect(40,90,canvas.width-80,220);
-	ctx.fillStyle='#2e7d32'; ctx.font='bold 20px Arial'; ctx.fillText('Instrucciones', canvas.width/2,115);
+	ctx.globalAlpha=1;
+	ctx.fillStyle='#2e7d32'; ctx.font='bold 20px Arial'; ctx.textAlign='center';
+	ctx.fillText('Instrucciones', canvas.width/2,115);
 	ctx.fillStyle='#333'; ctx.font='14px Arial';
 	const lines=[
 		'Objetivo: gana el máximo dinero en 180 segundos.',
-		'Click en parcela vacía: plantar (aparece una semilla aleatoria).',
-		'Mientras crece: necesita agua. Cada segundo el agua baja.',
-		'Si el agua > 3 crece rápido; si baja crece lento; si llega a 0 se marchita.',
-		'Plagas: pueden aparecer (🐛). Si hay demasiadas la planta se estropea.',
-		'Click parcela creciendo: regar (aumenta agua).',
-		'Click parcela lista (amarilla): cosechar (+50 dinero).',
-		'Click parcela marchita o con plagas: limpiar (vuelve a vacía).',
-		'Fin del tiempo: se muestra tu dinero y se guarda el récord.',
-		'Pulsa dentro del huerto para empezar. Pulsa I para ver esto otra vez.'
+		'Click en parcela vacía: plantar (semilla aleatoria).',
+		'Mientras crece baja el agua cada segundo.',
+		'Agua > 3 = crecimiento rápido; si llega a 0 se marchita.',
+		'Plagas (🐛) pueden aparecer; demasiadas arruinan la planta.',
+		'Click creciendo: regar. Lista (amarilla): cosechar (+50).',
+		'Marchita / plagas: limpiar para replantar.',
+		'Al acabar: se guarda récord si mejoras.',
+		'Pulsa dentro para empezar. Pulsa I para ver esto de nuevo.'
 	];
 	lines.forEach((ln,i)=> ctx.fillText(ln, canvas.width/2, 145 + i*18));
+	ctx.restore();
  }
  if(ended){
-	ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(80,140,canvas.width-160,120);
-	ctx.globalAlpha=1; ctx.fillStyle='#2e7d32'; ctx.font='bold 22px Arial';
-	ctx.fillText('Tiempo agotado. Dinero: '+dinero, canvas.width/2,185);
-	if(mensajeRecord) { ctx.fillStyle='#d32f2f'; ctx.fillText(mensajeRecord, canvas.width/2,215); }
-	ctx.fillStyle='#333'; ctx.font='16px Arial'; ctx.fillText('Haz click para reiniciar', canvas.width/2,245);
+	ctx.save();
+	ctx.globalAlpha=0.9; ctx.fillStyle='#000';
+	ctx.fillRect(60,130,canvas.width-120,140);
+	ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center';
+	ctx.fillText('Tiempo agotado. Dinero: '+dinero, canvas.width/2,175);
+	if(mensajeRecord){ ctx.fillStyle='#ffeb3b'; ctx.fillText(mensajeRecord, canvas.width/2,205); }
+	ctx.fillStyle='#ddd'; ctx.font='16px Arial'; ctx.fillText('Haz click para reiniciar', canvas.width/2,235);
+	ctx.restore();
  }
- ctx.restore();
- for(let c of campos) drawParcel(c);
 }
 function loop(t){ if(!loop.prev) loop.prev=t; const dt=t-loop.prev; loop.prev=t; update(dt); draw(); af=requestAnimationFrame(loop); }
 function click(e){
