@@ -18,6 +18,13 @@ let paddle = {
 	dx: 0
 };
 
+// Power-ups temporales
+let powerups=[]; // {x,y,dy,type,size}
+let basePaddleWidth = paddle.width;
+let bigActive=false, bigUntil=0; const BIG_EXTRA=40; const BIG_DURATION=7000;
+let slowActive=false, slowUntil=0; const SLOW_FACTOR=0.6; const SLOW_DURATION=7000;
+function now(){ return performance.now(); }
+
 // Bolita
 const ball = {
 		x: canvas.width / 2,
@@ -28,14 +35,19 @@ const ball = {
 		dy: -4
 };
 
-// Bloques
+// Bloques (ajustados dinámicamente al ancho del canvas)
 const blockRowCount = 4;
-const blockColumnCount = 8;
-const blockWidth = 60;
-const blockHeight = 20;
-const blockPadding = 10;
-const blockOffsetTop = 40;
-const blockOffsetLeft = 35;
+const blockColumnCount = 10; // más columnas para rellenar ancho
+const blockHeight = 22;
+const blockPaddingX = 8;
+const blockPaddingY = 10;
+const blockOffsetTop = 60;
+const blockSideMargin = 30;
+let blockWidth = 50; // recalculado luego
+function recalcBlockWidth(){
+	blockWidth = (canvas.width - blockSideMargin*2 - (blockColumnCount-1)*blockPaddingX)/blockColumnCount;
+}
+recalcBlockWidth();
 
 let blocks = [];
 function createBlocks() {
@@ -75,19 +87,18 @@ function drawBlocks() {
 	for (let c = 0; c < blockColumnCount; c++) {
 		for (let r = 0; r < blockRowCount; r++) {
 			if (blocks[c][r].status === 1) {
-				let blockX = c * (blockWidth + blockPadding) + blockOffsetLeft;
-				let blockY = r * (blockHeight + blockPadding) + blockOffsetTop;
+				let blockX = blockSideMargin + c * (blockWidth + blockPaddingX);
+				let blockY = blockOffsetTop + r * (blockHeight + blockPaddingY);
 				blocks[c][r].x = blockX;
 				blocks[c][r].y = blockY;
-			ctx.beginPath();
-			ctx.rect(blockX, blockY, blockWidth, blockHeight);
-			// Colores vivos alternos
-			const colors = ['#ffeb3b', '#ff9800', '#f44336', '#4caf50', '#2196f3', '#e91e63', '#00bcd4', '#9c27b0'];
-			ctx.fillStyle = colors[(c + r) % colors.length];
-			ctx.fill();
-			ctx.strokeStyle = '#333';
-			ctx.stroke();
-			ctx.closePath();
+				ctx.beginPath();
+				ctx.rect(blockX, blockY, blockWidth, blockHeight);
+				const colors = ['#ffeb3b', '#ff9800', '#f44336', '#4caf50', '#2196f3', '#e91e63', '#00bcd4', '#9c27b0'];
+				ctx.fillStyle = colors[(c + r) % colors.length];
+				ctx.fill();
+				ctx.strokeStyle = '#333';
+				ctx.stroke();
+				ctx.closePath();
 			}
 		}
 	}
@@ -117,6 +128,19 @@ function drawBall() {
 		ctx.shadowBlur = 0;
 }
 
+function drawPowerups(){
+	for(const p of powerups){
+		ctx.save();
+		ctx.beginPath();
+		ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+		ctx.fillStyle = p.type==='big'? '#00c853':'#03a9f4';
+		ctx.shadowColor='#fff'; ctx.shadowBlur=8; ctx.fill();
+		ctx.fillStyle='#fff'; ctx.font='12px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+		ctx.fillText(p.type==='big'?'⇔':'🐢', p.x, p.y+1);
+		ctx.restore();
+	}
+}
+
 // Dibuja todo
 function draw() {
 	ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -124,6 +148,7 @@ function draw() {
 	drawBlocks();
 	drawPaddle();
 	drawBall();
+	drawPowerups();
 	// Dibuja puntuación
 	ctx.save();
 	ctx.font = 'bold 24px Arial';
@@ -161,6 +186,27 @@ function moveBall() {
 	ball.x += ball.dx;
 	ball.y += ball.dy;
 
+	// Actualizar power-ups cayendo
+	for(let i=powerups.length-1;i>=0;i--){
+		const p=powerups[i]; p.y += p.dy;
+		// recoger
+		if(p.y + p.size >= paddle.y && p.y - p.size <= paddle.y + paddle.height && p.x >= paddle.x && p.x <= paddle.x + paddle.width){
+			if(p.type==='big'){
+				bigActive=true; bigUntil=now()+BIG_DURATION; paddle.width = basePaddleWidth + BIG_EXTRA;
+			}else if(p.type==='slow'){
+				if(!slowActive){ ball.dx *= SLOW_FACTOR; ball.dy *= SLOW_FACTOR; }
+				slowActive=true; slowUntil=now()+SLOW_DURATION;
+			}
+			powerups.splice(i,1); continue;
+		}
+		if(p.y - p.size > canvas.height) powerups.splice(i,1);
+	}
+
+	// Expiración efectos
+	const t=now();
+	if(bigActive && t>bigUntil){ bigActive=false; paddle.width = basePaddleWidth; }
+	if(slowActive && t>slowUntil){ slowActive=false; ball.dx /= SLOW_FACTOR; ball.dy /= SLOW_FACTOR; }
+
 	// Rebote en los lados
 	if (ball.x + ball.size > canvas.width || ball.x - ball.size < 0) {
 		ball.dx = -ball.dx;
@@ -185,7 +231,7 @@ function moveBall() {
 		if(score>highScore){ highScore=score; localStorage.setItem('arkanoidHighScore', String(highScore)); }
 		level = 1;
 		score = 0;
-		paddle.width = 100;
+		basePaddleWidth = 100; paddle.width = basePaddleWidth; bigActive=false; slowActive=false; powerups=[];
 		ball.x = canvas.width / 2;
 		ball.y = canvas.height - 45;
 		ball.dx = 4;
@@ -209,16 +255,10 @@ function moveBall() {
 					ball.dy = -ball.dy;
 					b.status = 0;
 					score += 10;
-					// Efecto especial aleatorio
-					if (Math.random() < 0.3) { // 30% de probabilidad
-						if (Math.random() < 0.5) {
-							// Barra más grande
-							paddle.width = Math.min(paddle.width + 30, canvas.width);
-						} else {
-							// Bola más lenta
-							ball.dx *= 0.7;
-							ball.dy *= 0.7;
-						}
+					// Posible aparición de power-up (estrella que cae)
+					if(Math.random()<0.28){
+						const type = Math.random()<0.5? 'big':'slow';
+						powerups.push({x:b.x+blockWidth/2,y:b.y+blockHeight/2,dy:3,type,size:12});
 					}
 				}
 			}
@@ -228,7 +268,9 @@ function moveBall() {
 	if (bloquesRestantes === 0) {
 		if (level < maxLevel) {
 			level++;
-			paddle.width = Math.max(60, paddle.width - 15); // barra más pequeña
+			// establecer base y reducir ligeramente dificultad
+			basePaddleWidth = Math.max(60, basePaddleWidth - 10);
+			paddle.width = bigActive ? basePaddleWidth + BIG_EXTRA : basePaddleWidth;
 			ball.x = canvas.width / 2;
 			ball.y = canvas.height - 45;
 			ball.dx = 4 + level;
@@ -241,7 +283,7 @@ function moveBall() {
 				alert('¡Felicidades! Has completado todos los niveles. Puntuación final: ' + score);
 				level = 1;
 				score = 0;
-				paddle.width = 100;
+				basePaddleWidth = 100; paddle.width = basePaddleWidth; bigActive=false; slowActive=false; powerups=[];
 				ball.x = canvas.width / 2;
 				ball.y = canvas.height - 45;
 				ball.dx = 4;
