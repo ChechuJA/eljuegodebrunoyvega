@@ -11,6 +11,7 @@
   <button onclick="startGame('arkanoid')">Arkanoid</button>
   <button onclick="startGame('paracaidista')">Bruno el paracaidista</button>
   <button onclick="startGame('vega-bailarina')">Vega la bailarina</button>
+  <button onclick="startGame('nave-exploradora')">Nave exploradora</button>
   </div>
   <div id="backBtn" style="display:none; margin-top:20px;">
     <button onclick="goBack()">⟵ Volver al menú</button>
@@ -28,6 +29,8 @@
         loadScript('script-paracaidista.js');
       } else if (game === 'vega-bailarina') {
         loadScript('script-vega-bailarina.js');
+      } else if (game === 'nave-exploradora') {
+        loadScript('script-nave-exploradora.js');
       }
     }
     function loadScript(src) {

@@ -34,15 +34,6 @@ let bruno = {
 // Teclas
 let leftPressed = false;
 let rightPressed = false;
-
-  // Muñeco fijo en vertical
-  let bruno = {
-    x: canvas.width / 2,
-    y: canvas.height / 2 + 60,
-    size: 30,
-    color: '#2196f3',
-    dx: 0
-  };
 function drawInstructions() {
   ctx.save();
   ctx.globalAlpha = 0.9;
@@ -272,8 +263,8 @@ function checkColisiones() {
       } else {
         mensajeNivel = '¡Cuidado! Has perdido una vida.';
         setTimeout(() => { mensajeNivel = ''; }, 1200);
-        bruno.x = canvas.width / 2;
-        bruno.y = 60;
+  bruno.x = canvas.width / 2;
+  bruno.y = canvas.height / 2 + 60;
       }
       obstaculos = [];
       estrellas = [];
@@ -388,12 +379,12 @@ document.addEventListener('keydown', (e) => {
       mensajeNivel = '¡Respuesta correcta! +100 puntos';
       preguntaPendiente = false;
       preguntaActual = null;
-      setTimeout(() => { mensajeNivel = ''; altura = 10000; bruno.x = canvas.width / 2; bruno.y = 60; obstaculos = []; estrellas = []; gameLoop(); }, 1200);
+  setTimeout(() => { mensajeNivel = ''; altura = 10000; bruno.x = canvas.width / 2; bruno.y = canvas.height / 2 + 60; obstaculos = []; estrellas = []; gameLoop(); }, 1200);
     } else if (!isNaN(Number(e.key))) {
       mensajeNivel = 'Respuesta incorrecta.';
       preguntaPendiente = false;
       preguntaActual = null;
-      setTimeout(() => { mensajeNivel = ''; altura = 10000; bruno.x = canvas.width / 2; bruno.y = 60; obstaculos = []; estrellas = []; gameLoop(); }, 1200);
+  setTimeout(() => { mensajeNivel = ''; altura = 10000; bruno.x = canvas.width / 2; bruno.y = canvas.height / 2 + 60; obstaculos = []; estrellas = []; gameLoop(); }, 1200);
     }
     return;
   }
