@@ -19,6 +19,7 @@
   <canvas id="gameCanvas" width="600" height="400" style="display:none;"></canvas>
   <script>
     let currentScript = null;
+    let currentCleanup = null;
     function startGame(game) {
       document.getElementById('menu').style.display = 'none';
       document.getElementById('gameCanvas').style.display = 'block';
@@ -34,27 +35,36 @@
       }
     }
     function loadScript(src) {
-      if (currentScript) {
-        document.body.removeChild(currentScript);
-      }
-      var script = document.createElement('script');
-      script.src = src;
-      document.body.appendChild(script);
-      currentScript = script;
-    }
-    function goBack() {
-      document.getElementById('menu').style.display = 'block';
-      document.getElementById('gameCanvas').style.display = 'none';
-      document.getElementById('backBtn').style.display = 'none';
-      // Elimina el script del juego actual
+      // Limpieza juego previo
+      if (currentCleanup) { try { currentCleanup(); } catch(e) { console.warn('Error cleanup', e); } currentCleanup = null; }
       if (currentScript) {
         document.body.removeChild(currentScript);
         currentScript = null;
       }
-      // Limpia el canvas
       const canvas = document.getElementById('gameCanvas');
       const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      var script = document.createElement('script');
+      script.src = src + '?v=' + Date.now(); // cache busting
+      script.onload = () => {
+        if (typeof window.registerGame === 'function') {
+          currentCleanup = window.registerGame();
+        } else {
+          console.error('El script no registró el juego correctamente. Falta registerGame.');
+        }
+      };
+      document.body.appendChild(script);
+      currentScript = script;
+    }
+    function goBack() {
+      if (currentCleanup) { try { currentCleanup(); } catch(e) {} currentCleanup = null; }
+      if (currentScript) { document.body.removeChild(currentScript); currentScript = null; }
+      const canvas = document.getElementById('gameCanvas');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      document.getElementById('menu').style.display = 'block';
+      document.getElementById('gameCanvas').style.display = 'none';
+      document.getElementById('backBtn').style.display = 'none';
     }
   </script>
 </body>

@@ -1,6 +1,8 @@
+function registerGame(){
 // Nave exploradora - Juego educativo de planetas
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let af = null;
 
 // Estado principal
 let nave = { x: canvas.width / 2, y: canvas.height - 60, w: 30, h: 40, speed: 5 };
@@ -14,6 +16,7 @@ let mostrarInstrucciones = true;
 let nivel = 1;
 let maxNivel = 5;
 let metaOrbes = 5; // orbes necesarios por nivel
+let orbesNivel = 0; // contador independiente de orbes en el nivel actual
 
 const datosPlanetas = [
   { nombre: 'Mercurio', dato: 'El más cercano al Sol y el más rápido.' },
@@ -104,7 +107,7 @@ function drawHUD() {
   ctx.textAlign = 'left';
   ctx.fillText('Puntos: ' + score, 15, 24);
   ctx.fillText('Nivel: ' + nivel + ' / ' + maxNivel, 15, 44);
-  ctx.fillText('Orbes: ' + (score % 100) / 20 + ' / ' + metaOrbes, 15, 64);
+  ctx.fillText('Orbes: ' + orbesNivel + ' / ' + metaOrbes, 15, 64);
   ctx.textAlign = 'right';
   ctx.fillText('Descubre planetas para curiosidades', canvas.width - 15, 24);
   ctx.restore();
@@ -158,7 +161,8 @@ function update() {
   for (let i = orbes.length - 1; i >= 0; i--) {
     let o = orbes[i];
     if (Math.abs(o.x - nave.x) < 20 && Math.abs(o.y - nave.y) < 30) {
-      score += 20; // cada orbe = 20 puntos, 5 orbes = 100 puntos => nuevo nivel
+      score += 20;
+      orbesNivel++;
       orbes.splice(i, 1);
     }
   }
@@ -176,11 +180,11 @@ function update() {
   }
 
   // Subir nivel
-  let orbesRecolectados = (score % 100) / 20; // 0..5
-  if (orbesRecolectados >= metaOrbes) {
+  if (orbesNivel >= metaOrbes) {
     nivel++;
     score += 50; // bonus
-    metaOrbes = Math.min(5 + nivel, 10);
+    orbesNivel = 0;
+    metaOrbes = Math.min(metaOrbes + 1, 10);
     crearPlanetas();
     if (nivel > maxNivel) {
       infoActual = { nombre: '¡Completado!', dato: 'Has explorado el mini-sistema. ¡Gran trabajo!' };
@@ -188,15 +192,45 @@ function update() {
   }
 }
 
+// Pre-generar estrellas con formas reales (puntas)
+const estrellas = Array.from({length:60},()=>({
+  x: Math.random()*canvas.width,
+  y: Math.random()*canvas.height,
+  r: 1+Math.random()*1.5,
+  p: 5 + Math.floor(Math.random()*2),
+  o: 0.5 + Math.random()*0.5
+}));
+
+function drawStar(s){
+  const rot = Math.PI/2 * 3;
+  let x = s.x;
+  let y = s.y;
+  let spikes = s.p;
+  let outerRadius = s.r*2.2;
+  let innerRadius = s.r;
+  let angle = 0;
+  ctx.beginPath();
+  ctx.moveTo(x, y - outerRadius);
+  for (let i=0;i<spikes;i++){
+    let rx = x + Math.cos(angle) * outerRadius;
+    let ry = y + Math.sin(angle) * outerRadius;
+    ctx.lineTo(rx, ry);
+    angle += Math.PI / spikes;
+    rx = x + Math.cos(angle) * innerRadius;
+    ry = y + Math.sin(angle) * innerRadius;
+    ctx.lineTo(rx, ry);
+    angle += Math.PI / spikes;
+  }
+  ctx.closePath();
+  ctx.fillStyle = 'rgba(255,255,255,'+s.o+')';
+  ctx.fill();
+}
+
 function drawFondo() {
   ctx.save();
   ctx.fillStyle = '#000014';
   ctx.fillRect(0,0,canvas.width,canvas.height);
-  // Estrellas simples
-  for (let i = 0; i < 40; i++) {
-    ctx.fillStyle = 'rgba(255,255,255,' + Math.random().toFixed(2) + ')';
-    ctx.fillRect(Math.random()*canvas.width, Math.random()*canvas.height, 2, 2);
-  }
+  estrellas.forEach(drawStar);
   ctx.restore();
 }
 
@@ -209,15 +243,24 @@ function loop() {
   drawInfo();
   drawInstrucciones();
   if (!mostrarInstrucciones) update();
-  requestAnimationFrame(loop);
+  af = requestAnimationFrame(loop);
 }
 
 // Eventos
-window.addEventListener('keydown', (e) => {
+function keydown(e){
   if (mostrarInstrucciones) { mostrarInstrucciones = false; return; }
   teclas[e.key] = true;
-});
-window.addEventListener('keyup', (e) => { teclas[e.key] = false; });
+}
+function keyup(e){ teclas[e.key] = false; }
+window.addEventListener('keydown',keydown);
+window.addEventListener('keyup',keyup);
 
 crearPlanetas();
 loop();
+return function cleanup(){
+  if (af) cancelAnimationFrame(af);
+  window.removeEventListener('keydown',keydown);
+  window.removeEventListener('keyup',keyup);
+};
+}
+window.registerGame = registerGame;

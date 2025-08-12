@@ -1,5 +1,7 @@
+function registerGame() {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let af = null;
 
 // Barra (paddle)
 let level = 1;
@@ -233,21 +235,32 @@ function moveBall() {
 }
 
 // Eventos de teclado
-document.addEventListener('keydown', (e) => {
+function keydown(e){
 	if (e.key === 'ArrowRight') rightPressed = true;
 	if (e.key === 'ArrowLeft') leftPressed = true;
-});
-document.addEventListener('keyup', (e) => {
+}
+function keyup(e){
 	if (e.key === 'ArrowRight') rightPressed = false;
 	if (e.key === 'ArrowLeft') leftPressed = false;
-});
+}
+document.addEventListener('keydown',keydown);
+document.addEventListener('keyup',keyup);
 
 // Bucle principal
 function gameLoop() {
 	movePaddle();
 	moveBall();
 	draw();
-	requestAnimationFrame(gameLoop);
+ 	af = requestAnimationFrame(gameLoop);
 }
 
 gameLoop();
+
+// cleanup
+return function cleanup(){
+	if (af) cancelAnimationFrame(af);
+	document.removeEventListener('keydown',keydown);
+	document.removeEventListener('keyup',keyup);
+};
+}
+window.registerGame = registerGame;

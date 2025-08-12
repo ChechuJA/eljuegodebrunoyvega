@@ -1,6 +1,8 @@
+function registerGame(){
 // Vega la bailarina - Juego sencillo para 3 años
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let af = null;
 
 let vega = {
   x: canvas.width / 2,
@@ -109,7 +111,7 @@ let rightPressed = false;
 let upPressed = false;
 let downPressed = false;
 
-document.addEventListener('keydown', (e) => {
+function keydown(e){
   if (e.key === 'ArrowLeft') leftPressed = true;
   if (e.key === 'ArrowRight') rightPressed = true;
   if (e.key === 'ArrowUp') upPressed = true;
@@ -121,18 +123,27 @@ document.addEventListener('keydown', (e) => {
     }
     setTimeout(() => { bailando = false; }, 400);
   }
-});
-document.addEventListener('keyup', (e) => {
+}
+function keyup(e){
   if (e.key === 'ArrowLeft') leftPressed = false;
   if (e.key === 'ArrowRight') rightPressed = false;
   if (e.key === 'ArrowUp') upPressed = false;
   if (e.key === 'ArrowDown') downPressed = false;
-});
+}
+document.addEventListener('keydown',keydown);
+document.addEventListener('keyup',keyup);
 
 function gameLoop() {
   moveVega();
   updateCorazones();
   draw();
-  requestAnimationFrame(gameLoop);
+  af = requestAnimationFrame(gameLoop);
 }
 gameLoop();
+return function cleanup(){
+  if (af) cancelAnimationFrame(af);
+  document.removeEventListener('keydown',keydown);
+  document.removeEventListener('keyup',keyup);
+};
+}
+window.registerGame = registerGame;

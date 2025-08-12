@@ -1,6 +1,8 @@
+function registerGame(){
 // Bruno el paracaidista - Base Jump Simulator
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+let af = null;
 
 let altura = 10000; // metros
 let velocidad = 30; // metros por segundo
@@ -105,11 +107,43 @@ function drawBruno() {
 function drawObstaculos() {
   for (let o of obstaculos) {
     ctx.save();
-    ctx.beginPath();
-    ctx.ellipse(o.x, o.y, o.size, o.size / 2, 0, 0, Math.PI * 2);
     ctx.fillStyle = o.color;
-    ctx.fill();
-    ctx.closePath();
+    if (o.tipo === 'pajaro') {
+      ctx.beginPath();
+      ctx.ellipse(o.x, o.y, o.size, o.size/2, 0, 0, Math.PI*2);
+      ctx.fill();
+    } else if (o.tipo === 'globo') {
+      ctx.beginPath();
+      ctx.arc(o.x, o.y, o.size*0.7, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(o.x, o.y + o.size*0.7);
+      ctx.lineTo(o.x, o.y + o.size*1.1);
+      ctx.strokeStyle = o.color;
+      ctx.stroke();
+    } else if (o.tipo === 'drone') {
+      ctx.beginPath();
+      ctx.rect(o.x - o.size*0.8, o.y - o.size*0.3, o.size*1.6, o.size*0.6);
+      ctx.fill();
+      ctx.fillStyle = '#000';
+      ctx.fillRect(o.x - 2, o.y - 2, 4, 4);
+    } else if (o.tipo === 'nube') {
+      ctx.fillStyle = '#ccc';
+      ctx.beginPath();
+      ctx.arc(o.x - o.size*0.5, o.y, o.size*0.6, 0, Math.PI*2);
+      ctx.arc(o.x, o.y - o.size*0.3, o.size*0.7, 0, Math.PI*2);
+      ctx.arc(o.x + o.size*0.5, o.y, o.size*0.6, 0, Math.PI*2);
+      ctx.fill();
+    } else if (o.tipo === 'avion') {
+      ctx.beginPath();
+      ctx.moveTo(o.x - o.size, o.y);
+      ctx.lineTo(o.x + o.size, o.y);
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = o.color;
+      ctx.stroke();
+      ctx.fillStyle = o.color;
+      ctx.fillRect(o.x - o.size*0.3, o.y - o.size*0.2, o.size*0.6, o.size*0.4);
+    }
     ctx.restore();
   }
 }
@@ -224,15 +258,13 @@ function moveBruno() {
 function crearObstaculo() {
   let r = Math.random();
   let tipo, color, size;
-  if (r < 0.5) {
-    tipo = 'pajaro'; color = '#795548'; size = 22;
-  } else if (r < 0.8) {
-    tipo = 'globo'; color = '#e91e63'; size = 26;
-  } else {
-    tipo = 'drone'; color = '#607d8b'; size = 20;
-  }
+  if (r < 0.3) { tipo = 'pajaro'; color = '#795548'; size = 22; }
+  else if (r < 0.5) { tipo = 'globo'; color = '#e91e63'; size = 26; }
+  else if (r < 0.7) { tipo = 'drone'; color = '#607d8b'; size = 20; }
+  else if (r < 0.85) { tipo = 'nube'; color = '#bbb'; size = 30; }
+  else { tipo = 'avion'; color = '#9e9e9e'; size = 28; }
   let x = 40 + Math.random() * (canvas.width - 80);
-  obstaculos.push({ x, y: -30, size, color });
+  obstaculos.push({ x, y: -30, size, color, tipo });
 }
 
 function crearEstrella() {
@@ -363,11 +395,11 @@ function gameLoop() {
   checkColisiones();
   checkLanding();
   draw();
-  if (altura > 0) requestAnimationFrame(gameLoop);
+  if (altura > 0) af = requestAnimationFrame(gameLoop);
   else draw();
 }
 
-document.addEventListener('keydown', (e) => {
+function keydown(e){
   if (showInstructions) {
     showInstructions = false;
     gameLoop();
@@ -391,11 +423,20 @@ document.addEventListener('keydown', (e) => {
   if (e.key === 'ArrowLeft') leftPressed = true;
   if (e.key === 'ArrowRight') rightPressed = true;
   if (e.key.toLowerCase() === 'h') humoActivo = true;
-});
-document.addEventListener('keyup', (e) => {
+}
+function keyup(e){
   if (e.key === 'ArrowLeft') leftPressed = false;
   if (e.key === 'ArrowRight') rightPressed = false;
   if (e.key.toLowerCase() === 'h') humoActivo = false;
-});
+}
+document.addEventListener('keydown',keydown);
+document.addEventListener('keyup',keyup);
 
 draw();
+return function cleanup(){
+  if (af) cancelAnimationFrame(af);
+  document.removeEventListener('keydown',keydown);
+  document.removeEventListener('keyup',keyup);
+};
+}
+window.registerGame = registerGame;
