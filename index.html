@@ -6,7 +6,27 @@
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <canvas id="gameCanvas" width="600" height="400"></canvas>
-  <script src="script.js"></script>
+  <div id="menu">
+    <h2>Elige tu juego</h2>
+    <button onclick="startGame('arkanoid')">Arkanoid</button>
+    <button onclick="startGame('paracaidista')">Bruno el paracaidista</button>
+  </div>
+  <canvas id="gameCanvas" width="600" height="400" style="display:none;"></canvas>
+  <script>
+    function startGame(game) {
+      document.getElementById('menu').style.display = 'none';
+      document.getElementById('gameCanvas').style.display = 'block';
+      if (game === 'arkanoid') {
+        loadScript('script-arkanoid.js');
+      } else if (game === 'paracaidista') {
+        loadScript('script-paracaidista.js');
+      }
+    }
+    function loadScript(src) {
+      var script = document.createElement('script');
+      script.src = src;
+      document.body.appendChild(script);
+    }
+  </script>
 </body>
 </html>
