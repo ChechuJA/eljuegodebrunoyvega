@@ -1,7 +1,7 @@
 function registerGame(){
 // Huerto mágico (gestión ligera + tiempo)
 const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
-canvas.width=640; canvas.height=420;
+canvas.width=800; canvas.height=500;
 const parcelasCols=6, parcelasRows=3; const size=80; const margin=16; const startY=90;
 let semillas=['🍓','🥕','🌽','🥦','🍆'];
 let campos=[]; for(let r=0;r<parcelasRows;r++){ for(let c=0;c<parcelasCols;c++){ campos.push({c,r,estado:'vacio',semilla:null,progreso:0,agua:0,plagas:0}); }}

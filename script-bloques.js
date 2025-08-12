@@ -1,7 +1,10 @@
 function registerGame(){
 // Bloques mágicos (mini Tetris simplificado con récord)
 const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
-const COLS=10, ROWS=20, SIZE=24; canvas.width=COLS*SIZE; canvas.height=ROWS*SIZE+80;
+const COLS=12, ROWS=22, SIZE=28; // ampliar tablero
+const PANEL_W = 160;
+canvas.width=COLS*SIZE + PANEL_W;
+canvas.height=ROWS*SIZE + 60;
 const shapes={
  I:[[1,1,1,1]],
  O:[[1,1],[1,1]],
@@ -24,12 +27,39 @@ let color = colors[Math.floor(Math.random()*colors.length)];
 function spawn(){ color = colors[Math.floor(Math.random()*colors.length)]; newPiece(); }
 function update(t){ if(gameOver) return; if(!lastDrop) lastDrop=t; const delta=t-lastDrop; if(delta>dropInterval){ if(!collide(0,1,current)) y++; else { merge(); clearLines(); spawn(); } lastDrop=t; }
 }
-function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.save(); ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.font='16px Arial'; ctx.fillStyle='#fff'; ctx.fillText('Bloques mágicos  Puntos: '+score+'  Nivel: '+level+'  Récord: '+high, 10,20); if(gameOver){ ctx.fillStyle='rgba(0,0,0,0.7)'; ctx.fillRect(0,40,canvas.width,canvas.height-40); ctx.fillStyle='#ffeb3b'; ctx.font='22px Arial'; ctx.fillText('Game Over. Pulsa R para reiniciar', canvas.width/2, canvas.height/2); }
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.save();
+ // Fondo principal
+ ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height);
+ // Área de juego
+ ctx.fillStyle='#222'; ctx.fillRect(0,0,COLS*SIZE,canvas.height);
+ // Panel lateral
+ ctx.fillStyle='#1e1e1e'; ctx.fillRect(COLS*SIZE,0,PANEL_W,canvas.height);
+ ctx.fillStyle='#fff'; ctx.font='18px Arial'; ctx.fillText('Bloques mágicos', COLS*SIZE + 12, 32);
+ ctx.font='14px Arial';
+ ctx.fillText('Puntos: '+score, COLS*SIZE + 12, 64);
+ ctx.fillText('Nivel: '+level, COLS*SIZE + 12, 84);
+ ctx.fillText('Récord: '+high, COLS*SIZE + 12, 104);
+ ctx.fillText('Controles:', COLS*SIZE + 12, 140);
+ ctx.fillText('← → mover', COLS*SIZE + 12, 160);
+ ctx.fillText('↑ rotar', COLS*SIZE + 12, 176);
+ ctx.fillText('↓ bajar', COLS*SIZE + 12, 192);
+ ctx.fillText('Space drop', COLS*SIZE + 12, 208);
+ if(gameOver){
+	 ctx.fillStyle='rgba(0,0,0,0.7)';
+	 ctx.fillRect(0,0,COLS*SIZE,canvas.height);
+	 ctx.fillStyle='#ffeb3b'; ctx.font='24px Arial'; ctx.textAlign='center';
+	 ctx.fillText('Game Over', (COLS*SIZE)/2, canvas.height/2 - 20);
+	 ctx.font='18px Arial';
+	 ctx.fillText('Pulsa R para reiniciar', (COLS*SIZE)/2, canvas.height/2 + 10);
+ }
  // draw grid
  for(let r=0;r<ROWS;r++) for(let c=0;c<COLS;c++){ if(grid[r][c]){ ctx.fillStyle=colors[(grid[r][c]-1)%colors.length]; ctx.fillRect(c*SIZE,r*SIZE+40,SIZE,SIZE); ctx.strokeStyle='#000'; ctx.strokeRect(c*SIZE,r*SIZE+40,SIZE,SIZE); }}
  // draw current
  if(current){ for(let r=0;r<current.length;r++) for(let c=0;c<current[0].length;c++) if(current[r][c]){ ctx.fillStyle=color; ctx.fillRect((x+c)*SIZE,(y+r)*SIZE+40,SIZE,SIZE); ctx.strokeStyle='#000'; ctx.strokeRect((x+c)*SIZE,(y+r)*SIZE+40,SIZE,SIZE); }}
- ctx.restore(); }
+ ctx.restore();
+}
 function loop(t){ update(t); draw(); af=requestAnimationFrame(loop); }
 function key(e){ if(gameOver && e.key.toLowerCase()==='r'){ grid=Array.from({length:ROWS},()=>Array(COLS).fill(0)); score=0; level=1; dropInterval=700; gameOver=false; newPiece(); return; }
  if(e.key==='ArrowLeft'&&!collide(-1,0,current)) x--; else if(e.key==='ArrowRight'&&!collide(1,0,current)) x++; else if(e.key==='ArrowDown'){ if(!collide(0,1,current)) y++; } else if(e.key==='ArrowUp'){ const rot=rotate(current); if(!collide(0,0,rot)) current=rot; } else if(e.key===' '){ while(!collide(0,1,current)) y++; merge(); clearLines(); spawn(); }

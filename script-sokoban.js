@@ -22,7 +22,17 @@ function mover(dx,dy){ const nx=jugador.x+dx, ny=jugador.y+dy; if(mapa[ny][nx]==
 }
 function completado(){ return cajas.every(c=>isObjetivo(c.x,c.y)); }
 function reiniciar(){ parse(); movimientos=0; }
-function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); ctx.fillStyle='#283593'; ctx.fillRect(0,0,canvas.width,70); ctx.fillStyle='#fff'; ctx.font='18px Arial'; ctx.fillText('Empuja Cajas  Movimientos: '+movimientos+'  Mejor: '+(mejor>0?mejor:'-')+'  (R reinicia)', 10,40); for(let y=0;y<mapa.length;y++) for(let x=0;x<mapa[0].length;x++){ const ch=mapa[y][x]; if(ch==='#'){ ctx.fillStyle='#455a64'; ctx.fillRect(x*TILE,y*TILE+70,TILE,TILE); } else { ctx.fillStyle='#eceff1'; ctx.fillRect(x*TILE,y*TILE+70,TILE,TILE); if(isObjetivo(x,y)){ ctx.fillStyle='#ffca28'; ctx.beginPath(); ctx.arc(x*TILE+TILE/2,y*TILE+70+TILE/2,8,0,Math.PI*2); ctx.fill(); } } }
+function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); // header gradient
+ let g=ctx.createLinearGradient(0,0,0,70); g.addColorStop(0,'#0d47a1'); g.addColorStop(1,'#1976d2'); ctx.fillStyle=g; ctx.fillRect(0,0,canvas.width,70);
+ ctx.fillStyle='#fff'; ctx.font='20px Arial'; ctx.textBaseline='middle';
+ ctx.fillText('Empuja Cajas', 12,22);
+ ctx.font='16px Arial';
+ ctx.fillText('Movs: '+movimientos, 12, 48);
+ ctx.textAlign='right';
+ ctx.fillText('Récord: '+(mejor>0?mejor:'-'), canvas.width-12,22);
+ ctx.fillText('(R) Reiniciar', canvas.width-12,48);
+ ctx.textAlign='left';
+ for(let y=0;y<mapa.length;y++) for(let x=0;x<mapa[0].length;x++){ const ch=mapa[y][x]; if(ch==='#'){ ctx.fillStyle='#455a64'; ctx.fillRect(x*TILE,y*TILE+70,TILE,TILE); } else { ctx.fillStyle='#fafafa'; ctx.fillRect(x*TILE,y*TILE+70,TILE,TILE); if(isObjetivo(x,y)){ ctx.fillStyle='#ffca28'; ctx.beginPath(); ctx.arc(x*TILE+TILE/2,y*TILE+70+TILE/2,8,0,Math.PI*2); ctx.fill(); } } }
  for(let c of cajas){ ctx.fillStyle='#8d6e63'; ctx.fillRect(c.x*TILE+4,c.y*TILE+74,TILE-8,TILE-8); }
  ctx.fillStyle='#4caf50'; ctx.beginPath(); ctx.arc(jugador.x*TILE+TILE/2, jugador.y*TILE+70+TILE/2, TILE/3,0,Math.PI*2); ctx.fill(); }
 function loop(){ draw(); af=requestAnimationFrame(loop); }

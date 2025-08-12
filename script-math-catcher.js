@@ -3,7 +3,7 @@ function registerGame(){
 const canvas=document.getElementById('gameCanvas');
 const ctx=canvas.getContext('2d'); let af=null;
 let targetOp=null, score=0, fallers=[], tiempo=60, started=false; let lastSpawn=0; let highScore=Number(localStorage.getItem('mathCatcherHigh')||0);
-canvas.width=600; canvas.height=420;
+canvas.width=800; canvas.height=500;
 function nuevaOperacion(){ const a=1+Math.floor(Math.random()*9); const b=1+Math.floor(Math.random()*9); const ops=['+','-','x']; const op=ops[Math.floor(Math.random()*ops.length)]; let res; if(op==='+') res=a+b; else if(op==='-') res=a-b; else res=a*b; targetOp={texto:`${a} ${op} ${b}`,res}; }
 function spawn(){ const n = targetOp.res + (Math.random()<0.5?0: (Math.floor(Math.random()*7)-3)); fallers.push({x:40+Math.random()*(canvas.width-80), y:-30, v:2+Math.random()*2, val:n}); }
 function update(delta){ if(!started) return; lastSpawn+=delta; if(lastSpawn>700){ spawn(); lastSpawn=0; } for(let f of fallers){ f.y+=f.v; } fallers=fallers.filter(f=>f.y<canvas.height+40); tiempo-=delta/1000; if(tiempo<=0){ started=false; }

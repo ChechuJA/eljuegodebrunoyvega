@@ -1,7 +1,7 @@
 function registerGame(){
 // Constelaciones (unir estrellas por orden para descubrir figura / dato)
 const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
-canvas.width=640; canvas.height=420;
+canvas.width=800; canvas.height=500;
 const figuras=[
  {nombre:'Orión',dato:'Cazador mítico.', puntos:[[80,90],[140,160],[200,100],[260,180],[320,120],[380,200]], icon:'🗡️'},
  {nombre:'Osa Mayor',dato:'Ayuda a encontrar la estrella polar.', puntos:[[70,260],[130,240],[190,250],[250,270],[310,300],[370,320],[430,300]], icon:'🐻'},

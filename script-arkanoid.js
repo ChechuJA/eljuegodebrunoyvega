@@ -2,6 +2,7 @@ function registerGame() {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 let af = null;
+ let showIntro = true;
 
 // Barra (paddle)
 let level = 1;
@@ -128,8 +129,22 @@ function draw() {
 	ctx.font = 'bold 24px Arial';
 	ctx.fillStyle = '#ff9800';
 	ctx.textAlign = 'left';
-	ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore, 20, 30);
+	let recordName = localStorage.getItem('arkanoidHighScoreName')||'';
+	ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore + (recordName? (' ('+recordName+')') : ''), 20, 30);
 	ctx.restore();
+	if(showIntro){
+		ctx.save();
+		ctx.globalAlpha=0.9; ctx.fillStyle='#fff';
+		ctx.fillRect(40,50,canvas.width-80,180);
+		ctx.globalAlpha=1; ctx.fillStyle='#0d47a1'; ctx.font='bold 26px Arial'; ctx.textAlign='center';
+		ctx.fillText('Arkanoid', canvas.width/2,85);
+		ctx.font='14px Arial'; ctx.fillStyle='#333';
+		ctx.fillText('Mueve la barra con ← → y rebota la bola para romper los bloques.', canvas.width/2,115);
+		ctx.fillText('Power-ups aleatorios: barra más grande o bola más lenta.', canvas.width/2,138);
+		ctx.fillText('Consejo: juega sesiones de hasta 10 minutos y descansa.', canvas.width/2,161);
+		ctx.fillText('Pulsa cualquier tecla para comenzar.', canvas.width/2,184);
+		ctx.restore();
+	}
 }
 
 // Mueve barra
@@ -239,9 +254,12 @@ function moveBall() {
 
 // Eventos de teclado
 function keydown(e){
+	if(showIntro){ showIntro=false; return; }
 	if (e.key === 'ArrowRight') rightPressed = true;
 	if (e.key === 'ArrowLeft') leftPressed = true;
 }
+		if(score>highScore){ highScore=score; localStorage.setItem('arkanoidHighScore', String(highScore)); localStorage.setItem('arkanoidHighScoreName', localStorage.getItem('playerName')||''); }
+				if(score>highScore){ highScore=score; localStorage.setItem('arkanoidHighScore', String(highScore)); localStorage.setItem('arkanoidHighScoreName', localStorage.getItem('playerName')||''); }
 function keyup(e){
 	if (e.key === 'ArrowRight') rightPressed = false;
 	if (e.key === 'ArrowLeft') leftPressed = false;

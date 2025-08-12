@@ -2,6 +2,8 @@ function registerGame(){
 // Bruno el paracaidista - Base Jump Simulator
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
+// Aumentamos el tamaño para que el título se vea completo
+canvas.width = 800; canvas.height = 500;
 let af = null;
 
 let altura = 10000; // metros
@@ -41,7 +43,8 @@ function drawInstructions() {
   ctx.save();
   ctx.globalAlpha = 0.9;
   ctx.fillStyle = '#fff';
-  ctx.fillRect(40, 40, canvas.width - 80, 120);
+  // Caja más alta para que quepan todas las líneas
+  ctx.fillRect(40, 40, canvas.width - 80, 160);
   ctx.font = 'bold 22px Arial';
   ctx.fillStyle = '#333';
   ctx.textAlign = 'center';
