@@ -11,6 +11,7 @@ let planetas = [];
 let orbes = [];
 let mensajes = [];
 let score = 0;
+let highScore = Number(localStorage.getItem('naveHighScore')||0);
 let infoActual = null;
 let mostrarInstrucciones = true;
 let nivel = 1;
@@ -106,6 +107,7 @@ function drawHUD() {
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
   ctx.fillText('Puntos: ' + score, 15, 24);
+  ctx.fillText('Récord: ' + highScore, 15, 84);
   ctx.fillText('Nivel: ' + nivel + ' / ' + maxNivel, 15, 44);
   ctx.fillText('Orbes: ' + orbesNivel + ' / ' + metaOrbes, 15, 64);
   ctx.textAlign = 'right';
@@ -183,6 +185,7 @@ function update() {
   if (orbesNivel >= metaOrbes) {
     nivel++;
     score += 50; // bonus
+  if(score>highScore){ highScore=score; localStorage.setItem('naveHighScore', String(highScore)); }
     orbesNivel = 0;
     metaOrbes = Math.min(metaOrbes + 1, 10);
     crearPlanetas();

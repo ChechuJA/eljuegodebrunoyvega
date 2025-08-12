@@ -17,6 +17,9 @@
   <button onclick="startGame('huerto')">Huerto mágico</button>
   <button onclick="startGame('constelaciones')">Constelaciones</button>
   <button onclick="startGame('laberinto')">Laberinto de colores</button>
+  <button onclick="startGame('bloques')">Bloques mágicos</button>
+  <button onclick="startGame('serpiente')">Serpiente</button>
+  <button onclick="startGame('sokoban')">Empuja Cajas</button>
   </div>
   <div id="backBtn" style="display:none; margin-top:20px;">
     <button onclick="goBack()">⟵ Volver al menú</button>
@@ -47,6 +50,12 @@
         loadScript('script-constelaciones.js');
       } else if (game === 'laberinto') {
         loadScript('script-laberinto.js');
+      } else if (game === 'bloques') {
+        loadScript('script-bloques.js');
+      } else if (game === 'serpiente') {
+        loadScript('script-serpiente.js');
+      } else if (game === 'sokoban') {
+        loadScript('script-sokoban.js');
       }
     }
     function loadScript(src) {

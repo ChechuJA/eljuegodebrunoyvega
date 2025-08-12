@@ -13,6 +13,7 @@ let gameOver = false;
 let showInstructions = true;
 let humoActivo = false;
 let score = 0;
+let highScore = Number(localStorage.getItem('paracaHighScore')||0);
 let nivel = 1;
 let maxNivel = 5;
 let vidas = 3;
@@ -173,7 +174,7 @@ function drawScore() {
   ctx.font = 'bold 20px Arial';
   ctx.fillStyle = '#ff9800';
   ctx.textAlign = 'left';
-  ctx.fillText('Puntos: ' + score, 20, 70);
+  ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore, 20, 70);
   ctx.restore();
 }
 
@@ -327,6 +328,7 @@ function checkLanding() {
         setTimeout(() => { mensajeNivel = ''; preguntaLogica(); }, 1800);
       } else {
         setTimeout(() => {
+          if(score>highScore){ highScore=score; localStorage.setItem('paracaHighScore', String(highScore)); }
           alert('¡Has completado todos los niveles! Puntuación final: ' + score);
           reiniciar();
         }, 100);
@@ -341,6 +343,7 @@ function checkLanding() {
 }
 
 function reiniciar() {
+  if(score>highScore){ highScore=score; localStorage.setItem('paracaHighScore', String(highScore)); }
   altura = 10000;
   bruno.x = canvas.width / 2;
   bruno.y = canvas.height / 2 + 60;
@@ -372,6 +375,7 @@ function preguntaLogica() {
 function gameLoop() {
   if (gameOver) {
     setTimeout(() => {
+  if(score>highScore){ highScore=score; localStorage.setItem('paracaHighScore', String(highScore)); }
       alert('¡Te has quedado sin vidas! Intenta de nuevo.');
       reiniciar();
     }, 100);

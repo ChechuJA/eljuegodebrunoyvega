@@ -7,6 +7,7 @@ let af = null;
 let level = 1;
 let maxLevel = 5;
 let score = 0;
+let highScore = Number(localStorage.getItem('arkanoidHighScore')||0);
 let paddle = {
 	width: 100,
 	height: 18,
@@ -127,7 +128,7 @@ function draw() {
 	ctx.font = 'bold 24px Arial';
 	ctx.fillStyle = '#ff9800';
 	ctx.textAlign = 'left';
-	ctx.fillText('Puntos: ' + score, 20, 30);
+	ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore, 20, 30);
 	ctx.restore();
 }
 
@@ -166,6 +167,7 @@ function moveBall() {
 	// Pierde (bolita abajo)
 	if (ball.y + ball.size > canvas.height) {
 		// Reinicia nivel y puntuación si pierde
+		if(score>highScore){ highScore=score; localStorage.setItem('arkanoidHighScore', String(highScore)); }
 		level = 1;
 		score = 0;
 		paddle.width = 100;
@@ -220,6 +222,7 @@ function moveBall() {
 		} else {
 			// Juego completado
 			setTimeout(() => {
+				if(score>highScore){ highScore=score; localStorage.setItem('arkanoidHighScore', String(highScore)); }
 				alert('¡Felicidades! Has completado todos los niveles. Puntuación final: ' + score);
 				level = 1;
 				score = 0;

@@ -13,6 +13,7 @@ pool.sort(()=>Math.random()-0.5);
 let cards = pool.map((icon,i)=>({icon,x:(i%cols),y:Math.floor(i/cols),open:false,found:false}));
 let first=null, second=null;
 let lock=false; let aciertos=0; let intentos=0; let mostrarInicio=true;
+let bestIntentos = Number(localStorage.getItem('memoriaBest')||0);
 const cardW = 100, cardH=120, margin=20;
 canvas.width = cols*cardW + (cols+1)*margin; canvas.height = rows*cardH + (rows+1)*margin + 80;
 function drawCard(c){
@@ -33,11 +34,12 @@ function drawHUD(){
  ctx.font='bold 26px Arial'; ctx.fillStyle='#e91e63'; ctx.textAlign='center';
  ctx.fillText('Memoria de Animales', canvas.width/2,40);
  ctx.font='16px Arial'; ctx.fillStyle='#333';
- ctx.fillText('Aciertos: '+aciertos+' / '+(total/2)+'  Intentos: '+intentos, canvas.width/2, 62);
+ ctx.fillText('Aciertos: '+aciertos+' / '+(total/2)+'  Intentos: '+intentos + '  Mejor: ' + (bestIntentos>0?bestIntentos:'-'), canvas.width/2, 62);
  if (mostrarInicio){ ctx.font='18px Arial'; ctx.fillStyle='#444'; ctx.fillText('Haz clic para voltear cartas y encontrar parejas.', canvas.width/2, canvas.height-20); }
  ctx.restore();
 }
-function draw(){ drawHUD(); for (let c of cards) drawCard(c); if (aciertos===total/2){ ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(30,canvas.height/2-60,canvas.width-60,120); ctx.fillStyle='#2e7d32'; ctx.font='bold 28px Arial'; ctx.textAlign='center'; ctx.fillText('¡Completado! Intentos: '+intentos, canvas.width/2, canvas.height/2); ctx.restore(); }
+function draw(){ drawHUD(); for (let c of cards) drawCard(c); if (aciertos===total/2){ if(bestIntentos===0 || intentos<bestIntentos){ bestIntentos=intentos; localStorage.setItem('memoriaBest', String(bestIntentos)); }
+ ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(30,canvas.height/2-60,canvas.width-60,120); ctx.fillStyle='#2e7d32'; ctx.font='bold 28px Arial'; ctx.textAlign='center'; ctx.fillText('¡Completado! Intentos: '+intentos, canvas.width/2, canvas.height/2); if(intentos===bestIntentos) { ctx.fillStyle='#d32f2f'; ctx.font='20px Arial'; ctx.fillText('Nuevo récord', canvas.width/2, canvas.height/2+40); } ctx.restore(); }
 }
 function loop(){ draw(); af=requestAnimationFrame(loop); }
 function pick(mx,my){ if(lock) return; const c = cards.find(card=>{ const px=margin+card.x*(cardW+margin); const py=margin+card.y*(cardH+margin)+60; return mx>px&&mx<px+cardW&&my>py&&my<py+cardH; }); if(!c||c.open||c.found) return; c.open=true; if(!first){ first=c; } else if(!second){ second=c; lock=true; intentos++; if(first.icon===second.icon){ first.found=second.found=true; lock=false; first=second=null; aciertos++; } else { setTimeout(()=>{ first.open=false; second.open=false; first=second=null; lock=false; },800); } }

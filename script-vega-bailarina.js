@@ -12,6 +12,8 @@ let vega = {
 };
 let corazones = [];
 let bailando = false;
+let totalCorazones = 0;
+let highScore = Number(localStorage.getItem('bailarinaHighScore')||0);
 
 function drawVega() {
   ctx.save();
@@ -88,6 +90,8 @@ function draw() {
   ctx.textAlign = 'center';
   ctx.fillText('Usa las flechas para mover a Vega', canvas.width / 2, canvas.height - 60);
   ctx.fillText('Pulsa ESPACIO para bailar', canvas.width / 2, canvas.height - 30);
+  ctx.font='16px Arial';
+  ctx.fillText('Corazones: '+totalCorazones+'  Récord: '+highScore, canvas.width/2, 30);
   ctx.restore();
 }
 
@@ -120,7 +124,9 @@ function keydown(e){
     bailando = true;
     for (let i = 0; i < 6; i++) {
       corazones.push({ x: vega.x + Math.random() * 40 - 20, y: vega.y - 10, alpha: 1 });
+      totalCorazones++;
     }
+    if(totalCorazones>highScore){ highScore=totalCorazones; localStorage.setItem('bailarinaHighScore', String(highScore)); }
     setTimeout(() => { bailando = false; }, 400);
   }
 }
