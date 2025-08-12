@@ -3,7 +3,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
 let altura = 10000; // metros
-let velocidad = 50; // metros por segundo
+let velocidad = 30; // metros por segundo
 let baseX = canvas.width / 2;
 let baseWidth = 80;
 let baseHeight = 20;
@@ -54,21 +54,48 @@ function drawInstructions() {
 
 function drawBruno() {
   ctx.save();
+  // Cabeza
   ctx.beginPath();
-  ctx.arc(bruno.x, bruno.y, bruno.size, 0, Math.PI * 2);
+  ctx.arc(bruno.x, bruno.y, 12, 0, Math.PI * 2);
+  ctx.fillStyle = '#ffe0b2';
+  ctx.fill();
+  ctx.closePath();
+  // Cuerpo
+  ctx.beginPath();
+  ctx.rect(bruno.x - 6, bruno.y + 12, 12, 22);
   ctx.fillStyle = bruno.color;
   ctx.fill();
   ctx.closePath();
+  // Piernas
+  ctx.beginPath();
+  ctx.moveTo(bruno.x - 4, bruno.y + 34);
+  ctx.lineTo(bruno.x - 4, bruno.y + 46);
+  ctx.moveTo(bruno.x + 4, bruno.y + 34);
+  ctx.lineTo(bruno.x + 4, bruno.y + 46);
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.closePath();
+  // Brazos
+  ctx.beginPath();
+  ctx.moveTo(bruno.x - 6, bruno.y + 18);
+  ctx.lineTo(bruno.x - 16, bruno.y + 28);
+  ctx.moveTo(bruno.x + 6, bruno.y + 18);
+  ctx.lineTo(bruno.x + 16, bruno.y + 28);
+  ctx.strokeStyle = '#333';
+  ctx.lineWidth = 2;
+  ctx.stroke();
+  ctx.closePath();
   // Paracaídas
   ctx.beginPath();
-  ctx.arc(bruno.x, bruno.y - bruno.size, bruno.size, Math.PI, 2 * Math.PI);
+  ctx.arc(bruno.x, bruno.y - 16, 18, Math.PI, 2 * Math.PI);
   ctx.fillStyle = '#ffeb3b';
   ctx.fill();
   ctx.closePath();
   // Humo
   if (humoActivo) {
     ctx.beginPath();
-    ctx.arc(bruno.x, bruno.y + bruno.size + 10, 12, 0, Math.PI * 2);
+    ctx.arc(bruno.x, bruno.y + 50, 12, 0, Math.PI * 2);
     ctx.fillStyle = 'rgba(200,200,200,0.7)';
     ctx.fill();
     ctx.closePath();
@@ -330,8 +357,8 @@ function gameLoop() {
   frameCount++;
   if (frameCount % obstaculoInterval === 0) crearObstaculo();
   if (frameCount % (obstaculoInterval * 2) === 0) crearEstrella();
-  altura -= velocidad * 0.05 + nivel * 0.02;
-  bruno.y += 4 + nivel * 0.5;
+  altura -= velocidad * 0.03 + nivel * 0.01;
+  bruno.y += 2 + nivel * 0.3;
   moveBruno();
   updateObstaculos();
   checkColisiones();
