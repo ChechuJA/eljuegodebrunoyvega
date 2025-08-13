@@ -33,7 +33,8 @@ let bruno = {
   y: canvas.height / 2 + 60,
   size: 30,
   color: '#2196f3',
-  dx: 0
+  dx: 0,
+  anim: 0
 };
 
 // Teclas
@@ -59,52 +60,27 @@ function drawInstructions() {
 
 function drawBruno() {
   ctx.save();
+  bruno.anim += 0.16; const sway = Math.sin(bruno.anim)*4; const limb = Math.sin(bruno.anim*1.8)*6;
+  // Sombra
+  ctx.globalAlpha=0.25; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(bruno.x, bruno.y+52, 14,6,0,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+  // Paracaídas segmentado
+  const radius=22; const segs=6; for(let i=0;i<segs;i++){ const a0=Math.PI + i*(Math.PI/segs); const a1=Math.PI + (i+1)*(Math.PI/segs); ctx.beginPath(); ctx.moveTo(bruno.x, bruno.y - 22); ctx.arc(bruno.x, bruno.y - 22, radius, a0, a1); ctx.closePath(); ctx.fillStyle= i%2? '#ffd54f':'#ffb300'; ctx.fill(); }
+  ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(bruno.x, bruno.y - 22, radius, Math.PI, 2*Math.PI); ctx.stroke();
+  // Cuerdas
+  ctx.beginPath(); ctx.moveTo(bruno.x - radius*0.8, bruno.y - 10); ctx.lineTo(bruno.x - 6 + sway*0.2, bruno.y + 14); ctx.moveTo(bruno.x + radius*0.8, bruno.y - 10); ctx.lineTo(bruno.x + 6 + sway*0.2, bruno.y + 14); ctx.stroke();
   // Cabeza
-  ctx.beginPath();
-  ctx.arc(bruno.x, bruno.y, 12, 0, Math.PI * 2);
-  ctx.fillStyle = '#ffe0b2';
-  ctx.fill();
-  ctx.closePath();
-  // Cuerpo
-  ctx.beginPath();
-  ctx.rect(bruno.x - 6, bruno.y + 12, 12, 22);
-  ctx.fillStyle = bruno.color;
-  ctx.fill();
-  ctx.closePath();
-  // Piernas
-  ctx.beginPath();
-  ctx.moveTo(bruno.x - 4, bruno.y + 34);
-  ctx.lineTo(bruno.x - 4, bruno.y + 46);
-  ctx.moveTo(bruno.x + 4, bruno.y + 34);
-  ctx.lineTo(bruno.x + 4, bruno.y + 46);
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.closePath();
-  // Brazos
-  ctx.beginPath();
-  ctx.moveTo(bruno.x - 6, bruno.y + 18);
-  ctx.lineTo(bruno.x - 16, bruno.y + 28);
-  ctx.moveTo(bruno.x + 6, bruno.y + 18);
-  ctx.lineTo(bruno.x + 16, bruno.y + 28);
-  ctx.strokeStyle = '#333';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  ctx.closePath();
-  // Paracaídas
-  ctx.beginPath();
-  ctx.arc(bruno.x, bruno.y - 16, 18, Math.PI, 2 * Math.PI);
-  ctx.fillStyle = '#ffeb3b';
-  ctx.fill();
-  ctx.closePath();
+  ctx.beginPath(); ctx.arc(bruno.x + sway*0.3, bruno.y, 12, 0, Math.PI*2); ctx.fillStyle='#ffe0b2'; ctx.fill();
+  // Casco simple
+  ctx.beginPath(); ctx.arc(bruno.x + sway*0.3, bruno.y - 4, 12, Math.PI, 2*Math.PI); ctx.fillStyle='#1976d2'; ctx.fill();
+  // Cuerpo gradiente
+  let g=ctx.createLinearGradient(bruno.x-6, bruno.y+12, bruno.x+6, bruno.y+34); g.addColorStop(0, '#64b5f6'); g.addColorStop(1,'#1976d2');
+  ctx.fillStyle=g; ctx.fillRect(bruno.x - 6, bruno.y + 12, 12, 22);
+  // Brazos (anim)
+  ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.moveTo(bruno.x - 6, bruno.y + 18); ctx.lineTo(bruno.x - 16 - limb*0.3, bruno.y + 28 + limb*0.2); ctx.moveTo(bruno.x + 6, bruno.y + 18); ctx.lineTo(bruno.x + 16 + limb*0.3, bruno.y + 28 + limb*0.2); ctx.stroke();
+  // Piernas (anim)
+  ctx.beginPath(); ctx.moveTo(bruno.x - 4, bruno.y + 34); ctx.lineTo(bruno.x - 4 - limb*0.2, bruno.y + 46); ctx.moveTo(bruno.x + 4, bruno.y + 34); ctx.lineTo(bruno.x + 4 + limb*0.2, bruno.y + 46); ctx.stroke();
   // Humo
-  if (humoActivo) {
-    ctx.beginPath();
-    ctx.arc(bruno.x, bruno.y + 50, 12, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(200,200,200,0.7)';
-    ctx.fill();
-    ctx.closePath();
-  }
+  if(humoActivo){ ctx.beginPath(); ctx.arc(bruno.x, bruno.y + 50, 12,0,Math.PI*2); ctx.fillStyle='rgba(200,200,200,0.7)'; ctx.fill(); }
   ctx.restore();
 }
 

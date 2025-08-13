@@ -14,6 +14,8 @@ let corazones = [];
 let bailando = false;
 let totalCorazones = 0;
 let highScore = Number(localStorage.getItem('bailarinaHighScore')||0);
+let highName = localStorage.getItem('bailarinaHighName')||'-';
+const playerName = localStorage.getItem('playerName')||'';
 
 function drawVega() {
   ctx.save();
@@ -75,24 +77,11 @@ function drawCorazones() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.save();
-  ctx.globalAlpha = 0.12;
-  ctx.font = 'bold 48px Comic Sans MS, Arial';
-  ctx.fillStyle = '#e91e63';
-  ctx.textAlign = 'center';
-  ctx.fillText('Vega la bailarina', canvas.width / 2, 70);
-  ctx.restore();
+  if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#fce4ec','#f8bbd0']);
+  if(window.GameUI) GameUI.gradientBar(ctx,canvas.width,60,'#ad1457','#d81b60'); else { ctx.fillStyle='#d81b60'; ctx.fillRect(0,0,canvas.width,60);} ctx.fillStyle='#fff'; ctx.font='bold 26px Arial'; ctx.textAlign='center'; ctx.fillText('Vega la bailarina', canvas.width/2,40); ctx.font='14px Arial'; ctx.fillStyle='#ffeef5'; ctx.fillText('Corazones: '+totalCorazones+'  Récord: '+highScore+' ('+highName+')', canvas.width/2,58);
   drawVega();
   drawCorazones();
-  ctx.save();
-  ctx.font = 'bold 22px Arial';
-  ctx.fillStyle = '#333';
-  ctx.textAlign = 'center';
-  ctx.fillText('Usa las flechas para mover a Vega', canvas.width / 2, canvas.height - 60);
-  ctx.fillText('Pulsa ESPACIO para bailar', canvas.width / 2, canvas.height - 30);
-  ctx.font='16px Arial';
-  ctx.fillText('Corazones: '+totalCorazones+'  Récord: '+highScore, canvas.width/2, 30);
-  ctx.restore();
+  ctx.save(); ctx.font='18px Arial'; ctx.fillStyle='#444'; ctx.textAlign='center'; ctx.fillText('Flechas: mover  |  Espacio: bailar', canvas.width/2, canvas.height-34); ctx.restore();
 }
 
 function moveVega() {
@@ -126,7 +115,7 @@ function keydown(e){
       corazones.push({ x: vega.x + Math.random() * 40 - 20, y: vega.y - 10, alpha: 1 });
       totalCorazones++;
     }
-    if(totalCorazones>highScore){ highScore=totalCorazones; localStorage.setItem('bailarinaHighScore', String(highScore)); }
+  if(totalCorazones>highScore){ highScore=totalCorazones; highName=playerName||'-'; localStorage.setItem('bailarinaHighScore', String(highScore)); localStorage.setItem('bailarinaHighName', highName); }
     setTimeout(() => { bailando = false; }, 400);
   }
 }

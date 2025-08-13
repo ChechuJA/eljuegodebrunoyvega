@@ -12,6 +12,8 @@ let orbes = [];
 let mensajes = [];
 let score = 0;
 let highScore = Number(localStorage.getItem('naveHighScore')||0);
+let highName = localStorage.getItem('naveHighScoreName')||'-';
+const playerName = localStorage.getItem('playerName')||'';
 let infoActual = null;
 let mostrarInstrucciones = true;
 let nivel = 1;
@@ -103,15 +105,15 @@ function drawOrbes() {
 
 function drawHUD() {
   ctx.save();
-  ctx.font = '14px Arial';
+  if(window.GameUI){ GameUI.gradientBar(ctx,canvas.width,60,'#0d47a1','#1565c0'); } else { ctx.fillStyle='#0d47a1'; ctx.fillRect(0,0,canvas.width,60);} 
+  ctx.font = '16px Arial';
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
-  ctx.fillText('Puntos: ' + score, 15, 24);
-  ctx.fillText('Récord: ' + highScore, 15, 84);
-  ctx.fillText('Nivel: ' + nivel + ' / ' + maxNivel, 15, 44);
-  ctx.fillText('Orbes: ' + orbesNivel + ' / ' + metaOrbes, 15, 64);
+  ctx.fillText('Puntos: ' + score, 12, 24);
+  ctx.fillText('Nivel: ' + nivel + ' / ' + maxNivel, 12, 44);
   ctx.textAlign = 'right';
-  ctx.fillText('Descubre planetas para curiosidades', canvas.width - 15, 24);
+  ctx.fillText('Orbes: ' + orbesNivel + ' / ' + metaOrbes, canvas.width - 12, 24);
+  ctx.fillText('Récord: ' + highScore + ' ('+highName+')', canvas.width - 12, 44);
   ctx.restore();
 }
 
@@ -130,19 +132,8 @@ function drawInfo() {
 
 function drawInstrucciones() {
   if (!mostrarInstrucciones) return;
-  ctx.save();
-  ctx.globalAlpha = 0.92;
-  ctx.fillStyle = '#000';
-  ctx.fillRect(30, 30, canvas.width - 60, 140);
-  ctx.fillStyle = '#fff';
-  ctx.font = 'bold 20px Arial';
-  ctx.textAlign = 'center';
-  ctx.fillText('Nave exploradora', canvas.width / 2, 60);
-  ctx.font = '14px Arial';
-  ctx.fillText('Flechas: mover | Arriba: aceleración | Reúne orbes', canvas.width / 2, 90);
-  ctx.fillText('Acércate a un planeta para descubrirlo y ver un dato.', canvas.width / 2, 115);
-  ctx.fillText('Pulsa cualquier tecla para comenzar.', canvas.width / 2, 140);
-  ctx.restore();
+  const x=40,y=80,w=canvas.width-80,h=160; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='#000'; ctx.fillRect(x,y,w,h); ctx.restore(); }
+  ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('Nave exploradora', canvas.width/2, y+36); ctx.font='14px Arial'; ctx.fillText('Flechas: mover | Arriba: acelerar | Reúne orbes', canvas.width/2, y+70); ctx.fillText('Acércate a un planeta para descubrir un dato.', canvas.width/2, y+92); ctx.fillText('Completa niveles reuniendo orbes. Pulsa tecla para empezar.', canvas.width/2, y+114); ctx.restore();
 }
 
 function update() {
@@ -185,7 +176,7 @@ function update() {
   if (orbesNivel >= metaOrbes) {
     nivel++;
     score += 50; // bonus
-  if(score>highScore){ highScore=score; localStorage.setItem('naveHighScore', String(highScore)); }
+  if(score>highScore){ highScore=score; highName=playerName||'-'; localStorage.setItem('naveHighScore', String(highScore)); localStorage.setItem('naveHighScoreName', highName); }
     orbesNivel = 0;
     metaOrbes = Math.min(metaOrbes + 1, 10);
     crearPlanetas();

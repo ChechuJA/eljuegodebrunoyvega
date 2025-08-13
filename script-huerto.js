@@ -1,12 +1,14 @@
 function registerGame(){
 // Huerto mágico (gestión ligera + tiempo)
 const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
-canvas.width=800; canvas.height=500;
+canvas.width=800; canvas.height=520;
 const parcelasCols=6, parcelasRows=3; const size=80; const margin=16; const startY=90;
 let semillas=['🍓','🥕','🌽','🥦','🍆'];
 let campos=[]; for(let r=0;r<parcelasRows;r++){ for(let c=0;c<parcelasCols;c++){ campos.push({c,r,estado:'vacio',semilla:null,progreso:0,agua:0,plagas:0}); }}
 let dinero=0, tiempo=180, started=false; let lastTick=0; let showInstructions=true; let ended=false; let mensajeRecord='';
 let highScore = Number(localStorage.getItem('huertoHighScore')||0);
+let highName = localStorage.getItem('huertoHighName')||'-';
+const playerName = localStorage.getItem('playerName')||'';
 function plantar(campo){ if(campo.estado!=='vacio') return; campo.semilla=semillas[Math.floor(Math.random()*semillas.length)]; campo.estado='creciendo'; campo.progreso=0; campo.agua=5; campo.plagas=0; }
 function regar(campo){ if(campo.estado==='creciendo') campo.agua=Math.min(10,campo.agua+3); }
 function cosechar(c){ if(c.estado==='listo'){ dinero+=50; c.estado='vacio'; c.semilla=null; }}
@@ -30,7 +32,9 @@ function update(dt){
 	if(tiempo<=0){
 		started=false; ended=true;
 		if(dinero>highScore){
-			highScore=dinero; localStorage.setItem('huertoHighScore', String(highScore));
+			highScore=dinero; highName=playerName||'-';
+			localStorage.setItem('huertoHighScore', String(highScore));
+			localStorage.setItem('huertoHighName', highName);
 			mensajeRecord='¡Nuevo récord!';
 		} else mensajeRecord='';
 	}
@@ -44,49 +48,21 @@ function drawParcel(c){ const x=margin + c.c*(size+margin); const y=startY + c.r
  ctx.strokeStyle='#3e2723'; ctx.lineWidth=3; ctx.strokeRect(x,y,size,size); ctx.restore(); }
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);
- // Cabecera
+ if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#e8f5e9','#f1f8e9']);
+ // Cabecera degradada
+ if(window.GameUI) GameUI.gradientBar(ctx,canvas.width,70,'#2e7d32','#43a047'); else { ctx.fillStyle='#2e7d32'; ctx.fillRect(0,0,canvas.width,70);} 
  ctx.save();
- ctx.font='bold 28px Arial'; ctx.fillStyle='#2e7d32'; ctx.textAlign='center';
- ctx.fillText('Huerto mágico', canvas.width/2,40);
- ctx.font='16px Arial'; ctx.fillStyle='#333';
- ctx.fillText('Dinero: '+dinero+'  Tiempo: '+tiempo+'s   Récord: '+highScore, canvas.width/2,65);
+ ctx.font='bold 28px Arial'; ctx.fillStyle='#fff'; ctx.textAlign='center';
+ ctx.fillText('Huerto mágico', canvas.width/2,44);
+ ctx.font='14px Arial'; ctx.fillStyle='#e8f5e9';
+ ctx.fillText('Dinero: '+dinero+'  Tiempo: '+tiempo+'s   Récord: '+highScore+' ('+highName+')', canvas.width/2,64);
  ctx.restore();
- // Parcelas primero
+ // Parcelas
  for(let c of campos) drawParcel(c);
- // Overlays encima
+ // Instrucciones
  if(showInstructions){
-	ctx.save();
-	ctx.globalAlpha=0.92;
-	ctx.fillStyle='#ffffff';
-	ctx.fillRect(40,90,canvas.width-80,220);
-	ctx.globalAlpha=1;
-	ctx.fillStyle='#2e7d32'; ctx.font='bold 20px Arial'; ctx.textAlign='center';
-	ctx.fillText('Instrucciones', canvas.width/2,115);
-	ctx.fillStyle='#333'; ctx.font='14px Arial';
-	const lines=[
-		'Objetivo: gana el máximo dinero en 180 segundos.',
-		'Click en parcela vacía: plantar (semilla aleatoria).',
-		'Mientras crece baja el agua cada segundo.',
-		'Agua > 3 = crecimiento rápido; si llega a 0 se marchita.',
-		'Plagas (🐛) pueden aparecer; demasiadas arruinan la planta.',
-		'Click creciendo: regar. Lista (amarilla): cosechar (+50).',
-		'Marchita / plagas: limpiar para replantar.',
-		'Al acabar: se guarda récord si mejoras.',
-		'Pulsa dentro para empezar. Pulsa I para ver esto de nuevo.'
-	];
-	lines.forEach((ln,i)=> ctx.fillText(ln, canvas.width/2, 145 + i*18));
-	ctx.restore();
- }
- if(ended){
-	ctx.save();
-	ctx.globalAlpha=0.9; ctx.fillStyle='#000';
-	ctx.fillRect(60,130,canvas.width-120,140);
-	ctx.globalAlpha=1; ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center';
-	ctx.fillText('Tiempo agotado. Dinero: '+dinero, canvas.width/2,175);
-	if(mensajeRecord){ ctx.fillStyle='#ffeb3b'; ctx.fillText(mensajeRecord, canvas.width/2,205); }
-	ctx.fillStyle='#ddd'; ctx.font='16px Arial'; ctx.fillText('Haz click para reiniciar', canvas.width/2,235);
-	ctx.restore();
- }
+	 const w=canvas.width-100, h=240, x=50, y=90; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,18); } else { ctx.fillStyle='rgba(255,255,255,0.9)'; ctx.fillRect(x,y,w,h);} ctx.save(); ctx.fillStyle='#2e7d32'; ctx.font='bold 20px Arial'; ctx.textAlign='center'; ctx.fillText('Instrucciones', canvas.width/2,y+30); ctx.fillStyle='#333'; ctx.font='14px Arial'; const lines=[ 'Objetivo: gana el máximo dinero en 180 segundos.','Click parcela vacía: plantar. Creciendo: regar.','Agua baja cada segundo; a 0 = marchita.','Agua alta acelera crecimiento.','Plagas (🐛) pueden arruinar la planta.','Lista (amarilla): cosecha +50.','Marchita/plagas: click para limpiar.','Pulsa dentro para empezar. I: mostrar de nuevo.' ]; lines.forEach((ln,i)=> ctx.fillText(ln, canvas.width/2, y+60 + i*20)); ctx.restore(); }
+ if(ended){ const w=canvas.width-140, h=150, x=70, y=140; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.fillStyle='rgba(0,0,0,0.75)'; ctx.fillRect(x,y,w,h);} ctx.save(); ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillStyle='#2e7d32'; ctx.fillText('Tiempo agotado', canvas.width/2,y+34); ctx.fillStyle='#333'; ctx.font='18px Arial'; ctx.fillText('Dinero: '+dinero, canvas.width/2,y+64); if(mensajeRecord){ ctx.fillStyle='#ff8f00'; ctx.fillText(mensajeRecord, canvas.width/2,y+92);} ctx.fillStyle='#555'; ctx.font='14px Arial'; ctx.fillText('Click para reiniciar', canvas.width/2,y+118); ctx.restore(); }
 }
 function loop(t){ if(!loop.prev) loop.prev=t; const dt=t-loop.prev; loop.prev=t; update(dt); draw(); af=requestAnimationFrame(loop); }
 function click(e){

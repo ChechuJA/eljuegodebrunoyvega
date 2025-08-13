@@ -31,15 +31,33 @@ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ this.beginPath
 function drawHUD(){
  ctx.save();
  ctx.clearRect(0,0,canvas.width,canvas.height);
- ctx.font='bold 26px Arial'; ctx.fillStyle='#e91e63'; ctx.textAlign='center';
- ctx.fillText('Memoria de Animales', canvas.width/2,40);
- ctx.font='16px Arial'; ctx.fillStyle='#333';
+ if(window.GameUI){ GameUI.gradientBar(ctx, canvas.width, 64); }
+ ctx.font='bold 28px Arial'; ctx.textAlign='center';
+ if(window.GameUI){ GameUI.shadowedText(ctx,'Memoria de Animales', canvas.width/2,42,'#fff'); }
+ else { ctx.fillStyle='#e91e63'; ctx.fillText('Memoria de Animales', canvas.width/2,42); }
+ ctx.font='16px Arial'; ctx.fillStyle=window.GameUI? '#fce4ec':'#333';
  ctx.fillText('Aciertos: '+aciertos+' / '+(total/2)+'  Intentos: '+intentos + '  Mejor: ' + (bestIntentos>0?bestIntentos:'-'), canvas.width/2, 62);
- if (mostrarInicio){ ctx.font='18px Arial'; ctx.fillStyle='#444'; ctx.fillText('Haz clic para voltear cartas y encontrar parejas.', canvas.width/2, canvas.height-20); }
+ if (mostrarInicio){
+	 if(window.GameUI){ GameUI.glassPanel(ctx,40,canvas.height-90,canvas.width-80,60,18); ctx.fillStyle='#0d47a1'; }
+	 else ctx.fillStyle='#444';
+	 ctx.font='18px Arial';
+	 ctx.fillText('Haz clic para voltear cartas y encontrar parejas.', canvas.width/2, canvas.height-50);
+ }
  ctx.restore();
 }
-function draw(){ drawHUD(); for (let c of cards) drawCard(c); if (aciertos===total/2){ if(bestIntentos===0 || intentos<bestIntentos){ bestIntentos=intentos; localStorage.setItem('memoriaBest', String(bestIntentos)); }
- ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(30,canvas.height/2-60,canvas.width-60,120); ctx.fillStyle='#2e7d32'; ctx.font='bold 28px Arial'; ctx.textAlign='center'; ctx.fillText('¡Completado! Intentos: '+intentos, canvas.width/2, canvas.height/2); if(intentos===bestIntentos) { ctx.fillStyle='#d32f2f'; ctx.font='20px Arial'; ctx.fillText('Nuevo récord', canvas.width/2, canvas.height/2+40); } ctx.restore(); }
+function draw(){
+ drawHUD();
+ for (let c of cards) drawCard(c);
+ if (aciertos===total/2){
+  if(bestIntentos===0 || intentos<bestIntentos){ bestIntentos=intentos; localStorage.setItem('memoriaBest', String(bestIntentos)); }
+  ctx.save();
+  if(window.GameUI){ GameUI.glassPanel(ctx,30,canvas.height/2-90,canvas.width-60,170,26); }
+  else { ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(30,canvas.height/2-60,canvas.width-60,120); ctx.globalAlpha=1; }
+  ctx.font='bold 28px Arial'; ctx.fillStyle='#2e7d32'; ctx.textAlign='center';
+  ctx.fillText('¡Completado! Intentos: '+intentos, canvas.width/2, canvas.height/2-10);
+  if(intentos===bestIntentos){ ctx.fillStyle='#d32f2f'; ctx.font='20px Arial'; ctx.fillText('Nuevo récord', canvas.width/2, canvas.height/2+30); }
+  ctx.restore();
+ }
 }
 function loop(){ draw(); af=requestAnimationFrame(loop); }
 function pick(mx,my){ if(lock) return; const c = cards.find(card=>{ const px=margin+card.x*(cardW+margin); const py=margin+card.y*(cardH+margin)+60; return mx>px&&mx<px+cardW&&my>py&&my<py+cardH; }); if(!c||c.open||c.found) return; c.open=true; if(!first){ first=c; } else if(!second){ second=c; lock=true; intentos++; if(first.icon===second.icon){ first.found=second.found=true; lock=false; first=second=null; aciertos++; } else { setTimeout(()=>{ first.open=false; second.open=false; first=second=null; lock=false; },800); } }

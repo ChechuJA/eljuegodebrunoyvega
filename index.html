@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
   <title>El juego de Bruno y Vega</title>
   <link rel="stylesheet" href="style.css">
 </head>
@@ -36,12 +37,33 @@
   <button onclick="startGame('sokoban')">Empuja Cajas</button>
   <button onclick="startGame('carrera')">Carrera F1</button>
   <button onclick="startGame('bubble')">Dispara Colores</button>
+  <button onclick="startGame('experimento-3d')">Experimento 3D</button>
+  <button onclick="startGame('experimento-3d-terreno')">Experimento 3D Terreno</button>
   </div>
   <div id="backBtn" style="display:none; margin-top:20px;">
     <button onclick="goBack()">⟵ Volver al menú</button>
   </div>
-  <canvas id="gameCanvas" width="800" height="500" style="display:none;"></canvas>
+  <canvas id="gameCanvas" width="800" height="500" style="display:none;width:100%;max-width:800px;height:auto;touch-action:none;"></canvas>
+  <div id="touchControls" style="display:none;position:fixed;left:12px;bottom:14px;z-index:900;font-family:Arial;">
+    <div style="display:flex;gap:14px;align-items:flex-end;">
+      <div style="display:grid;grid-template-columns:60px 60px 60px;grid-template-rows:60px 60px 60px;gap:6px;">
+        <div></div>
+        <button data-key="ArrowUp" class="tc-btn" style="width:60px;height:60px;font-size:22px;border:0;border-radius:14px;background:#1976d2;color:#fff;">▲</button>
+        <div></div>
+        <button data-key="ArrowLeft" class="tc-btn" style="width:60px;height:60px;font-size:22px;border:0;border-radius:14px;background:#1976d2;color:#fff;">◄</button>
+        <button data-key="ArrowDown" class="tc-btn" style="width:60px;height:60px;font-size:22px;border:0;border-radius:14px;background:#1976d2;color:#fff;">▼</button>
+        <button data-key="ArrowRight" class="tc-btn" style="width:60px;height:60px;font-size:22px;border:0;border-radius:14px;background:#1976d2;color:#fff;">►</button>
+        <div></div>
+        <div></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;">
+        <button data-key="Space" class="tc-btn" style="width:80px;height:80px;font-size:17px;border:0;border-radius:18px;background:#e91e63;color:#fff;">SALTO /<br/>ESPACIO</button>
+      </div>
+    </div>
+  </div>
   <script>
+  // Cargar utilidades gráficas
+  const utilScript=document.createElement('script'); utilScript.src='game-utils.js?v='+Date.now(); document.head.appendChild(utilScript);
     let currentScript = null;
     let currentCleanup = null;
     function ensurePlayerName(){ const n=localStorage.getItem('playerName'); if(!n){ document.getElementById('playerOverlay').style.display='flex'; } }
@@ -51,12 +73,16 @@
       btn.addEventListener('click',()=>{ const v=document.getElementById('playerNameInput').value.trim(); if(v){ localStorage.setItem('playerName',v); document.getElementById('playerOverlay').style.display='none'; }});
       document.getElementById('playerNameInput').addEventListener('keydown',e=>{ if(e.key==='Enter'){ btn.click(); }});
     });
+    function isTouch(){ return ('ontouchstart' in window)||(navigator.maxTouchPoints>0); }
+    function showTouchControls(){ if(!isTouch()) return; document.getElementById('touchControls').style.display='block'; }
+    function hideTouchControls(){ document.getElementById('touchControls').style.display='none'; }
     function startGame(game) {
       ensurePlayerName();
       if(!localStorage.getItem('playerName')) return; // bloquear hasta nombre
       document.getElementById('menu').style.display = 'none';
       document.getElementById('gameCanvas').style.display = 'block';
       document.getElementById('backBtn').style.display = 'block';
+      showTouchControls();
       if (game === 'arkanoid') {
         loadScript('script-arkanoid.js');
       } else if (game === 'paracaidista') {
@@ -85,6 +111,10 @@
         loadScript('script-carrera.js');
       } else if (game === 'bubble') {
         loadScript('script-bubble.js');
+      } else if (game === 'experimento-3d') {
+        loadScript('script-experimento-3d.js');
+      } else if (game === 'experimento-3d-terreno') {
+        loadScript('script-experimento-3d-terreno.js');
       }
     }
     function loadScript(src) {
@@ -118,7 +148,21 @@
       document.getElementById('menu').style.display = 'block';
       document.getElementById('gameCanvas').style.display = 'none';
       document.getElementById('backBtn').style.display = 'none';
+      hideTouchControls();
     }
+
+    // Controles táctiles -> eventos de teclado simulados
+    function dispatchKey(type,key){ const code = key==='Space' ? 'Space' : key; const evt=new KeyboardEvent(type,{key: key==='Space'?' ':key, code, bubbles:true}); window.dispatchEvent(evt); }
+    document.addEventListener('DOMContentLoaded',()=>{
+      const tc=document.getElementById('touchControls');
+      tc.addEventListener('touchstart',e=>{ const btn=e.target.closest('.tc-btn'); if(btn){ e.preventDefault(); const k=btn.getAttribute('data-key'); dispatchKey('keydown',k); btn.style.transform='scale(0.9)'; } },{passive:false});
+      tc.addEventListener('touchend',e=>{ const btn=e.target.closest('.tc-btn'); if(btn){ const k=btn.getAttribute('data-key'); dispatchKey('keyup',k); btn.style.transform='scale(1)'; } },{passive:false});
+    });
+    // Traducir toques a movimientos/clic para juegos que usan ratón
+    (function(){ const canvas=document.getElementById('gameCanvas'); function mapTouch(t){ const rect=canvas.getBoundingClientRect(); return {x:(t.clientX-rect.left)*(canvas.width/rect.width), y:(t.clientY-rect.top)*(canvas.height/rect.height)}; }
+      canvas.addEventListener('touchmove',e=>{ const t=e.changedTouches[0]; if(!t) return; const m=mapTouch(t); const evt=new MouseEvent('mousemove',{clientX:m.x,clientY:m.y,bubbles:true}); canvas.dispatchEvent(evt); e.preventDefault(); },{passive:false});
+      canvas.addEventListener('touchstart',e=>{ const t=e.changedTouches[0]; if(!t) return; const m=mapTouch(t); const evtMove=new MouseEvent('mousemove',{clientX:m.x,clientY:m.y,bubbles:true}); canvas.dispatchEvent(evtMove); const evtClick=new MouseEvent('click',{clientX:m.x,clientY:m.y,bubbles:true}); canvas.dispatchEvent(evtClick); e.preventDefault(); },{passive:false});
+    })();
   </script>
 </body>
 </html>
