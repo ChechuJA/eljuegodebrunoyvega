@@ -1,5 +1,9 @@
 // Quiz de Conocimiento - Categorías y niveles
-registerGame('quiz', function initQuiz(canvas, cleanupBag) {
+function registerGame(){
+  const canvas = document.getElementById('gameCanvas');
+  return initQuiz(canvas);
+}
+function initQuiz(canvas, cleanupBag) {
   const ctx = canvas.getContext('2d');
   const ui = window.GameUI;
   let state = 'categories'; // categories, playing, complete, gameover
