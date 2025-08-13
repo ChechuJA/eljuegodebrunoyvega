@@ -5,7 +5,7 @@ function registerGame(){
   let af = null;
   canvas.width = 800;
   canvas.height = 500;
-  let player = { x: canvas.width/2, y: canvas.height-90, w: 60, h: 80, vx: 0 };
+  let player = { x: canvas.width/2, y: canvas.height-90, w: 60, h: 80, vx: 0, flipped: false };
   let score = 0;
   let high = Number(localStorage.getItem('alonsoNoelHigh')||0);
   let highName = localStorage.getItem('alonsoNoelHighName')||'';
@@ -24,8 +24,19 @@ function registerGame(){
     showIntro = true;
   }
   function spawnObject(){
-    // 70% regalo, 30% bola de nieve
-    if(Math.random()<0.7){
+    // 5% reno especial, 65% regalo, 30% bola de nieve
+    const roll = Math.random();
+    if(roll < 0.05){
+      // Rudolph
+      const rw = 54, rh = 44;
+      objects.push({
+        type: 'rudolph',
+        x: Math.random()*(canvas.width-rw),
+        y: -rh,
+        w: rw,
+        h: rh
+      });
+    } else if(roll < 0.7){
       // Regalo: tamaño aleatorio
       const sizes = [32, 48, 64];
       const points = [100, 50, 20];
@@ -86,22 +97,43 @@ function registerGame(){
             localStorage.setItem('alonsoNoelHighName', playerName);
           }
         }
+      } else if(o.type==='rudolph'){
+        if(
+          player.x+player.w>o.x && player.x<o.x+o.w &&
+          player.y+player.h>o.y && player.y<o.y+o.h
+        ){
+          score += 500;
+          o.caught = true;
+          showRudolphMsg = 60; // frames para mostrar mensaje
+        }
       }
     }
     // Eliminar objetos atrapados o fuera de pantalla
     objects = objects.filter(o=>!o.caught && o.y<canvas.height+60);
   }
   function drawSanta(x,y,w,h){
-    // Cuerpo
     ctx.save();
     ctx.translate(x+w/2,y+h/2);
     ctx.scale(w/60,h/80);
+    if(player.flipped){
+      ctx.scale(-1,1); // Mirar a la izquierda
+    }
+    // Cuerpo y gorro
     ctx.beginPath(); ctx.arc(0,18,18,0,Math.PI*2); ctx.fillStyle='#fff'; ctx.fill(); // cara
     ctx.beginPath(); ctx.arc(0,32,22,Math.PI*0.9,Math.PI*2.1); ctx.fillStyle='#e53935'; ctx.fill(); // gorro
     ctx.beginPath(); ctx.arc(0,38,20,0,Math.PI,true); ctx.fillStyle='#fff'; ctx.fill(); // barba
     ctx.fillStyle='#e53935'; ctx.fillRect(-16,36,32,30); // cuerpo
     ctx.fillStyle='#fff'; ctx.fillRect(-16,66,32,8); // bajo
     ctx.fillStyle='#000'; ctx.fillRect(-12,74,8,8); ctx.fillRect(4,74,8,8); // pies
+    // Si está girado, dibujar cara sonriente y barba
+    if(player.flipped){
+      // Ojos
+      ctx.beginPath(); ctx.arc(-6,18,2,0,Math.PI*2); ctx.arc(6,18,2,0,Math.PI*2); ctx.fillStyle='#222'; ctx.fill();
+      // Sonrisa
+      ctx.beginPath(); ctx.arc(0,26,7,0,Math.PI,false); ctx.lineWidth=2; ctx.strokeStyle='#222'; ctx.stroke();
+      // Barba más grande
+      ctx.beginPath(); ctx.arc(0,38,22,0,Math.PI,true); ctx.fillStyle='#fff'; ctx.globalAlpha=0.7; ctx.fill(); ctx.globalAlpha=1;
+    }
     ctx.restore();
   }
   function drawGift(o){
@@ -120,15 +152,35 @@ function registerGame(){
   }
   function drawSnow(o){
     ctx.save();
+    // Sombra
+    ctx.globalAlpha=0.18;
+    ctx.beginPath(); ctx.ellipse(o.x+o.r,o.y+o.r+o.r*0.5,o.r*0.8,o.r*0.25,0,0,Math.PI*2); ctx.fillStyle='#0288d1'; ctx.fill();
+    ctx.globalAlpha=1;
+    // Bola principal
     ctx.beginPath();
     ctx.arc(o.x+o.r,o.y+o.r,o.r,0,Math.PI*2);
-    ctx.fillStyle = '#b3e5fc';
+    let grad=ctx.createRadialGradient(o.x+o.r-4,o.y+o.r-6,o.r*0.2,o.x+o.r,o.y+o.r,o.r);
+    grad.addColorStop(0,'#fff'); grad.addColorStop(0.7,'#b3e5fc'); grad.addColorStop(1,'#0288d1');
+    ctx.fillStyle = grad;
     ctx.fill();
     ctx.strokeStyle = '#0288d1';
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2.5;
     ctx.stroke();
+    // Brillo
+    ctx.beginPath(); ctx.arc(o.x+o.r-7,o.y+o.r-7,o.r*0.22,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.7)'; ctx.fill();
+    // Copos
+    for(let i=0;i<5;i++){
+      const ang = Math.PI*2*i/5;
+      ctx.save();
+      ctx.translate(o.x+o.r+Math.cos(ang)*o.r*0.55, o.y+o.r+Math.sin(ang)*o.r*0.55);
+      ctx.rotate(ang);
+      ctx.strokeStyle='#fff'; ctx.lineWidth=1.1;
+      ctx.beginPath(); ctx.moveTo(-3,0); ctx.lineTo(3,0); ctx.moveTo(0,-3); ctx.lineTo(0,3); ctx.stroke();
+      ctx.restore();
+    }
     ctx.restore();
   }
+  let showRudolphMsg = 0;
   function drawHUD(){
     ctx.save();
     ctx.fillStyle = '#1565c0';
@@ -140,6 +192,21 @@ function registerGame(){
     ctx.textAlign = 'right';
     ctx.fillText('Récord: '+high+(highName?' ('+highName+')':''), canvas.width-16,32);
     ctx.restore();
+    if(showRudolphMsg>0){
+      ctx.save();
+      ctx.globalAlpha = Math.min(1, showRudolphMsg/20);
+      ctx.fillStyle = '#fffde7';
+      ctx.fillRect(canvas.width/2-170, 60, 340, 60);
+      ctx.strokeStyle = '#ff9800';
+      ctx.lineWidth = 3;
+      ctx.strokeRect(canvas.width/2-170, 60, 340, 60);
+      ctx.font = 'bold 28px Arial';
+      ctx.fillStyle = '#d84315';
+      ctx.textAlign = 'center';
+      ctx.fillText('¡Enhorabuena! Has atrapado a Rudolph 🦌', canvas.width/2, 100);
+      ctx.restore();
+      showRudolphMsg--;
+    }
   }
   function drawIntro(){
     ctx.save();
@@ -183,8 +250,30 @@ function registerGame(){
     drawSanta(player.x, player.y, player.w, player.h);
     for(const o of objects){
       if(o.type==='gift') drawGift(o);
-      else drawSnow(o);
+      else if(o.type==='snow') drawSnow(o);
+      else if(o.type==='rudolph') drawRudolph(o);
     }
+  function drawRudolph(o){
+    ctx.save();
+    ctx.translate(o.x+o.w/2, o.y+o.h/2);
+    ctx.scale(o.w/54, o.h/44);
+    // Cuerpo
+    ctx.beginPath(); ctx.ellipse(0,10,18,14,0,0,Math.PI*2); ctx.fillStyle='#8d6e63'; ctx.fill();
+    // Cabeza
+    ctx.beginPath(); ctx.ellipse(0,-10,13,11,0,0,Math.PI*2); ctx.fillStyle='#a1887f'; ctx.fill();
+    // Hocico rojo
+    ctx.beginPath(); ctx.arc(0,-3,4,0,Math.PI*2); ctx.fillStyle='#e53935'; ctx.fill();
+    // Ojos
+    ctx.beginPath(); ctx.arc(-4,-12,2,0,Math.PI*2); ctx.arc(4,-12,2,0,Math.PI*2); ctx.fillStyle='#222'; ctx.fill();
+    // Orejas
+    ctx.beginPath(); ctx.ellipse(-9,-15,3,6,Math.PI/7,0,Math.PI*2); ctx.ellipse(9,-15,3,6,-Math.PI/7,0,Math.PI*2); ctx.fillStyle='#8d6e63'; ctx.fill();
+    // Cuernos
+    ctx.strokeStyle='#bcaaa4'; ctx.lineWidth=2.2;
+    ctx.beginPath(); ctx.moveTo(-7,-20); ctx.lineTo(-15,-28); ctx.moveTo(-7,-22); ctx.lineTo(-13,-32);
+    ctx.moveTo(7,-20); ctx.lineTo(15,-28); ctx.moveTo(7,-22); ctx.lineTo(13,-32);
+    ctx.stroke();
+    ctx.restore();
+  }
     if(showIntro) drawIntro();
     if(gameOver) drawGameOver();
   }
@@ -198,10 +287,12 @@ function registerGame(){
     if(gameOver && e.key.toLowerCase()==='r'){ reset(); return; }
     if(e.key==='ArrowLeft') left=true;
     if(e.key==='ArrowRight') right=true;
+    if(e.key==='a' || e.key==='A') player.flipped = true;
   }
   function keyup(e){
     if(e.key==='ArrowLeft') left=false;
     if(e.key==='ArrowRight') right=false;
+    if(e.key==='a' || e.key==='A') player.flipped = false;
   }
   window.addEventListener('keydown', keydown);
   window.addEventListener('keyup', keyup);
