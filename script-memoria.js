@@ -62,7 +62,16 @@ function draw(){
 function loop(){ draw(); af=requestAnimationFrame(loop); }
 function pick(mx,my){ if(lock) return; const c = cards.find(card=>{ const px=margin+card.x*(cardW+margin); const py=margin+card.y*(cardH+margin)+60; return mx>px&&mx<px+cardW&&my>py&&my<py+cardH; }); if(!c||c.open||c.found) return; c.open=true; if(!first){ first=c; } else if(!second){ second=c; lock=true; intentos++; if(first.icon===second.icon){ first.found=second.found=true; lock=false; first=second=null; aciertos++; } else { setTimeout(()=>{ first.open=false; second.open=false; first=second=null; lock=false; },800); } }
 }
-function click(e){ const rect=canvas.getBoundingClientRect(); pick(e.clientX-rect.left,e.clientY-rect.top); mostrarInicio=false; }
+function click(e){
+    const rect = canvas.getBoundingClientRect();
+    // Ajustar por escalado real del canvas
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+    const mx = (e.clientX - rect.left) * scaleX;
+    const my = (e.clientY - rect.top) * scaleY;
+    pick(mx, my);
+    mostrarInicio = false;
+}
 canvas.addEventListener('click',click);
 loop();
 return function cleanup(){ if(af) cancelAnimationFrame(af); canvas.removeEventListener('click',click); };

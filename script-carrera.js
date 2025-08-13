@@ -17,9 +17,43 @@ function update(dt){ if(showIntro||crashed) return; distance += speed*dt/100; if
  // colisiones
  for(const o of obstacles){ if(o.lane===player.lane){ if(!(player.y+player.h < o.y || player.y > o.y+o.h)){ crashed=true; break; } } }
 }
-function drawRoad(){ ctx.fillStyle='#444'; ctx.fillRect(roadMargin-40,0,laneCount*laneWidth+80,canvas.height); ctx.strokeStyle='#fff'; ctx.lineWidth=4; ctx.strokeRect(roadMargin-40,0,laneCount*laneWidth+80,canvas.height); // líneas discontinuas
- ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.setLineDash([25,25]); for(let l=1;l<laneCount;l++){ const x=roadMargin + l*laneWidth; ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); }
- ctx.setLineDash([]);
+function drawRoad(){
+	// Fondo césped
+	ctx.fillStyle = '#43a047';
+	ctx.fillRect(0, 0, canvas.width, canvas.height);
+	// Carretera con leve textura
+	let grad = ctx.createLinearGradient(roadMargin-40,0,roadMargin-40,canvas.height);
+	grad.addColorStop(0, '#888');
+	grad.addColorStop(1, '#222');
+	ctx.fillStyle = grad;
+	ctx.fillRect(roadMargin-40,0,laneCount*laneWidth+80,canvas.height);
+	// Bordes amarillos
+	ctx.strokeStyle = '#ffd600';
+	ctx.lineWidth = 8;
+	ctx.strokeRect(roadMargin-40,0,laneCount*laneWidth+80,canvas.height);
+	// Líneas discontinuas blancas
+	ctx.strokeStyle='#fff'; ctx.lineWidth=6; ctx.setLineDash([25,25]);
+	for(let l=1;l<laneCount;l++){
+		const x=roadMargin + l*laneWidth;
+		ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke();
+	}
+	ctx.setLineDash([]);
+	// Animación de líneas de carretera para dar sensación de movimiento
+	const dashLen = 60, gapLen = 40, totalLen = dashLen + gapLen;
+	const offset = Math.floor((distance*2)%totalLen);
+	ctx.save();
+	ctx.strokeStyle = '#fff';
+	ctx.lineWidth = 10;
+	for(let l=0;l<laneCount;l++){
+		const x = roadMargin + l*laneWidth + laneWidth/2;
+		for(let y=-offset; y<canvas.height; y+=totalLen){
+			ctx.beginPath();
+			ctx.moveTo(x, y);
+			ctx.lineTo(x, y+dashLen);
+			ctx.stroke();
+		}
+	}
+	ctx.restore();
 }
 function drawCarBase(x,y,w,h,color,isPlayer){
 	ctx.save(); ctx.translate(x,y);
@@ -56,8 +90,16 @@ function drawCars(){
 	// Obstáculos
 	obstacles.forEach(o=> drawCarBase(laneX(o.lane)-o.w/2, o.y, o.w, o.h, o.color,false));
 }
-// Utilidad para oscurecer color hex
-function shade(hex,percent){ if(!/^#/.test(hex)) return hex; let num=parseInt(hex.slice(1),16); let r=(num>>16)&255,g=(num>>8)&255,b=num&255; r=Math.min(255,Math.max(0, r + 255*percent/100)); g=Math.min(255,Math.max(0, g + 255*percent/100)); b=Math.min(255,Math.max(0, b + 255*percent/100)); return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1); }
+// Utilidad para oscurecer o aclarar color hex
+function shade(hex,percent){
+	if(!/^#/.test(hex)) return hex;
+	let num=parseInt(hex.slice(1),16);
+	let r=(num>>16)&255,g=(num>>8)&255,b=num&255;
+	r=Math.min(255,Math.max(0, r + 255*percent/100));
+	g=Math.min(255,Math.max(0, g + 255*percent/100));
+	b=Math.min(255,Math.max(0, b + 255*percent/100));
+	return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+}
 function drawHUD(){ ctx.fillStyle='#0d47a1'; ctx.fillRect(0,0,canvas.width,50); ctx.fillStyle='#fff'; ctx.font='16px Arial'; ctx.textAlign='left'; ctx.fillText('Distancia: '+Math.floor(distance), 14,30); ctx.fillText('Velocidad: '+speed.toFixed(1), 180,30); ctx.textAlign='right'; ctx.fillText('Récord: '+high+(highName?(' ('+highName+')'):''), canvas.width-14,30); }
 function drawIntro(){ ctx.save(); ctx.globalAlpha=0.9; ctx.fillStyle='#fff'; ctx.fillRect(60,70,canvas.width-120,200); ctx.globalAlpha=1; ctx.fillStyle='#0d47a1'; ctx.font='bold 28px Arial'; ctx.textAlign='center'; ctx.fillText('Carrera F1', canvas.width/2,110); ctx.font='15px Arial'; ctx.fillStyle='#333'; ctx.fillText('Usa ← → para cambiar de carril y evita los otros coches.', canvas.width/2,145); ctx.fillText('Ganas puntos por la distancia. Sesiones de máx. 10 minutos.', canvas.width/2,170); ctx.fillText('Pulsa cualquier tecla para empezar.', canvas.width/2,195); ctx.restore(); }
 function drawCrash(){ ctx.save(); ctx.globalAlpha=0.85; ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalAlpha=1; ctx.fillStyle='#ffeb3b'; ctx.font='bold 30px Arial'; ctx.textAlign='center'; ctx.fillText('¡Choque!', canvas.width/2,canvas.height/2-40); ctx.font='20px Arial'; ctx.fillText('Distancia: '+Math.floor(distance), canvas.width/2, canvas.height/2); ctx.fillText('Pulsa R para reiniciar', canvas.width/2, canvas.height/2+40); ctx.restore(); }
