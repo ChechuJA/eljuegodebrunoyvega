@@ -5,11 +5,6 @@ canvas.width=800; canvas.height=500;
 let showIntro=true;
 const laneCount=3; const laneWidth=160; const roadMargin=(canvas.width - laneCount*laneWidth)/2; const roadTop=0; const roadBottom=canvas.height;
 let player={lane:1,y:canvas.height-120,w:70,h:120,color:'#ff1744'};
-// Imagen externa para el coche del jugador
-const carImg = new window.Image();
-carImg.src = 'https://upload.wikimedia.org/wikipedia/commons/7/7c/Formula_One_car.png'; // Ejemplo PNG libre
-let carImgLoaded = false;
-carImg.onload = ()=>{ carImgLoaded = true; };
 let speed=6; let baseSpeed=6; let distance=0; let high=Number(localStorage.getItem('carreraHigh')||0); let highName=localStorage.getItem('carreraHighName')||''; let obstacles=[]; let spawnTimer=0; let spawnEvery=1200; let lastT=0; let crashed=false; let playerName=localStorage.getItem('playerName')||'';
 let powerTimer=0; // futuro para boosts
 function laneX(l){ return roadMargin + l*laneWidth + laneWidth/2; }
@@ -62,37 +57,31 @@ function drawRoad(){
 }
 function drawCarBase(x,y,w,h,color,isPlayer){
 	ctx.save(); ctx.translate(x,y);
-	if(isPlayer && carImgLoaded){
-	  // Dibuja la imagen externa escalada
-	  ctx.drawImage(carImg, 0, 0, w, h);
-	} else {
-	  // Dibujo clásico
-	  // Sombra
-	  ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(w/2,h/2,w*0.42,h*0.52,0,0,Math.PI*2); ctx.fill();
-	  // Ruedas (4)
-	  const wheelW=w*0.28, wheelH=h*0.12;
-	  ctx.fillStyle='#111';
-	  ctx.fillRect(-wheelW*0.5, h*0.15, wheelW, wheelH);
-	  ctx.fillRect(w-wheelW*0.5, h*0.15, wheelW, wheelH);
-	  ctx.fillRect(-wheelW*0.5, h*0.75, wheelW, wheelH);
-	  ctx.fillRect(w-wheelW*0.5, h*0.75, wheelW, wheelH);
-	  // Cuerpo principal (degradado longitudinal)
-	  let grad=ctx.createLinearGradient(0,0,0,h);
-	  grad.addColorStop(0, color);
-	  grad.addColorStop(0.5, shade(color, -25));
-	  grad.addColorStop(1, shade(color, -40));
-	  ctx.fillStyle=grad;
-	  const bodyW=w*0.55; const bodyX=(w-bodyW)/2;
-	  ctx.beginPath(); ctx.roundRect(bodyX,0,bodyW,h,12); ctx.fill();
-	  // Cockpit
-	  ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.roundRect(bodyX+bodyW*0.18,h*0.30,bodyW*0.64,h*0.22,8); ctx.fill();
-	  // Alerón delantero
-	  ctx.fillStyle=shade(color,-30); ctx.fillRect(bodyX-10,-8,bodyW+20,16);
-	  // Alerón trasero
-	  ctx.fillRect(bodyX-8,h-10,bodyW+16,14);
-	  // Número o marca
-	  ctx.fillStyle='#fff'; ctx.font='bold '+Math.max(14, w*0.25)+'px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(isPlayer?'1':'', w/2, h*0.54);
-	}
+	// Sombra
+	ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.beginPath(); ctx.ellipse(w/2,h/2,w*0.42,h*0.52,0,0,Math.PI*2); ctx.fill();
+	// Ruedas (4)
+	const wheelW=w*0.28, wheelH=h*0.12;
+	ctx.fillStyle='#111';
+	ctx.fillRect(-wheelW*0.5, h*0.15, wheelW, wheelH);
+	ctx.fillRect(w-wheelW*0.5, h*0.15, wheelW, wheelH);
+	ctx.fillRect(-wheelW*0.5, h*0.75, wheelW, wheelH);
+	ctx.fillRect(w-wheelW*0.5, h*0.75, wheelW, wheelH);
+	// Cuerpo principal (degradado longitudinal)
+	let grad=ctx.createLinearGradient(0,0,0,h);
+	grad.addColorStop(0, color);
+	grad.addColorStop(0.5, shade(color, -25));
+	grad.addColorStop(1, shade(color, -40));
+	ctx.fillStyle=grad;
+	const bodyW=w*0.55; const bodyX=(w-bodyW)/2;
+	ctx.beginPath(); ctx.roundRect(bodyX,0,bodyW,h,12); ctx.fill();
+	// Cockpit
+	ctx.fillStyle='rgba(255,255,255,0.85)'; ctx.beginPath(); ctx.roundRect(bodyX+bodyW*0.18,h*0.30,bodyW*0.64,h*0.22,8); ctx.fill();
+	// Alerón delantero
+	ctx.fillStyle=shade(color,-30); ctx.fillRect(bodyX-10,-8,bodyW+20,16);
+	// Alerón trasero
+	ctx.fillRect(bodyX-8,h-10,bodyW+16,14);
+	// Número o marca
+	ctx.fillStyle='#fff'; ctx.font='bold '+Math.max(14, w*0.25)+'px Arial'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(isPlayer?'1':'', w/2, h*0.54);
 	ctx.restore();
 }
 function drawCars(){
