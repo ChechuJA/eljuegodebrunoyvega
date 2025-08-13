@@ -509,4 +509,5 @@ registerGame('quiz', function initQuiz(canvas, cleanupBag) {
     requestAnimationFrame(loop);
   }
   loop();
-});
+}
+window.registerGame=registerGame;

@@ -1,4 +1,8 @@
-registerGame('ahorcado', function initAhorcado(canvas, cleanupBag){
+function registerGame(){
+  const canvas = document.getElementById('gameCanvas');
+  return initAhorcado(canvas);
+}
+function initAhorcado(canvas, cleanupBag){
   const ctx=canvas.getContext('2d');
   const ui=window.GameUI;
   const palabras = [
@@ -164,4 +168,5 @@ registerGame('ahorcado', function initAhorcado(canvas, cleanupBag){
     requestAnimationFrame(loop);
   }
   loop();
-});
+}
+window.registerGame=registerGame;
