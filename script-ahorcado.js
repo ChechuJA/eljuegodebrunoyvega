@@ -74,16 +74,32 @@ function initAhorcado(canvas, cleanupBag){
     }
   }
   function draw(){
-    ui.softBg(ctx,canvas,'#4a148c');
-    ui.gradientBar(ctx,canvas,{from:'#6a1b9a',to:'#4a148c'});
-    ui.shadowText(ctx,'Ahorcado Espacial',20,34,{size:24});
+    // Fondo y cabecera: usar GameUI si existe, si no, estilos básicos
+    if(window.GameUI && ui){
+      ui.softBg(ctx,canvas,'#4a148c');
+      ui.gradientBar(ctx,canvas,{from:'#6a1b9a',to:'#4a148c'});
+      ui.shadowText(ctx,'Ahorcado Espacial',20,34,{size:24});
+    } else {
+      ctx.fillStyle='#4a148c';
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle='#fff';
+      ctx.font='bold 28px Arial';
+      ctx.fillText('Ahorcado Espacial', canvas.width/2, 38);
+    }
     ctx.fillStyle='#fff';
     ctx.font='14px Arial';
     ctx.fillText('Score: '+score, 20,60);
     ctx.fillText('Récord: '+high+(highName?' ('+highName+')':''), 20,78);
     if(intro){
-      ui.glassPanel(ctx, canvas.width/2-240,110,480,260);
-      ctx.fillStyle='#fff';
+      if(window.GameUI && ui){
+        ui.glassPanel(ctx, canvas.width/2-240,110,480,260);
+      } else {
+        ctx.globalAlpha=0.85;
+        ctx.fillStyle='#fff';
+        ctx.fillRect(canvas.width/2-240,110,480,260);
+        ctx.globalAlpha=1;
+      }
+      ctx.fillStyle='#4a148c';
       ctx.font='20px Arial'; ctx.textAlign='center';
       ctx.fillText('Instrucciones', canvas.width/2,140);
       ctx.font='14px Arial';

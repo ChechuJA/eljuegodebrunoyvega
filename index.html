@@ -37,7 +37,8 @@
       <button onclick="startGame('serpiente')" style="background:#c0ca33;color:#222;">Serpiente</button>
       <button onclick="startGame('sokoban')" style="background:#6d4c41;color:#fff;">Empuja Cajas</button>
       <button onclick="startGame('carrera')" style="background:#d32f2f;color:#fff;">Carrera F1</button>
-      <button onclick="startGame('bubble')" style="background:#0288d1;color:#fff;">Dispara Colores</button>
+  <button onclick="startGame('bubble')" style="background:#0288d1;color:#fff;">Dispara Colores</button>
+  <button onclick="startGame('alonso-noel')" style="background:#c62828;color:#fff;font-weight:bold;">Alonso Noel 🎅</button>
       <button onclick="startGame('experimento-3d')" style="background:#ffb300;color:#222;">Experimento 3D</button>
       <button onclick="startGame('experimento-3d-terreno')" style="background:#8bc34a;color:#222;">Experimento 3D Terreno</button>
       <button onclick="startGame('ahorcado')" style="background:#5d4037;color:#fff;">Ahorcado espacial</button>
@@ -141,6 +142,8 @@
         loadScript('script-carrera.js');
       } else if (game === 'bubble') {
         loadScript('script-bubble.js');
+      } else if (game === 'alonso-noel') {
+        loadScript('script-alonso-noel.js');
       } else if (game === 'experimento-3d') {
         loadScript('script-experimento-3d.js');
       } else if (game === 'experimento-3d-terreno') {
