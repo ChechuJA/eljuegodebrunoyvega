@@ -23,25 +23,74 @@
     <p style="max-width:620px;margin:0 auto 20px auto;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.3;color:#222;background:rgba(255,255,255,0.55);padding:8px 12px;border-radius:10px;">
       ¿Un juego te resulta fácil? Reto extra: intenta recordarlo con los ojos cerrados y explica en voz alta cada paso que harías. ¡Tu memoria y tu concentración también se entrenan jugando! 🧠
     </p>
-  <button onclick="startGame('arkanoid')">Arkanoid</button>
-  <button onclick="startGame('paracaidista')">Bruno el paracaidista</button>
-  <button onclick="startGame('vega-bailarina')">Vega la bailarina</button>
-  <button onclick="startGame('nave-exploradora')">Nave exploradora</button>
-  <button onclick="startGame('memoria')">Memoria animales</button>
-  <button onclick="startGame('math-catcher')">Cazador de números</button>
-  <button onclick="startGame('huerto')">Huerto mágico</button>
-  <button onclick="startGame('constelaciones')">Constelaciones</button>
-  <button onclick="startGame('laberinto')">Laberinto de colores</button>
-  <button onclick="startGame('bloques')">Bloques mágicos</button>
-  <button onclick="startGame('serpiente')">Serpiente</button>
-  <button onclick="startGame('sokoban')">Empuja Cajas</button>
-  <button onclick="startGame('carrera')">Carrera F1</button>
-  <button onclick="startGame('bubble')">Dispara Colores</button>
-  <button onclick="startGame('experimento-3d')">Experimento 3D</button>
-  <button onclick="startGame('experimento-3d-terreno')">Experimento 3D Terreno</button>
-  <button onclick="startGame('ahorcado')">Ahorcado espacial</button>
-  <button onclick="startGame('quiz')">Quiz de Conocimiento</button>
+    <div style="display:flex;flex-wrap:wrap;gap:10px 12px;justify-content:center;margin-bottom:18px;">
+      <button onclick="startGame('arkanoid')" style="background:#1976d2;color:#fff;">Arkanoid</button>
+      <button onclick="startGame('paracaidista')" style="background:#388e3c;color:#fff;">Bruno el paracaidista</button>
+      <button onclick="startGame('vega-bailarina')" style="background:#e91e63;color:#fff;">Vega la bailarina</button>
+      <button onclick="startGame('nave-exploradora')" style="background:#0097a7;color:#fff;">Nave exploradora</button>
+      <button onclick="startGame('memoria')" style="background:#fbc02d;color:#222;">Memoria animales</button>
+      <button onclick="startGame('math-catcher')" style="background:#7b1fa2;color:#fff;">Cazador de números</button>
+      <button onclick="startGame('huerto')" style="background:#43a047;color:#fff;">Huerto mágico</button>
+      <button onclick="startGame('constelaciones')" style="background:#3949ab;color:#fff;">Constelaciones</button>
+      <button onclick="startGame('laberinto')" style="background:#ff7043;color:#fff;">Laberinto de colores</button>
+      <button onclick="startGame('bloques')" style="background:#00897b;color:#fff;">Bloques mágicos</button>
+      <button onclick="startGame('serpiente')" style="background:#c0ca33;color:#222;">Serpiente</button>
+      <button onclick="startGame('sokoban')" style="background:#6d4c41;color:#fff;">Empuja Cajas</button>
+      <button onclick="startGame('carrera')" style="background:#d32f2f;color:#fff;">Carrera F1</button>
+      <button onclick="startGame('bubble')" style="background:#0288d1;color:#fff;">Dispara Colores</button>
+      <button onclick="startGame('experimento-3d')" style="background:#ffb300;color:#222;">Experimento 3D</button>
+      <button onclick="startGame('experimento-3d-terreno')" style="background:#8bc34a;color:#222;">Experimento 3D Terreno</button>
+      <button onclick="startGame('ahorcado')" style="background:#5d4037;color:#fff;">Ahorcado espacial</button>
+      <button onclick="startGame('quiz')" style="background:#00bcd4;color:#fff;">Quiz de Conocimiento</button>
+      <button onclick="showGlobalScores()" style="background:#ff4081;color:#fff;font-weight:bold;">Marcadores ⭐</button>
+    </div>
   </div>
+
+  <div id="globalScoresOverlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,20,0.82);z-index:1200;align-items:center;justify-content:center;">
+    <div style="width:90%;max-width:780px;background:rgba(255,255,255,0.12);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.3);padding:26px 34px;border-radius:20px;font-family:Arial,Helvetica,sans-serif;position:relative;color:#fff;">
+      <button onclick="hideGlobalScores()" style="position:absolute;top:10px;right:10px;background:#ef5350;border:none;color:#fff;border-radius:8px;padding:6px 12px;cursor:pointer;">Cerrar</button>
+      <h2 style="margin:0 0 14px 0;font-size:28px;text-align:center;">Marcadores Globales</h2>
+      <p style="font-size:13px;opacity:.85;text-align:center;margin:0 0 18px 0;">Récords guardados por jugador. Reinicia cada juego si quieres intentar superarlos.</p>
+      <div id="globalScoresContent" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;font-size:14px;line-height:1.3;"></div>
+    </div>
+  </div>
+  <script>
+    function showGlobalScores(){
+      const map = [
+        ['Arkanoid','arkanoidHighScore','arkanoidHighScoreName'],
+        ['Paracaidista','paracaHighScore','paracaHighScoreName'],
+        ['Vega bailarina','bailarinaHighScore','bailarinaHighScoreName'],
+        ['Nave','naveHighScore','naveHighScoreName'],
+        ['Memoria','memoriaBest','memoriaBestName'],
+        ['Cazador números','mathCatcherHigh','mathCatcherHighName'],
+        ['Huerto','huertoHighScore','huertoHighScoreName'],
+        ['Constelaciones','constelMejor','constelMejorName'],
+        ['Laberinto','laberintoBest','laberintoBestName'],
+        ['Bloques','bloquesHigh','bloquesHighName'],
+        ['Serpiente','snakeHigh','snakeHighName'],
+        ['Sokoban','sokobanBest','sokobanBestName'],
+        ['Bubble','bubbleHigh','bubbleHighName'],
+        ['Carrera','carreraHigh','carreraHighName'],
+        ['Experimento 3D','exp3dHigh','exp3dHighName'],
+        ['Terreno 3D','terreno3dHigh','terreno3dHighName'],
+        ['Ahorcado','ahorcadoHigh','ahorcadoHighName'],
+        ['Quiz','quizHigh','quizHighName']
+      ];
+      const wrap = document.getElementById('globalScoresContent');
+      wrap.innerHTML = map.map(([label,key,keyName])=>{
+        const v = localStorage.getItem(key);
+        const n = localStorage.getItem(keyName);
+        if(!v) return `<div style="opacity:.45;border:1px dashed rgba(255,255,255,0.3);padding:10px 12px;border-radius:12px;"><strong>${label}</strong><br/><em>Sin récord</em></div>`;
+        return `<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);padding:10px 12px;border-radius:12px;">
+          <strong>${label}</strong><br/>${n?('👤 '+n):''}<br/>🏆 ${v}
+        </div>`;
+      }).join('');
+      document.getElementById('globalScoresOverlay').style.display='flex';
+    }
+    function hideGlobalScores(){
+      document.getElementById('globalScoresOverlay').style.display='none';
+    }
+  </script>
   <div id="backBtn" style="display:none; margin-top:20px;">
     <button onclick="goBack()">⟵ Volver al menú</button>
   </div>
