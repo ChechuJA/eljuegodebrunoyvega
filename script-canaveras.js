@@ -131,6 +131,7 @@
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
+    canvas.style.zIndex = '10';
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
     initGame();
