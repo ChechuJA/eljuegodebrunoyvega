@@ -142,4 +142,9 @@
     start: start,
     description: 'Atrapa el máximo de cañas que caen del cielo en 40 segundos. Usa las flechas para moverte.'
   });
+  return function cleanup() {
+    document.removeEventListener('keydown', keydown);
+    document.removeEventListener('keyup', keyup);
+    if(timer) clearInterval(timer);
+  };
 })();

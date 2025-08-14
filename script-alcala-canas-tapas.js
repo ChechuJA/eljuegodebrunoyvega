@@ -183,4 +183,9 @@
     start: start,
     description: 'Atrapa cañas y tapas que caen en 45 segundos. ¡Consigue la mejor puntuación! Usa las flechas para moverte.'
   });
+  return function cleanup() {
+    document.removeEventListener('keydown', keydown);
+    document.removeEventListener('keyup', keyup);
+    if(timer) clearInterval(timer);
+  };
 })();
