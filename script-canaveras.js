@@ -1,5 +1,5 @@
 // script-canaveras.js
-// Juego: Cañaveras
+// Juego: Cañas verás
 // Autor: ChechuJA + GitHub Copilot
 
 (function(){
@@ -140,7 +140,7 @@
   window.registerGame = function(canvas) {
     const cleanup = (function(){
       window.registerGame({
-        name: 'Cañaveras',
+        name: 'Cañas verás',
         start: start,
         description: 'Atrapa el máximo de cañas que caen del cielo en 40 segundos. Usa las flechas para moverte.'
       });
