@@ -507,6 +507,20 @@ function initQuiz(canvas, cleanupBag) {
     clearInterval(timer);
   });
   
+  // Ajustar dinámicamente el tamaño del canvas
+  function resizeCanvas() {
+    const dpr = window.devicePixelRatio || 1;
+    const displayWidth = canvas.clientWidth;
+    const displayHeight = Math.round(displayWidth * 0.625); // Mantener proporción 800x500
+    canvas.style.height = displayHeight + 'px';
+    if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
+      canvas.width = displayWidth * dpr;
+      canvas.height = displayHeight * dpr;
+    }
+  }
+  window.addEventListener('resize', resizeCanvas);
+  resizeCanvas();
+  
   // Loop principal
   function loop() {
     draw();

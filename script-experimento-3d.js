@@ -45,3 +45,19 @@ return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventLi
   objs.forEach(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); }); };
 }
 window.registerGame=registerGame;
+
+function resizeCanvas() {
+  const dpr = window.devicePixelRatio || 1;
+  const displayWidth = canvas.clientWidth;
+  const displayHeight = Math.round(displayWidth * 0.625); // Mantener proporción 800x500
+  canvas.style.height = displayHeight + 'px';
+  if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
+    canvas.width = displayWidth * dpr;
+    canvas.height = displayHeight * dpr;
+    renderer.setSize(displayWidth, displayHeight, false);
+    camera.aspect = displayWidth / displayHeight;
+    camera.updateProjectionMatrix();
+  }
+}
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
