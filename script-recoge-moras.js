@@ -131,14 +131,16 @@
     loop();
   }
 
-  window.registerGame && window.registerGame({
-    name: 'Recoge Moras',
-    start: start,
-    description: 'Recoge el máximo de moras en 30 segundos. Usa las flechas para moverte.'
-  });
-  return function cleanup() {
-    document.removeEventListener('keydown', keydown);
-    document.removeEventListener('keyup', keyup);
-    if(timer) clearInterval(timer);
+  window.registerGame = function(canvas) {
+    const cleanup = (function(){
+      start(canvas);
+      return function cleanup() {
+        document.removeEventListener('keydown', keydown);
+        document.removeEventListener('keyup', keyup);
+        if(timer) clearInterval(timer);
+      };
+    })();
+    start(canvas);
+    return cleanup;
   };
 })();

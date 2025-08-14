@@ -178,14 +178,19 @@
     loop();
   }
 
-  window.registerGame && window.registerGame({
-    name: 'Alcalá: Cañas y Tapas',
-    start: start,
-    description: 'Atrapa cañas y tapas que caen en 45 segundos. ¡Consigue la mejor puntuación! Usa las flechas para moverte.'
-  });
-  return function cleanup() {
-    document.removeEventListener('keydown', keydown);
-    document.removeEventListener('keyup', keyup);
-    if(timer) clearInterval(timer);
+  window.registerGame = function(canvas) {
+    const cleanup = (function(){
+      document.addEventListener('keydown', keydown);
+      document.addEventListener('keyup', keyup);
+      initGame();
+      loop();
+      return function cleanup() {
+        document.removeEventListener('keydown', keydown);
+        document.removeEventListener('keyup', keyup);
+        if(timer) clearInterval(timer);
+      };
+    })();
+    start(canvas);
+    return cleanup;
   };
 })();

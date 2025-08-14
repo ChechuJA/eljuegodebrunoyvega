@@ -141,13 +141,15 @@
     requestAnimationFrame(loop);
   }
 
-  window.registerGame && window.registerGame({
-    name: 'Sonseca: Andándose hace el camino',
-    start: start,
-    description: 'Avanza paso a paso y descubre curiosidades de Sonseca. Usa las flechas y pulsa ESPACIO para avanzar.'
-  });
-  return function cleanup() {
-    document.removeEventListener('keydown', keydown);
-    document.removeEventListener('keyup', keyup);
+  window.registerGame = function(canvas) {
+    const cleanup = (function(){
+      start(canvas);
+      return function cleanup() {
+        document.removeEventListener('keydown', keydown);
+        document.removeEventListener('keyup', keyup);
+      };
+    })();
+    start(canvas);
+    return cleanup;
   };
 })();
