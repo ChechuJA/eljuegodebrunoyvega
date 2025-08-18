@@ -55,6 +55,7 @@
       <button onclick="startGame('alcala-canas-tapas')" style="background:#ffe082;color:#d84315;font-weight:bold;">Alcalá: Cañas y Tapas 🍢</button>
       <button onclick="startGame('sonseca-camino')" style="background:#388e3c;color:#fff;font-weight:bold;">Sonseca: Andándose hace el camino 🧵</button>
       <button onclick="showGlobalScores()" style="background:#ff4081;color:#fff;font-weight:bold;">Marcadores ⭐</button>
+      <button onclick="startGame('juego-habilidad')" style="background:#ff5722;color:#fff;font-weight:bold;">Esquiva Obstáculos 🚀</button>
     </div>
   </div>
 
@@ -170,6 +171,8 @@
               loadScript('script-alcala-canas-tapas.js');
               } else if (game === 'sonseca-camino') {
                 loadScript('script-sonseca-camino.js');
+                } else if (game === 'juego-habilidad') {
+      loadScript('script-juego-habilidad.js');
       }
     }
     function loadScript(src) {
