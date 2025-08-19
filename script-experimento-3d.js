@@ -2,7 +2,7 @@ function registerGame(){
 // Experimento 3D básico con Three.js: escena con cubos interactivos y órbita cámara
 const canvas=document.getElementById('gameCanvas');
 // Creamos un renderer WebGL sobre el mismo canvas
-let renderer, scene, camera, af=null, resizeObserver=null; let orbiting=true; let lastTime=performance.now(); let spinSpeed=0.6; let objs=[]; let raycaster=new THREE.Raycaster(); let pointer=new THREE.Vector2(); let INTERSECTED=null; let highRot=Number(localStorage.getItem('exp3dHighRot')||0); let highName=localStorage.getItem('exp3dHighRotName')||'-'; const playerName=localStorage.getItem('playerName')||'';
+let renderer, scene, camera, af=null; let orbiting=true; let lastTime=performance.now(); let spinSpeed=0.6; let objs=[]; let raycaster=null; let pointer=null; let INTERSECTED=null; let highRot=Number(localStorage.getItem('exp3dHighRot')||0); let highName=localStorage.getItem('exp3dHighRotName')||'-'; const playerName=localStorage.getItem('playerName')||'';
 function initThree(){
   renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true});
   renderer.setPixelRatio(window.devicePixelRatio||1);
@@ -27,8 +27,8 @@ let pointerDown=false; let lastPointer={x:0,y:0};
 function onPointerDown(e){ pointerDown=true; lastPointer.x=e.clientX; lastPointer.y=e.clientY; setPointer(e); pick(); }
 function onPointerUp(){ pointerDown=false; }
 function onPointerMove(e){ if(pointerDown){ const dx=(e.clientX-lastPointer.x)/200; const dy=(e.clientY-lastPointer.y)/200; camera.position.applyAxisAngle(new THREE.Vector3(0,1,0), -dx); camera.position.y -= dy*3; camera.position.y=Math.max(-0.5,Math.min(6,camera.position.y)); camera.lookAt(0,0,0); lastPointer.x=e.clientX; lastPointer.y=e.clientY; } setPointer(e); }
-function setPointer(e){ const rect=canvas.getBoundingClientRect(); pointer.x=((e.clientX-rect.left)/rect.width)*2-1; pointer.y=-((e.clientY-rect.top)/rect.height)*2+1; }
-function pick(){ raycaster.setFromCamera(pointer,camera); const intersects=raycaster.intersectObjects(objs); if(intersects.length){ const m=intersects[0].object; m.rotationSpeed*=1.35; if(m.rotationSpeed>spinSpeed) spinSpeed=m.rotationSpeed; if(spinSpeed>highRot){ highRot=spinSpeed; localStorage.setItem('exp3dHighRot', String(highRot)); localStorage.setItem('exp3dHighRotName', playerName||'-'); } }
+function setPointer(e){ const rect=canvas.getBoundingClientRect(); if(!pointer) return; pointer.x=((e.clientX-rect.left)/rect.width)*2-1; pointer.y=-((e.clientY-rect.top)/rect.height)*2+1; }
+function pick(){ if(!raycaster||!pointer) return; raycaster.setFromCamera(pointer,camera); const intersects=raycaster.intersectObjects(objs); if(intersects.length){ const m=intersects[0].object; m.rotationSpeed*=1.35; if(m.rotationSpeed>spinSpeed) spinSpeed=m.rotationSpeed; if(spinSpeed>highRot){ highRot=spinSpeed; localStorage.setItem('exp3dHighRot', String(highRot)); localStorage.setItem('exp3dHighRotName', playerName||'-'); } }
 }
 function onKey(e){ if(e.key==='d' || e.key==='D'){ orbiting=!orbiting; } }
 function resize(){ const dpr=window.devicePixelRatio||1; const displayW=canvas.clientWidth; const displayH= Math.round(displayW*0.625); // mantener proporción 800x500
@@ -39,25 +39,10 @@ function animate(){ af=requestAnimationFrame(animate); resize(); const now=perfo
  objs.forEach(o=>{ o.rotation.x+=dt*o.rotationSpeed; o.rotation.y+=dt*o.rotationSpeed*0.8; }); renderer.render(scene,camera); drawHUD(); }
 // Cargar three.js si no existe
 function ensureThree(cb){ if(window.THREE){ cb(); return;} const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js'; s.onload=cb; document.head.appendChild(s); }
-ensureThree(()=>{ initThree(); animate(); });
+ensureThree(()=>{ raycaster=new THREE.Raycaster(); pointer=new THREE.Vector2(); initThree(); animate(); });
 canvas.addEventListener('mousedown',onPointerDown); canvas.addEventListener('mouseup',onPointerUp); canvas.addEventListener('mousemove',onPointerMove); canvas.addEventListener('mouseleave',onPointerUp); canvas.addEventListener('touchstart',e=>{ const t=e.changedTouches[0]; if(!t)return; onPointerDown({clientX:t.clientX,clientY:t.clientY}); e.preventDefault(); },{passive:false}); canvas.addEventListener('touchmove',e=>{ const t=e.changedTouches[0]; if(!t)return; onPointerMove({clientX:t.clientX,clientY:t.clientY}); e.preventDefault(); },{passive:false}); canvas.addEventListener('touchend',e=>{ onPointerUp(); e.preventDefault(); },{passive:false}); window.addEventListener('keydown',onKey);
-return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',onKey); canvas.removeEventListener('mousedown',onPointerDown); canvas.removeEventListener('mouseup',onPointerUp); canvas.removeEventListener('mousemove',onPointerMove); if(renderer){ renderer.dispose(); }
-  objs.forEach(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); }); };
+return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',onKey); canvas.removeEventListener('mousedown',onPointerDown); canvas.removeEventListener('mouseup',onPointerUp); canvas.removeEventListener('mousemove',onPointerMove); canvas.removeEventListener('mouseleave',onPointerUp); canvas.removeEventListener('touchstart',onPointerDown); canvas.removeEventListener('touchmove',onPointerMove); canvas.removeEventListener('touchend',onPointerUp); if(renderer){ try{ renderer.dispose(); }catch(_){} }
+  objs.forEach(o=>{ try{ if(o.geometry) o.geometry.dispose(); if(o.material) o.material.dispose(); }catch(_){} }); };
 }
 window.registerGame=registerGame;
 
-function resizeCanvas() {
-  const dpr = window.devicePixelRatio || 1;
-  const displayWidth = canvas.clientWidth;
-  const displayHeight = Math.round(displayWidth * 0.625); // Mantener proporción 800x500
-  canvas.style.height = displayHeight + 'px';
-  if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
-    canvas.width = displayWidth * dpr;
-    canvas.height = displayHeight * dpr;
-    renderer.setSize(displayWidth, displayHeight, false);
-    camera.aspect = displayWidth / displayHeight;
-    camera.updateProjectionMatrix();
-  }
-}
-window.addEventListener('resize', resizeCanvas);
-resizeCanvas();

@@ -111,6 +111,17 @@ function registerGame(){
     // Eliminar objetos atrapados o fuera de pantalla
     objects = objects.filter(o=>!o.caught && o.y<canvas.height+60);
   }
+  const backgroundImage = new Image();
+  backgroundImage.src = 'assets/alonso-noel-background.png';
+  const characterImage = new Image();
+  // Prefer PNG if present; fallback to bundled SVG
+  characterImage.src = 'assets/alonso-noel-character.png';
+  characterImage.onerror = () => { characterImage.src = 'assets/alonso-noel-character.svg'; };
+
+  function characterImgReady(){
+    return characterImage && characterImage.complete && characterImage.naturalWidth > 0;
+  }
+
   function drawSanta(x,y,w,h){
     ctx.save();
     ctx.translate(x+w/2,y+h/2);
@@ -244,10 +255,14 @@ function registerGame(){
   }
   function draw(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#b3e5fc';
-    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    if (characterImgReady()){
+      ctx.drawImage(characterImage, player.x, player.y, player.w, player.h);
+    } else {
+      drawSanta(player.x, player.y, player.w, player.h);
+    }
     drawHUD();
-    drawSanta(player.x, player.y, player.w, player.h);
+    // No duplicar al personaje si ya hay sprite
     for(const o of objects){
       if(o.type==='gift') drawGift(o);
       else if(o.type==='snow') drawSnow(o);

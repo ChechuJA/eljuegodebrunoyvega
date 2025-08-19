@@ -5,10 +5,14 @@
 (function(){
   let canvas, ctx, width, height;
   let player, moras, score, gameOver, keys, timer, timeLeft;
+  let backgroundImage, playerImage, moraImage;
   const PLAYER_SIZE = 32;
   const MORA_SIZE = 20;
   const GAME_TIME = 30; // segundos
   const MORA_COUNT = 5;
+  function bgReady(){ return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth>0; }
+  function playerReady(){ return playerImage && playerImage.complete && playerImage.naturalWidth>0; }
+  function moraReady(){ return moraImage && moraImage.complete && moraImage.naturalWidth>0; }
 
   function initGame() {
     score = 0;
@@ -32,23 +36,26 @@
   function draw() {
     ctx.clearRect(0,0,width,height);
     // Fondo
-    ctx.fillStyle = '#b6e685';
-    ctx.fillRect(0,0,width,height);
+    if (bgReady()) ctx.drawImage(backgroundImage, 0, 0, width, height);
+    else { ctx.fillStyle = '#b6e685'; ctx.fillRect(0,0,width,height); }
     // Jugador
-    ctx.fillStyle = '#6b3e26';
-    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = '#fff';
-    ctx.font = '16px Arial';
-    ctx.fillText('Tú', player.x+6, player.y+22);
+    if (playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    else {
+      ctx.fillStyle = '#6b3e26';
+      ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    }
     // Moras
     for(let mora of moras) {
       if(!mora.collected) {
-        ctx.beginPath();
-        ctx.arc(mora.x+MORA_SIZE/2, mora.y+MORA_SIZE/2, MORA_SIZE/2, 0, 2*Math.PI);
-        ctx.fillStyle = '#7b1fa2';
-        ctx.fill();
-        ctx.strokeStyle = '#4a148c';
-        ctx.stroke();
+        if (moraReady()) ctx.drawImage(moraImage, mora.x, mora.y, MORA_SIZE, MORA_SIZE);
+        else {
+          ctx.beginPath();
+          ctx.arc(mora.x+MORA_SIZE/2, mora.y+MORA_SIZE/2, MORA_SIZE/2, 0, 2*Math.PI);
+          ctx.fillStyle = '#7b1fa2';
+          ctx.fill();
+          ctx.strokeStyle = '#4a148c';
+          ctx.stroke();
+        }
       }
     }
     // Marcadores
@@ -125,22 +132,23 @@
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
+  // Carga de imágenes
+  backgroundImage = new Image(); backgroundImage.src = 'assets/recoge-moras-background.png'; backgroundImage.onerror = ()=>{ backgroundImage.src = 'assets/recoge-moras-background.svg'; };
+  playerImage = new Image(); playerImage.src = 'assets/recoge-moras-player.png'; playerImage.onerror = ()=>{ playerImage.src = 'assets/recoge-moras-player.svg'; };
+  moraImage = new Image(); moraImage.src = 'assets/recoge-moras-mora.png'; moraImage.onerror = ()=>{ moraImage.src = 'assets/recoge-moras-mora.svg'; };
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
     initGame();
     loop();
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      start(canvas);
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-        if(timer) clearInterval(timer);
-      };
-    })();
-    start(canvas);
-    return cleanup;
+  window.registerGame = function registerGame(){
+    const canvasEl = document.getElementById('gameCanvas');
+    start(canvasEl);
+    return function cleanup(){
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+      if(timer) clearInterval(timer);
+    };
   };
 })();

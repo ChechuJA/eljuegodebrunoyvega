@@ -4,11 +4,14 @@
 
 (function(){
   let canvas, ctx, width, height;
+  let backgroundImage, characterImage;
   let player, obstacles, score, gameOver, keys, timer;
   const PLAYER_WIDTH = 40, PLAYER_HEIGHT = 80;
   const OBSTACLE_WIDTH = 40, OBSTACLE_HEIGHT = 40;
   const OBSTACLE_COUNT = 5;
   const GAME_SPEED = 5;
+  function bgReady(){ return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth>0; }
+  function charReady(){ return characterImage && characterImage.complete && characterImage.naturalWidth>0; }
 
   function initGame() {
     score = 0;
@@ -23,27 +26,31 @@
 
   function draw() {
     ctx.clearRect(0, 0, width, height);
-    // Fondo del desierto
-    ctx.fillStyle = '#f4a261';
-    ctx.fillRect(0, 0, width, height);
-    // Carretera
-    ctx.fillStyle = '#6d6875';
-    ctx.fillRect(width/4, 0, width/2, height);
-    // Líneas de la carretera
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 4;
-    for (let i = 0; i < height; i += 40) {
-      ctx.beginPath();
-      ctx.moveTo(width/2 - 2, i);
-      ctx.lineTo(width/2 - 2, i + 20);
-      ctx.stroke();
+    // Fondo/Carretera
+    if (bgReady()) {
+      ctx.drawImage(backgroundImage, 0, 0, width, height);
+    } else {
+      // fallback simple
+      ctx.fillStyle = '#f4a261';
+      ctx.fillRect(0, 0, width, height);
+      ctx.fillStyle = '#6d6875';
+      ctx.fillRect(width/4, 0, width/2, height);
+      ctx.strokeStyle = '#fff';
+      ctx.lineWidth = 4;
+      for (let i = 0; i < height; i += 40) {
+        ctx.beginPath();
+        ctx.moveTo(width/2 - 2, i);
+        ctx.lineTo(width/2 - 2, i + 20);
+        ctx.stroke();
+      }
     }
     // Jugador (moto)
-    ctx.fillStyle = '#e63946';
-    ctx.fillRect(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-    ctx.fillStyle = '#fff';
-    ctx.font = '14px Arial';
-    ctx.fillText('Moto', player.x + 10, player.y + 50);
+    if (charReady()) {
+      ctx.drawImage(characterImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+    } else {
+      ctx.fillStyle = '#e63946';
+      ctx.fillRect(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+    }
     // Obstáculos (rocas)
     for(let obstacle of obstacles) {
       ctx.fillStyle = '#2a9d8f';
@@ -114,25 +121,25 @@
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
+  // Carga de imágenes
+  backgroundImage = new Image();
+  backgroundImage.src = 'assets/moto-desierto-background.png';
+  backgroundImage.onerror = () => { backgroundImage.src = 'assets/moto-desierto-background.svg'; };
+  characterImage = new Image();
+  characterImage.src = 'assets/moto-desierto-character.png';
+  characterImage.onerror = () => { characterImage.src = 'assets/moto-desierto-character.svg'; };
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
     initGame();
     loop();
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      window.registerGame({
-        name: 'Moto en el Desierto',
-        start: start,
-        description: 'Conduce tu moto por el desierto, esquiva obstáculos y consigue la mayor puntuación.'
-      });
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-      };
-    })();
-    start(canvas);
-    return cleanup;
+  window.registerGame = function registerGame() {
+    const canvasEl = document.getElementById('gameCanvas');
+    start(canvasEl);
+    return function cleanup() {
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+    };
   };
 })();

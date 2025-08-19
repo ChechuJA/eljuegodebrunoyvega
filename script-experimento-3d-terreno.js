@@ -1,7 +1,7 @@
 function registerGame(){
 // Experimento 3D Terreno procedural + esfera saltarina
 const canvas=document.getElementById('gameCanvas');
-let renderer, scene, camera, af=null; let sphere, clock=new THREE.Clock(); let raycaster=new THREE.Raycaster(); let jumpVel=0; let onGround=false; let accum=0; let bestHeight=Number(localStorage.getItem('exp3dTerrainBestHeight')||0); let bestName=localStorage.getItem('exp3dTerrainBestHeightName')||'-'; const playerName=localStorage.getItem('playerName')||'-';
+let renderer, scene, camera, af=null; let sphere, clock=null; let raycaster=null; let jumpVel=0; let onGround=false; let accum=0; let bestHeight=Number(localStorage.getItem('exp3dTerrainBestHeight')||0); let bestName=localStorage.getItem('exp3dTerrainBestHeightName')||'-'; const playerName=localStorage.getItem('playerName')||'-';
 function ensureThree(cb){ if(window.THREE){ cb(); return;} const s=document.createElement('script'); s.src='https://cdn.jsdelivr.net/npm/three@0.157.0/build/three.min.js'; s.onload=cb; document.head.appendChild(s); }
 function generateHeight(w,h){ const data=[]; for(let y=0;y<h;y++){ for(let x=0;x<w;x++){ const nx=x/w-0.5, ny=y/h-0.5; const d=Math.sqrt(nx*nx+ny*ny); const val= (Math.sin((nx*5)) + Math.cos((ny*5)))*0.5 - d*1.2 + (Math.random()*0.15); data.push(val); } } return data; }
 function init(){ renderer=new THREE.WebGLRenderer({canvas,antialias:true,alpha:true}); renderer.setPixelRatio(window.devicePixelRatio||1); renderer.setSize(canvas.clientWidth, canvas.clientHeight,false); scene=new THREE.Scene(); camera=new THREE.PerspectiveCamera(60, canvas.clientWidth/canvas.clientHeight, 0.1, 100); camera.position.set(0,4,8); camera.lookAt(0,0,0);
@@ -23,7 +23,7 @@ function physics(dt){ jumpVel+= -9.8*dt; sphere.position.y+=jumpVel*dt; // detec
 function resize(){ const dpr=window.devicePixelRatio||1; const displayW=canvas.clientWidth; const displayH=Math.round(displayW*0.625); canvas.style.height=displayH+'px'; if(canvas.width!==displayW*dpr||canvas.height!==displayH*dpr){ canvas.width=displayW*dpr; canvas.height=displayH*dpr; camera.aspect=displayW/displayH; camera.updateProjectionMatrix(); renderer.setSize(displayW,displayH,false);} }
 function drawHUD(){ const ctx=canvas.getContext('2d'); const w=canvas.width; if(window.GameUI) GameUI.gradientBar(ctx,w,60,'#004d40','#00695c'); else { ctx.fillStyle='#004d40'; ctx.fillRect(0,0,w,60);} ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='left'; ctx.fillText('Terreno 3D',14,38); ctx.textAlign='center'; ctx.font='14px Arial'; ctx.fillText('Click / Space salta. Alcanza mayor altura.', w/2,40); ctx.textAlign='right'; ctx.font='14px Arial'; ctx.fillText('Altura max: '+bestHeight.toFixed(2)+' ('+bestName+')', w-14,40); }
 function animate(){ af=requestAnimationFrame(animate); resize(); const dt=clock.getDelta(); physics(dt); sphere.rotation.y += dt*2; renderer.render(scene,camera); drawHUD(); }
-ensureThree(init);
-return function cleanup(){ if(af) cancelAnimationFrame(af); if(renderer){ renderer.dispose(); } if(sphere){ sphere.geometry.dispose(); sphere.material.dispose(); } };
+ensureThree(()=>{ clock=new THREE.Clock(); raycaster=new THREE.Raycaster(); init(); });
+return function cleanup(){ if(af) cancelAnimationFrame(af); try{ if(renderer){ renderer.dispose(); } }catch(_){} try{ if(sphere){ sphere.geometry.dispose(); sphere.material.dispose(); } }catch(_){} };
 }
 window.registerGame=registerGame;

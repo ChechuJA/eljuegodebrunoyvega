@@ -178,19 +178,13 @@
     loop();
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      document.addEventListener('keydown', keydown);
-      document.addEventListener('keyup', keyup);
-      initGame();
-      loop();
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-        if(timer) clearInterval(timer);
-      };
-    })();
-    start(canvas);
-    return cleanup;
+  window.registerGame = function registerGame(){
+    const canvasEl = document.getElementById('gameCanvas');
+    start(canvasEl);
+    return function cleanup(){
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+      if(timer) clearInterval(timer);
+    };
   };
 })();
