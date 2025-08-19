@@ -5,10 +5,13 @@
 (function(){
   let canvas, ctx, width, height;
   let player, obstacles, score, gameOver, keys;
+  let backgroundImage, characterImage;
   const PLAYER_SIZE = 30;
   const OBSTACLE_SIZE = 20;
   const OBSTACLE_COUNT = 5;
   const GAME_SPEED = 3;
+  function bgReady(){ return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth>0; }
+  function charReady(){ return characterImage && characterImage.complete && characterImage.naturalWidth>0; }
 
   function initGame() {
     score = 0;
@@ -24,11 +27,19 @@
   function draw() {
     ctx.clearRect(0, 0, width, height);
     // Fondo
-    ctx.fillStyle = '#b3e5fc';
-    ctx.fillRect(0, 0, width, height);
+    if (bgReady()) {
+      ctx.drawImage(backgroundImage, 0, 0, width, height);
+    } else {
+      ctx.fillStyle = '#b3e5fc';
+      ctx.fillRect(0, 0, width, height);
+    }
     // Jugador
-    ctx.fillStyle = '#ff5722';
-    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    if (charReady()) {
+      ctx.drawImage(characterImage, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    } else {
+      ctx.fillStyle = '#ff5722';
+      ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    }
     ctx.fillStyle = '#fff';
     ctx.font = '14px Arial';
     ctx.fillText('Tú', player.x + 8, player.y + 20);
@@ -104,6 +115,13 @@
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
+  // Carga de imágenes
+  backgroundImage = new Image();
+  backgroundImage.src = 'assets/juego-habilidad-background.png';
+  backgroundImage.onerror = () => { backgroundImage.src = 'assets/juego-habilidad-background.svg'; };
+  characterImage = new Image();
+  characterImage.src = 'assets/juego-habilidad-character.png';
+  characterImage.onerror = () => { characterImage.src = 'assets/juego-habilidad-character.svg'; };
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
     initGame();
