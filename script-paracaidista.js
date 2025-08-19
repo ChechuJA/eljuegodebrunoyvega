@@ -63,6 +63,13 @@ function drawBruno() {
   bruno.anim += 0.16; const sway = Math.sin(bruno.anim)*4; const limb = Math.sin(bruno.anim*1.8)*6;
   // Sombra
   ctx.globalAlpha=0.25; ctx.fillStyle='#000'; ctx.beginPath(); ctx.ellipse(bruno.x, bruno.y+52, 14,6,0,0,Math.PI*2); ctx.fill(); ctx.globalAlpha=1;
+  // Si hay sprite de personaje cargado, dibujarlo y salir
+  if (characterImgReady()){
+    const w = 60, h = 80; // tamaño objetivo del sprite
+    ctx.drawImage(characterImage, bruno.x - w/2, bruno.y - h/2, w, h);
+    ctx.restore();
+    return;
+  }
   // Paracaídas segmentado
   const radius=22; const segs=6; for(let i=0;i<segs;i++){ const a0=Math.PI + i*(Math.PI/segs); const a1=Math.PI + (i+1)*(Math.PI/segs); ctx.beginPath(); ctx.moveTo(bruno.x, bruno.y - 22); ctx.arc(bruno.x, bruno.y - 22, radius, a0, a1); ctx.closePath(); ctx.fillStyle= i%2? '#ffd54f':'#ffb300'; ctx.fill(); }
   ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(bruno.x, bruno.y - 22, radius, Math.PI, 2*Math.PI); ctx.stroke();
@@ -212,7 +219,13 @@ function drawPregunta() {
 const backgroundImage = new Image();
 backgroundImage.src = 'assets/paracaidista-background.png';
 const characterImage = new Image();
+// Prefer PNG if present; fallback to SVG we ship
 characterImage.src = 'assets/paracaidista-character.png';
+characterImage.onerror = () => { characterImage.src = 'assets/paracaidista-character.svg'; };
+
+function characterImgReady(){
+  return characterImage && characterImage.complete && characterImage.naturalWidth > 0;
+}
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);

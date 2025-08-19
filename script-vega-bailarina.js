@@ -17,6 +17,21 @@ let highScore = Number(localStorage.getItem('bailarinaHighScore')||0);
 let highName = localStorage.getItem('bailarinaHighName')||'-';
 const playerName = localStorage.getItem('playerName')||'';
 
+// Assets: fondo y personaje (PNG con fallback a SVG)
+const backgroundImage = new Image();
+backgroundImage.src = 'assets/vega-bailarina-background.png';
+backgroundImage.onerror = () => { backgroundImage.src = 'assets/vega-bailarina-background.svg'; };
+const characterImage = new Image();
+characterImage.src = 'assets/vega-bailarina-character.png';
+characterImage.onerror = () => { characterImage.src = 'assets/vega-bailarina-character.svg'; };
+function backgroundReady(){ return backgroundImage.complete && backgroundImage.naturalWidth>0; }
+function characterReady(){ return characterImage.complete && characterImage.naturalWidth>0; }
+
+function drawCharacterSprite(){
+  const w = 60, h = 80;
+  ctx.drawImage(characterImage, vega.x - w/2, vega.y - h/2, w, h);
+}
+
 function drawVega() {
   ctx.save();
   // Cabeza
@@ -77,9 +92,16 @@ function drawCorazones() {
 
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#fce4ec','#f8bbd0']);
+  // Fondo de escenario
+  if (backgroundReady()) {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+  } else {
+    if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#fce4ec','#f8bbd0']);
+  }
+  // Barra superior
   if(window.GameUI) GameUI.gradientBar(ctx,canvas.width,60,'#ad1457','#d81b60'); else { ctx.fillStyle='#d81b60'; ctx.fillRect(0,0,canvas.width,60);} ctx.fillStyle='#fff'; ctx.font='bold 26px Arial'; ctx.textAlign='center'; ctx.fillText('Vega la bailarina', canvas.width/2,40); ctx.font='14px Arial'; ctx.fillStyle='#ffeef5'; ctx.fillText('Corazones: '+totalCorazones+'  Récord: '+highScore+' ('+highName+')', canvas.width/2,58);
-  drawVega();
+  // Vega: sprite si existe, si no el vector actual
+  if (characterReady()) drawCharacterSprite(); else drawVega();
   drawCorazones();
   ctx.save(); ctx.font='18px Arial'; ctx.fillStyle='#444'; ctx.textAlign='center'; ctx.fillText('Flechas: mover  |  Espacio: bailar', canvas.width/2, canvas.height-34); ctx.restore();
 }
