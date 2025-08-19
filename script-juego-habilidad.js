@@ -128,19 +128,12 @@
     loop();
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      window.registerGame({
-        name: 'Esquiva Obstáculos',
-        start: start,
-        description: 'Esquiva los obstáculos y acumula puntos. Usa las flechas para moverte.'
-      });
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-      };
-    })();
-    start(canvas);
-    return cleanup;
+  window.registerGame = function registerGame() {
+    const canvasEl = document.getElementById('gameCanvas');
+    start(canvasEl);
+    return function cleanup() {
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+    };
   };
 })();

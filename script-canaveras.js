@@ -138,20 +138,13 @@
     loop();
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      window.registerGame({
-        name: 'Cañas verás',
-        start: start,
-        description: 'Atrapa el máximo de cañas que caen del cielo en 40 segundos. Usa las flechas para moverte.'
-      });
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-        if(timer) clearInterval(timer);
-      };
-    })();
-    start(canvas);
-    return cleanup;
+  window.registerGame = function registerGame(){
+    const canvasEl = document.getElementById('gameCanvas');
+    start(canvasEl);
+    return function cleanup(){
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+      if(timer) clearInterval(timer);
+    };
   };
 })();
