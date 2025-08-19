@@ -209,8 +209,14 @@ function drawPregunta() {
   ctx.restore();
 }
 
+const backgroundImage = new Image();
+backgroundImage.src = 'assets/paracaidista-background.png';
+const characterImage = new Image();
+characterImage.src = 'assets/paracaidista-character.png';
+
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
+  ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
   ctx.save();
   ctx.globalAlpha = 0.12;
   ctx.font = 'bold 48px Comic Sans MS, Arial';
