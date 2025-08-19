@@ -2,7 +2,7 @@ function registerGame(){
   const canvas = document.getElementById('gameCanvas');
   return initAhorcado(canvas);
 }
-function initAhorcado(canvas, cleanupBag){
+function initAhorcado(canvas){
   const ctx=canvas.getContext('2d');
   const ui=window.GameUI;
   const palabras = [
@@ -177,12 +177,16 @@ function initAhorcado(canvas, cleanupBag){
   const clickListener=e=>click(e);
   window.addEventListener('keydown', keyListener);
   canvas.addEventListener('click', clickListener);
-  cleanupBag.push(()=>{window.removeEventListener('keydown', keyListener);canvas.removeEventListener('click', clickListener);});
 
   function loop(){
     draw();
     requestAnimationFrame(loop);
   }
   loop();
+  // devolver función de limpieza
+  return function cleanup(){
+    window.removeEventListener('keydown', keyListener);
+    canvas.removeEventListener('click', clickListener);
+  };
 }
 window.registerGame=registerGame;
