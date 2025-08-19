@@ -5,10 +5,14 @@
 (function(){
   let canvas, ctx, width, height;
   let player, canas, score, gameOver, keys, timer, timeLeft;
+  let backgroundImage, playerImage, canaImage;
   const PLAYER_WIDTH = 36, PLAYER_HEIGHT = 36;
   const CANA_WIDTH = 18, CANA_HEIGHT = 60;
   const GAME_TIME = 40; // segundos
   const CANA_COUNT = 6;
+  function bgReady(){ return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth>0; }
+  function playerReady(){ return playerImage && playerImage.complete && playerImage.naturalWidth>0; }
+  function canaReady(){ return canaImage && canaImage.complete && canaImage.naturalWidth>0; }
 
   function initGame() {
     score = 0;
@@ -31,22 +35,17 @@
 
   function draw() {
     ctx.clearRect(0,0,width,height);
-    // Fondo
-    ctx.fillStyle = '#b3e5fc';
-    ctx.fillRect(0,0,width,height);
-    // Jugador (niño/a)
-    ctx.fillStyle = '#ffb300';
-    ctx.fillRect(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
-    ctx.fillStyle = '#222';
-    ctx.font = '15px Arial';
-    ctx.fillText('Tú', player.x+7, player.y+24);
+  // Fondo
+  if(bgReady()) ctx.drawImage(backgroundImage, 0, 0, width, height);
+  else { ctx.fillStyle = '#b3e5fc'; ctx.fillRect(0,0,width,height); }
+  // Jugador (niño/a)
+  if(playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+  else { ctx.fillStyle = '#ffb300'; ctx.fillRect(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT); }
     // Cañas
     for(let cana of canas) {
       if(!cana.caught) {
-        ctx.fillStyle = '#8d6e63';
-        ctx.fillRect(cana.x, cana.y, CANA_WIDTH, CANA_HEIGHT);
-        ctx.fillStyle = '#388e3c';
-        ctx.fillRect(cana.x, cana.y, CANA_WIDTH, 18);
+  if(canaReady()) ctx.drawImage(canaImage, cana.x, cana.y, CANA_WIDTH, CANA_HEIGHT);
+  else { ctx.fillStyle = '#8d6e63'; ctx.fillRect(cana.x, cana.y, CANA_WIDTH, CANA_HEIGHT); ctx.fillStyle = '#388e3c'; ctx.fillRect(cana.x, cana.y, CANA_WIDTH, 18); }
       }
     }
     // Marcadores
@@ -131,6 +130,10 @@
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
+  // Carga de imágenes
+  backgroundImage = new Image(); backgroundImage.src = 'assets/canaveras-background.png'; backgroundImage.onerror = ()=>{ backgroundImage.src = 'assets/canaveras-background.svg'; };
+  playerImage = new Image(); playerImage.src = 'assets/canaveras-player.png'; playerImage.onerror = ()=>{ playerImage.src = 'assets/canaveras-player.svg'; };
+  canaImage = new Image(); canaImage.src = 'assets/canaveras-cana.png'; canaImage.onerror = ()=>{ canaImage.src = 'assets/canaveras-cana.svg'; };
     canvas.style.zIndex = '10';
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="500" viewBox="0 0 800 500">
+  <defs>
+    <linearGradient id="grass" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#c8f7a3"/>
+      <stop offset="100%" stop-color="#8bd46a"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="800" height="500" fill="url(#grass)"/>
+  <!-- bushes -->
+  <g fill="#4caf50" opacity="0.85">
+    <circle cx="120" cy="420" r="36"/>
+    <circle cx="170" cy="430" r="26"/>
+    <circle cx="560" cy="420" r="32"/>
+    <circle cx="600" cy="430" r="24"/>
+    <circle cx="640" cy="420" r="28"/>
+  </g>
+  <!-- flowers -->
+  <g>
+    <circle cx="260" cy="380" r="4" fill="#ffeb3b"/>
+    <circle cx="300" cy="360" r="4" fill="#ff8a80"/>
+    <circle cx="340" cy="400" r="4" fill="#ffd740"/>
+    <circle cx="420" cy="380" r="4" fill="#ff8a80"/>
+  </g>
+</svg>
