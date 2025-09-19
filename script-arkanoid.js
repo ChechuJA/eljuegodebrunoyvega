@@ -158,60 +158,15 @@ function draw() {
     ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore + (recordName? (' ('+recordName+')') : ''), 20, 30);
     ctx.restore();
 
-    // Panel de introducción (ahora más oscuro y legible)
+    // Panel de introducción usando la utilidad drawInstructionPanel
     if(showIntro){
-        const panelX = 40;
-        const panelY = 50;
-        const panelW = canvas.width - 80;
-        const panelH = 190;
-
-        // Fondo oscuro semi-transparente con borde
-        ctx.save();
-        ctx.fillStyle = 'rgba(15,25,40,0.92)';
-        ctx.strokeStyle = 'rgba(255,255,255,0.25)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        ctx.roundRect
-            ? ctx.roundRect(panelX, panelY, panelW, panelH, 16)
-            : (function(){ // fallback bordes redondeados manual
-                const r=16;
-                ctx.moveTo(panelX+r,panelY);
-                ctx.lineTo(panelX+panelW-r,panelY);
-                ctx.quadraticCurveTo(panelX+panelW,panelY,panelX+panelW,panelY+r);
-                ctx.lineTo(panelX+panelW,panelY+panelH-r);
-                ctx.quadraticCurveTo(panelX+panelW,panelY+panelH,panelX+panelW-r,panelY+panelH);
-                ctx.lineTo(panelX+r,panelY+panelH);
-                ctx.quadraticCurveTo(panelX,panelY+panelH,panelX,panelY+panelH-r);
-                ctx.lineTo(panelX,panelY+r);
-                ctx.quadraticCurveTo(panelX,panelY,panelX+r,panelY);
-            })();
-        ctx.fill();
-        ctx.stroke();
-
-        // Título
-        ctx.font = 'bold 28px Arial';
-        ctx.fillStyle = '#4fc3f7';
-        ctx.textAlign = 'center';
-        ctx.shadowColor = '#000';
-        ctx.shadowBlur = 8;
-        ctx.fillText('Arkanoid', canvas.width/2, panelY+42);
-
-        // Texto instrucciones
-        ctx.shadowBlur = 0;
-        ctx.font = '15px Arial';
-        ctx.fillStyle = '#ffffff';
         const lines = [
             'Mueve la barra con ← → y rebota la bola para romper los bloques.',
             'Power-ups: barra más grande (⇔) o bola más lenta (🐢).',
             'Consejo: juega sesiones de hasta 10 minutos y descansa.',
             'Pulsa cualquier tecla para comenzar.'
         ];
-        let y = panelY + 72;
-        for(const line of lines){
-            ctx.fillText(line, canvas.width/2, y);
-            y += 23;
-        }
-        ctx.restore();
+        window.GameUI.drawInstructionPanel(ctx, 'Arkanoid', lines);
     }
 }
 
