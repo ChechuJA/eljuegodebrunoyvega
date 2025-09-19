@@ -90,6 +90,13 @@
       <span style="background:#0d47a1;color:#fff;padding:6px 10px;border-radius:20px;font-weight:600;font-size:12px;" id="tipBubble">Consejo: respira hondo antes de un nivel difícil.</span>
     </div>
     <h2>Elige tu juego</h2>
+    
+    <!-- Panel de acceso rápido -->
+    <div style="max-width:820px;margin:10px auto 20px;padding:12px 15px;background:rgba(25,118,210,0.1);border-radius:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center;">
+      <span style="font-size:14px;font-weight:600;color:#0d47a1;margin-right:5px;">Acceso rápido:</span>
+      <button style="background:#ff4081;padding:8px 14px;" onclick="showGlobalScores()">Ver Marcadores ⭐</button>
+    </div>
+    
     <div id="gameButtons">
       <button style="background:#1976d2" onclick="startGame('arkanoid')">Arkanoid</button>
       <button style="background:#388e3c" onclick="startGame('paracaidista')">Bruno el paracaidista</button>
@@ -106,8 +113,6 @@
       <button style="background:#d32f2f" onclick="startGame('carrera')">Carrera F1</button>
       <button style="background:#0288d1" onclick="startGame('bubble')">Dispara Colores</button>
       <button style="background:#c62828" onclick="startGame('alonso-noel')">Alonso Noel 🎅</button>
-      <button style="background:#ffb300;color:#222" onclick="startGame('experimento-3d')">Experimento 3D</button>
-      <button style="background:#8bc34a;color:#222" onclick="startGame('experimento-3d-terreno')">Experimento 3D Terreno</button>
       <button style="background:#5d4037" onclick="startGame('ahorcado')">Ahorcado espacial</button>
       <button style="background:#00bcd4" onclick="startGame('quiz')">Quiz de Conocimiento</button>
       <button style="background:#fbc02d;color:#d32f2f" onclick="startGame('4enraya')">4 en Raya 🔴🟡</button>
@@ -115,9 +120,15 @@
       <button style="background:#8d6e63" onclick="startGame('canaveras')">Cañas verás 🌾</button>
       <button style="background:#ffe082;color:#d84315" onclick="startGame('alcala-canas-tapas')">Alcalá: Cañas y Tapas 🍢</button>
       <button style="background:#388e3c" onclick="startGame('sonseca-camino')">Sonseca: Andando se hace el camino 🧵</button>
-      <button style="background:#ff4081" onclick="showGlobalScores()">Marcadores ⭐</button>
       <button style="background:#ff5722" onclick="startGame('juego-habilidad')">Esquiva Obstáculos 🚀</button>
       <button style="background:#795548" onclick="startGame('moto-desierto')">Moto en el Desierto 🏍️</button>
+      <button style="background:#4bace1" onclick="startGame('flappy')">Flappy Bird 🐦</button>
+      <button style="background:#0288d1" onclick="startGame('atrapa-bola')">Atrapa Bolas 🏀</button>
+    </div>
+    
+    <!-- He eliminado los juegos 3D no funcionales del menú principal -->
+    <div style="max-width:820px;margin:20px auto 10px;font-size:13px;opacity:0.7;text-align:center;">
+      * Los juegos 3D experimentales se han retirado temporalmente para mejorar la experiencia
     </div>
   </div>
 
@@ -210,7 +221,9 @@
         ['Experimento 3D','exp3dHigh','exp3dHighName'],
         ['Terreno 3D','terreno3dHigh','terreno3dHighName'],
         ['Ahorcado','ahorcadoHigh','ahorcadoHighName'],
-        ['Quiz','quizHigh','quizHighName']
+        ['Quiz','quizHigh','quizHighName'],
+        ['Flappy','flappyHighScore','flappyHighScoreName'],
+        ['Atrapa Bola','atrapaBallHigh','atrapaBallHighName']
       ];
       const wrap=document.getElementById('globalScoresContent');
       wrap.innerHTML=map.map(([label,key,keyName])=>{
@@ -255,24 +268,32 @@
         'alcala-canas-tapas':'script-alcala-canas-tapas.js',
         'sonseca-camino':'script-sonseca-camino.js',
         'juego-habilidad':'script-juego-habilidad.js',
-        'moto-desierto':'script-moto-desierto.js'
+        'moto-desierto':'script-moto-desierto.js',
+        'flappy':'script-flappy.js',
+        'atrapa-bola':'script-atrapa-bola.js'
       };
       loadScript(map[game]);
     }
 
     function loadScript(src){
       currentGameSrc=src;
-      if(currentCleanup){ try{ currentCleanup(); }catch(e){} currentCleanup=null; }
+      if(currentCleanup){ try{ currentCleanup(); }catch(e){console.error('Error cleaning up:', e);} currentCleanup=null; }
       if(currentScript){ document.body.removeChild(currentScript); currentScript=null; }
       const canvas=document.getElementById('gameCanvas');
       const ctx=canvas.getContext('2d');
       ctx.clearRect(0,0,canvas.width,canvas.height);
+      console.log('Loading game script:', src);
       const s=document.createElement('script');
       s.src=src+'?v='+Date.now();
       s.onload=()=>{
+        console.log('Game script loaded:', src);
         if(typeof window.registerGame==='function'){
-          currentCleanup=window.registerGame();
-          canvas.focus();
+          try {
+            currentCleanup=window.registerGame();
+            canvas.focus();
+          } catch(e) {
+            console.error('Error initializing game:', e);
+          }
         } else {
           console.error('Falta registerGame en',src);
         }

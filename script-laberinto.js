@@ -5,6 +5,7 @@ canvas.width=800; canvas.height=520; // margen para barra
 const playerName=localStorage.getItem('playerName')||'';
 const cell=30; const cols=Math.floor(canvas.width/cell); const rows=Math.floor(canvas.height/cell);
 let showIntro = true; // Mostrar pantalla de intro
+let gameOver = false; // Variable para controlar el estado de Game Over
 
 // Colores mejorados
 const COLORS = {
@@ -27,6 +28,8 @@ const COLORS = {
 let grid=[]; for(let r=0;r<rows;r++){ let row=[]; for(let c=0;c<cols;c++){ row.push(Math.random()<0.22?1:0);} grid.push(row);} // start-end claros
 for(let r=0;r<rows;r++){ grid[r][0]=0; grid[r][cols-1]=0; }
 const player={c:1,r:1,steps:0, trail:[]}; grid[player.r][player.c]=0; const objetivoSecuencia=['🔴','🟢','🔵','🟡']; let idx=0; let items=[]; let bestSteps=Number(localStorage.getItem('laberintoBest')||0); let bestName=localStorage.getItem('laberintoBestName')||'-';
+let gameOverMessage = ""; // Mensaje para pantalla de Game Over
+
 function placeItems(){ items=[]; for(let i=0;i<objetivoSecuencia.length;i++){ let placed=false; while(!placed){ const c=2+Math.floor(Math.random()*(cols-4)); const r=2+Math.floor(Math.random()*(rows-4)); if(grid[r][c]===0 && !items.find(it=>it.c===c&&it.r===r)){ items.push({c,r,icon:objetivoSecuencia[i]}); placed=true; } } } }
 placeItems();
 
@@ -37,6 +40,18 @@ function addToTrail(c, r) {
   if (player.trail.length > 20) {
     player.trail.shift();
   }
+}
+
+// Función para reiniciar el juego
+function resetGame() {
+  player.c = 1;
+  player.r = 1;
+  player.steps = 0;
+  player.trail = [];
+  idx = 0;
+  gameOver = false;
+  gameOverMessage = "";
+  placeItems();
 }
 
 function draw(){
@@ -81,6 +96,12 @@ function draw(){
 	// Si estamos en la pantalla de intro, mostrarla y salir
 	if (showIntro) {
 	  drawIntro();
+	  return;
+	}
+	
+	// Si es Game Over, mostrar pantalla de Game Over
+	if (gameOver) {
+	  drawGameOver();
 	  return;
 	}
 	
@@ -210,7 +231,8 @@ function drawIntro() {
   if(window.GameUI) {
     const lines = [
       "Guía el círculo naranja a través del laberinto.",
-      "Recoge los elementos de colores en el orden indicado.",
+      "Recoge los elementos de colores EN EL ORDEN indicado.",
+      "Si recoges un color incorrecto, pierdes (Game Over).",
       "Usa las flechas ←↑→↓ para moverte.",
       "Trata de completar el laberinto con el mínimo de pasos.",
       "Pulsa cualquier tecla para empezar."
@@ -222,7 +244,7 @@ function drawIntro() {
   } else {
     // Versión manual del panel si GameUI no está disponible
     const w = canvas.width - 140;
-    const h = 250;
+    const h = 280;
     const x = 70;
     const y = 120;
     
@@ -249,11 +271,58 @@ function drawIntro() {
     ctx.fillStyle = '#ffffff';
     ctx.font = '15px Arial';
     ctx.fillText('Guía el círculo naranja a través del laberinto.', canvas.width/2, y + 80);
-    ctx.fillText('Recoge los elementos de colores en el orden indicado.', canvas.width/2, y + 110);
-    ctx.fillText('Usa las flechas ←↑→↓ para moverte.', canvas.width/2, y + 140);
-    ctx.fillText('Trata de completar el laberinto con el mínimo de pasos.', canvas.width/2, y + 170);
-    ctx.fillText('Pulsa cualquier tecla para empezar.', canvas.width/2, y + 210);
+    ctx.fillText('Recoge los elementos de colores EN EL ORDEN indicado.', canvas.width/2, y + 110);
+    ctx.fillText('Si recoges un color incorrecto, pierdes (Game Over).', canvas.width/2, y + 140);
+    ctx.fillText('Usa las flechas ←↑→↓ para moverte.', canvas.width/2, y + 170);
+    ctx.fillText('Trata de completar el laberinto con el mínimo de pasos.', canvas.width/2, y + 200);
+    ctx.fillText('Pulsa cualquier tecla para empezar.', canvas.width/2, y + 240);
   }
+}
+
+// Función para dibujar la pantalla de Game Over
+function drawGameOver() {
+  // Panel semi-transparente para Game Over
+  const w = canvas.width - 140;
+  const h = 200;
+  const x = 70;
+  const y = 150;
+  
+  // Fondo oscuro semitransparente
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+  ctx.fillRect(0, 50, canvas.width, canvas.height - 50);
+  
+  // Panel de Game Over
+  ctx.fillStyle = 'rgba(180, 0, 0, 0.85)';
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 16);
+  ctx.fill();
+  
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+  
+  // Texto de Game Over
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 32px Arial';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0,0,0,0.5)';
+  ctx.shadowBlur = 8;
+  ctx.fillText('¡GAME OVER!', canvas.width/2, y + 50);
+  
+  // Mensaje de error
+  ctx.font = '18px Arial';
+  ctx.fillText(gameOverMessage, canvas.width/2, y + 90);
+  
+  // Indicación para reiniciar
+  ctx.font = '16px Arial';
+  ctx.shadowBlur = 0;
+  
+  // Efecto pulsante en el texto de reinicio
+  const pulse = Math.sin(Date.now() / 300) * 0.1 + 0.9;
+  ctx.globalAlpha = pulse;
+  ctx.fillStyle = '#ffffff';
+  ctx.fillText('Pulsa ESPACIO para reiniciar', canvas.width/2, y + 150);
+  ctx.globalAlpha = 1;
 }
 
 function canMove(c,r){ return c>=0&&c<cols&&r>=0&&r<rows&&grid[r][c]===0; }
@@ -262,6 +331,14 @@ function key(e){
   // Si estamos en la pantalla de intro, iniciar el juego con cualquier tecla
   if (showIntro) {
     showIntro = false;
+    return;
+  }
+  
+  // Si es Game Over, reiniciar con la tecla espacio
+  if (gameOver) {
+    if (e.key === ' ' || e.code === 'Space') {
+      resetGame();
+    }
     return;
   }
 
@@ -285,23 +362,30 @@ function key(e){
     addToTrail(nc, nr);
     
     const item = items.find(i=>i.c===player.c&&i.r===player.r);
-    if(item && item.icon===objetivoSecuencia[idx]){
-      idx++;
-      items=items.filter(it=>it!==item);
-      if(idx===objetivoSecuencia.length){
-        if(bestSteps===0 || player.steps<bestSteps){
-          bestSteps=player.steps;
-          bestName=playerName||'-';
-          localStorage.setItem('laberintoBest', String(bestSteps));
-          localStorage.setItem('laberintoBestName', bestName);
+    if(item){
+      // Verificar si es el color correcto en la secuencia
+      if(item.icon === objetivoSecuencia[idx]){
+        idx++;
+        items=items.filter(it=>it!==item);
+        
+        // Si completamos la secuencia, finalizar el nivel
+        if(idx === objetivoSecuencia.length){
+          if(bestSteps === 0 || player.steps < bestSteps){
+            bestSteps = player.steps;
+            bestName = playerName || '-';
+            localStorage.setItem('laberintoBest', String(bestSteps));
+            localStorage.setItem('laberintoBestName', bestName);
+          }
+          setTimeout(() => {
+            alert('¡Laberinto completado! Pasos: ' + player.steps);
+            resetGame();
+          }, 50);
         }
-        setTimeout(()=>{
-          alert('¡Laberinto completado! Pasos: '+player.steps);
-          idx=0;
-          player.steps=0;
-          player.trail = [];  // Limpiar rastro
-          placeItems();
-        },50);
+      } else {
+        // Game Over si se recoge un color incorrecto
+        gameOver = true;
+        gameOverMessage = `¡Color incorrecto! Recogiste ${item.icon} cuando debías recoger ${objetivoSecuencia[idx]}`;
+        // También podríamos añadir un efecto de sonido o vibración aquí
       }
     }
   }
