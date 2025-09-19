@@ -143,33 +143,31 @@ function drawPowerups(){
 
 // Dibuja todo
 function draw() {
-	ctx.clearRect(0, 0, canvas.width, canvas.height);
-	drawBackground();
-	drawBlocks();
-	drawPaddle();
-	drawBall();
-	drawPowerups();
-	// Dibuja puntuación
-	ctx.save();
-	ctx.font = 'bold 24px Arial';
-	ctx.fillStyle = '#ff9800';
-	ctx.textAlign = 'left';
-	let recordName = localStorage.getItem('arkanoidHighScoreName')||'';
-	ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore + (recordName? (' ('+recordName+')') : ''), 20, 30);
-	ctx.restore();
-	if(showIntro){
-		ctx.save();
-		ctx.globalAlpha=0.9; ctx.fillStyle='#fff';
-		ctx.fillRect(40,50,canvas.width-80,180);
-		ctx.globalAlpha=1; ctx.fillStyle='#0d47a1'; ctx.font='bold 26px Arial'; ctx.textAlign='center';
-		ctx.fillText('Arkanoid', canvas.width/2,85);
-		ctx.font='14px Arial'; ctx.fillStyle='#333';
-		ctx.fillText('Mueve la barra con ← → y rebota la bola para romper los bloques.', canvas.width/2,115);
-		ctx.fillText('Power-ups aleatorios: barra más grande o bola más lenta.', canvas.width/2,138);
-		ctx.fillText('Consejo: juega sesiones de hasta 10 minutos y descansa.', canvas.width/2,161);
-		ctx.fillText('Pulsa cualquier tecla para comenzar.', canvas.width/2,184);
-		ctx.restore();
-	}
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawBackground();
+    drawBlocks();
+    drawPaddle();
+    drawBall();
+    drawPowerups();
+    // Dibuja puntuación
+    ctx.save();
+    ctx.font = 'bold 24px Arial';
+    ctx.fillStyle = '#ff9800';
+    ctx.textAlign = 'left';
+    let recordName = localStorage.getItem('arkanoidHighScoreName')||'';
+    ctx.fillText('Puntos: ' + score + '  Récord: ' + highScore + (recordName? (' ('+recordName+')') : ''), 20, 30);
+    ctx.restore();
+
+    // Panel de introducción usando la utilidad drawInstructionPanel
+    if(showIntro){
+        const lines = [
+            'Mueve la barra con ← → y rebota la bola para romper los bloques.',
+            'Power-ups: barra más grande (⇔) o bola más lenta (🐢).',
+            'Consejo: juega sesiones de hasta 10 minutos y descansa.',
+            'Pulsa cualquier tecla para comenzar.'
+        ];
+        window.GameUI.drawInstructionPanel(ctx, 'Arkanoid', lines);
+    }
 }
 
 // Mueve barra
