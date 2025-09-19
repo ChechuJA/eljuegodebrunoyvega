@@ -94,20 +94,20 @@ ctx.fillStyle='#fff'; ctx.font='bold '+Math.max(16, w*0.28)+'px Arial'; ctx.text
 ctx.restore();
 }
 function drawCars(){
-// Jugador
-drawCarBase(laneX(player.lane)-player.w/2, player.y, player.w, player.h, player.color,true);
-// Obstáculos
-obstacles.forEach(o=> drawCarBase(laneX(o.lane)-o.w/2, o.y, o.w, o.h, o.color,false));
+	// Jugador
+	drawCarBase(laneX(player.lane)-player.w/2, player.y, player.w, player.h, player.color,true);
+	// Obstáculos
+	obstacles.forEach(o=> drawCarBase(laneX(o.lane)-o.w/2, o.y, o.w, o.h, o.color,false));
 }
 // Utilidad para oscurecer o aclarar color hex
 function shade(hex,percent){
-if(!/^#/.test(hex)) return hex;
-let num=parseInt(hex.slice(1),16);
-let r=(num>>16)&255,g=(num>>8)&255,b=num&255;
-r=Math.min(255,Math.max(0, r + 255*percent/100));
-g=Math.min(255,Math.max(0, g + 255*percent/100));
-b=Math.min(255,Math.max(0, b + 255*percent/100));
-return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
+	if(!/^#/.test(hex)) return hex;
+	let num=parseInt(hex.slice(1),16);
+	let r=(num>>16)&255,g=(num>>8)&255,b=num&255;
+	r=Math.min(255,Math.max(0, r + 255*percent/100));
+	g=Math.min(255,Math.max(0, g + 255*percent/100));
+	b=Math.min(255,Math.max(0, b + 255*percent/100));
+	return '#'+((1<<24)+(r<<16)+(g<<8)+b).toString(16).slice(1);
 }
 function drawHUD(){ ctx.fillStyle='#0d47a1'; ctx.fillRect(0,0,canvas.width,50); ctx.fillStyle='#fff'; ctx.font='16px Arial'; ctx.textAlign='left'; ctx.fillText('Distancia: '+Math.floor(distance), 14,30); ctx.fillText('Velocidad: '+speed.toFixed(1), 180,30); ctx.textAlign='right'; ctx.fillText('Récord: '+high+(highName?(' ('+highName+')'):''), canvas.width-14,30); }
 function drawIntro(){ 
@@ -123,30 +123,9 @@ function drawIntro(){
 function drawCrash(){ ctx.save(); ctx.globalAlpha=0.85; ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalAlpha=1; ctx.fillStyle='#ffeb3b'; ctx.font='bold 30px Arial'; ctx.textAlign='center'; ctx.fillText('¡Choque!', canvas.width/2,canvas.height/2-40); ctx.font='20px Arial'; ctx.fillText('Distancia: '+Math.floor(distance), canvas.width/2, canvas.height/2); ctx.fillText('Pulsa R para reiniciar', canvas.width/2, canvas.height/2+40); ctx.restore(); }
 function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawRoad(); drawCars(); drawHUD(); if(showIntro) drawIntro(); if(crashed) drawCrash(); }
 function loop(t){ if(!lastT) lastT=t; const dt=t-lastT; lastT=t; update(dt); draw(); af=requestAnimationFrame(loop); }
-function key(e){ 
-  // Verifica si estamos en la introducción y activa el juego con cualquier tecla
-  if(showIntro){ 
-    showIntro=false; 
-    crashed=false;
-    lastT=0;
-    return; 
-  } 
-  // Reinicia el juego si chocamos y presionamos R
-  if(crashed && e.key.toLowerCase()==='r'){ 
-    distance=0; 
-    speed=baseSpeed; 
-    obstacles=[]; 
-    crashed=false; 
-    player.lane=1; 
-    return; 
-  }
-  // Manejo del movimiento con flechas 
-  if(e.key==='ArrowLeft' && player.lane>0) player.lane--; 
-  else if(e.key==='ArrowRight' && player.lane<laneCount-1) player.lane++; 
-}
-// Aseguramos que el canvas tenga foco para capturar eventos de teclado
-canvas.tabIndex = 0;
-canvas.focus();
+function key(e){ if(showIntro){ showIntro=false; return; } if(crashed && e.key.toLowerCase()==='r'){ // reset
+ distance=0; speed=baseSpeed; obstacles=[]; crashed=false; player.lane=1; return; }
+ if(e.key==='ArrowLeft' && player.lane>0) player.lane--; else if(e.key==='ArrowRight' && player.lane<laneCount-1) player.lane++; }
 window.addEventListener('keydown',key); requestAnimationFrame(loop);
 return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',key); };
 }
