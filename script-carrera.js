@@ -62,13 +62,58 @@ function drawCarBase(x,y,w,h,color,isPlayer){
 ctx.save(); ctx.translate(x,y);
 // Sombra más marcada
 ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.beginPath(); ctx.ellipse(w/2,h/2,w*0.42,h*0.52,0,0,Math.PI*2); ctx.fill();
-// Ruedas más grandes y agresivas
-const wheelW=w*0.32, wheelH=h*0.16;
-ctx.fillStyle='#111';
-ctx.fillRect(-wheelW*0.5, h*0.12, wheelW, wheelH);
-ctx.fillRect(w-wheelW*0.5, h*0.12, wheelW, wheelH);
-ctx.fillRect(-wheelW*0.5, h*0.78, wheelW, wheelH);
-ctx.fillRect(w-wheelW*0.5, h*0.78, wheelW, wheelH);
+
+// Ruedas más grandes, visibles y con detalles
+const wheelW=w*0.36, wheelH=h*0.18; // Ruedas más grandes
+// Neumáticos con detalles
+for (let i = 0; i < 4; i++) {
+    const isLeft = (i === 0 || i === 2);
+    const isTop = (i === 0 || i === 1);
+    const wheelX = isLeft ? -wheelW*0.5 : w-wheelW*0.5;
+    const wheelY = isTop ? h*0.12 : h*0.78;
+    
+    // Sombra de la rueda
+    ctx.fillStyle='rgba(0,0,0,0.3)';
+    ctx.fillRect(wheelX-2, wheelY+2, wheelW, wheelH);
+    
+    // Neumático exterior negro
+    ctx.fillStyle='#111';
+    ctx.fillRect(wheelX, wheelY, wheelW, wheelH);
+    
+    // Llanta brillante con degradado metálico
+    const rimW = wheelW * 0.7;
+    const rimH = wheelH * 0.7;
+    const rimX = wheelX + (wheelW-rimW)/2;
+    const rimY = wheelY + (wheelH-rimH)/2;
+    
+    // Degradado para la llanta
+    const rimGrad = ctx.createRadialGradient(
+        rimX + rimW/2, rimY + rimH/2, 0,
+        rimX + rimW/2, rimY + rimH/2, rimW/2
+    );
+    rimGrad.addColorStop(0, '#f5f5f5');
+    rimGrad.addColorStop(0.7, '#bdbdbd');
+    rimGrad.addColorStop(1, '#9e9e9e');
+    
+    ctx.fillStyle = rimGrad;
+    ctx.beginPath();
+    ctx.ellipse(rimX + rimW/2, rimY + rimH/2, rimW/2, rimH/2, 0, 0, Math.PI*2);
+    ctx.fill();
+    
+    // Borde plateado de la llanta
+    ctx.strokeStyle = '#e0e0e0';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(rimX + rimW/2, rimY + rimH/2, rimW/2, rimH/2, 0, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Centro de la llanta
+    ctx.fillStyle = isPlayer ? '#d50000' : '#424242';
+    ctx.beginPath();
+    ctx.arc(rimX + rimW/2, rimY + rimH/2, rimW/6, 0, Math.PI*2);
+    ctx.fill();
+}
+
 // Cuerpo principal más estilizado y con degradado más contrastado
 let grad=ctx.createLinearGradient(0,0,0,h);
 grad.addColorStop(0, color);

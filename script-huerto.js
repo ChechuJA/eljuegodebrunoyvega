@@ -97,38 +97,105 @@ function draw(){
  for(let c of campos) drawParcel(c);
  // Instrucciones ampliadas
  if(showInstructions){
-	 const w=canvas.width-100, h=280, x=50, y=90;
-	 if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,18); } else { ctx.fillStyle='rgba(255,255,255,0.95)'; ctx.fillRect(x,y,w,h);} 
-	 ctx.save();
-	 ctx.fillStyle='#2e7d32'; ctx.font='bold 22px Arial'; ctx.textAlign='center';
-	 ctx.fillText('Cómo se juega', canvas.width/2,y+32);
-	 ctx.fillStyle='#333'; ctx.font='14px Arial'; ctx.textAlign='left';
-	 const leftX = x+24; const baseY = y+58; const lh=20;
-	 const lines=[
-		 '1) Objetivo: consigue el máximo dinero en 180 segundos.',
-		 '2) Haz click en una parcela vacía para PLANTAR (aparece una semilla).',
-		 '3) Cuando está CRECIENDO, haz click para REGAR. El agua (barra azul) baja cada segundo.',
-		 '   - Con agua alta crece más rápido. Sin agua (0) se MARCHITA.',
-		 '4) A veces salen PLAGAS (🐛). Si suben mucho, arruinan la planta.',
-		 '5) Cuando está LISTA (amarilla), haz click para COSECHAR (+50 monedas).',
-		 '6) Si está MARCHITA o con PLAGAS, haz click para LIMPIAR y volver a plantar.',
-		 'Consejo: alterna varias parcelas. Pulsa “?” o la tecla I para ver de nuevo esta ayuda.'
-	 ];
-	 lines.forEach((ln,i)=> ctx.fillText(ln, leftX, baseY + i*lh));
-	 // Leyenda visual a la derecha
-	 const lx = x + w - 260, ly = y + 66;
-	 ctx.font='bold 14px Arial'; ctx.fillStyle='#2e7d32'; ctx.fillText('Leyenda', lx, ly-14);
-	 // Vacío
-	 ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly, 26,26); ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(lx+3, ly+3, 20,20); ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly, 26,26); ctx.fillStyle='#333'; ctx.fillText('Vacío', lx+36, ly+18);
-	 // Creciendo
-	 const ly2=ly+36; ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly2, 26,26); ctx.fillStyle='#2e7d32'; ctx.fillRect(lx+3, ly2+3, 14,20); ctx.fillStyle='#1565c0'; ctx.fillRect(lx+3, ly2+22, 16,4); ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly2, 26,26); ctx.fillStyle='#333'; ctx.fillText('Creciendo (agua/avance)', lx+36, ly2+18);
-	 // Lista
-	 const ly3=ly2+36; ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly3, 26,26); ctx.fillStyle='#ffeb3b'; ctx.fillRect(lx+3, ly3+3, 20,20); ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly3, 26,26); ctx.fillStyle='#333'; ctx.fillText('Lista (cosecha +50)', lx+36, ly3+18);
-	 // Marchita
-	 const ly4=ly3+36; ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly4, 26,26); ctx.fillStyle='#9e9e9e'; ctx.fillRect(lx+3, ly4+3, 20,20); ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly4, 26,26); ctx.fillStyle='#333'; ctx.fillText('Marchita (limpiar)', lx+36, ly4+18);
-	 // Plagas
-	 const ly5=ly4+36; ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly5, 26,26); ctx.fillStyle='#a1887f'; ctx.fillRect(lx+3, ly5+3, 20,20); ctx.fillStyle='#311b92'; ctx.font='16px Arial'; ctx.fillText('🐛', lx+13, ly5+20); ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly5, 26,26); ctx.fillStyle='#333'; ctx.font='14px Arial'; ctx.fillText('Plagas (riesgo)', lx+36, ly5+18);
-	 ctx.restore();
+   // Panel principal más grande y con mejor estructura
+   const w=canvas.width-100, h=320, x=50, y=90;
+   
+   // Fondo verde para mejor legibilidad con texto negro
+   if(window.GameUI){ 
+     GameUI.glassPanel(ctx,x,y,w,h,18,'rgba(76,175,80,0.95)'); // Panel verde semi-transparente
+   } else { 
+     ctx.fillStyle='rgba(76,175,80,0.95)'; // Verde #4caf50 con alta opacidad
+     ctx.fillRect(x,y,w,h);
+     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
+     ctx.lineWidth = 2;
+     ctx.strokeRect(x,y,w,h);
+   } 
+   
+   ctx.save();
+   // Título más destacado
+   ctx.fillStyle='#003300'; 
+   ctx.font='bold 24px Arial'; 
+   ctx.textAlign='center';
+   ctx.fillText('Cómo se juega', canvas.width/2, y+36);
+   
+   // Separar instrucciones y leyenda en dos columnas
+   const leftX = x+50; 
+   const baseY = y+90; 
+   const lh=35; // Mayor espacio entre líneas
+   
+   // Texto de instrucciones en color negro para mejor contraste con fondo verde
+   ctx.fillStyle='#000000'; 
+   ctx.font='15px Arial'; 
+   ctx.textAlign='left';
+   
+   const lines=[
+     '1) Objetivo: consigue el máximo dinero en 180 segundos.',
+     '2) Haz click en una parcela vacía para PLANTAR.',
+     '3) Cuando está CRECIENDO, haz click para REGAR.',
+     '   - La barra azul muestra el nivel de agua.',
+     '   - Sin agua (0) la planta se MARCHITA.',
+     '4) A veces salen PLAGAS (🐛) que arruinan la planta.',
+     '5) Cuando está LISTA (amarilla), haz click para COSECHAR.',
+     '6) Parcelas MARCHITAS o con PLAGAS: click para LIMPIAR.',
+     '',
+     'Consejo: alterna varias parcelas para maximizar producción.'
+   ];
+   
+   lines.forEach((ln,i)=> ctx.fillText(ln, leftX, baseY + i*lh));
+   
+   // Leyenda visual más grande y separada
+   const lx = x + w - 240, ly = y + 70;
+   ctx.font='bold 16px Arial'; 
+   ctx.fillStyle='#003300'; 
+   ctx.fillText('Leyenda', lx, ly-14);
+   
+   // Mayor espacio entre elementos
+   const itemHeight = 32;
+   const spacing = 40;
+   
+   // Vacío
+   ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly, 26, 26); 
+   ctx.fillStyle='rgba(255,255,255,0.25)'; ctx.fillRect(lx+3, ly+3, 20, 20); 
+   ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly, 26, 26); 
+   ctx.fillStyle='#000000'; ctx.fillText('Vacío', lx+36, ly+18);
+   
+   // Creciendo
+   const ly2=ly+spacing; 
+   ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly2, 26, 26); 
+   ctx.fillStyle='#2e7d32'; ctx.fillRect(lx+3, ly2+3, 14, 20); 
+   ctx.fillStyle='#1565c0'; ctx.fillRect(lx+3, ly2+22, 16, 4); 
+   ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly2, 26, 26); 
+   ctx.fillStyle='#000000'; ctx.fillText('Creciendo', lx+36, ly2+18);
+   
+   // Lista
+   const ly3=ly2+spacing; 
+   ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly3, 26, 26); 
+   ctx.fillStyle='#ffeb3b'; ctx.fillRect(lx+3, ly3+3, 20, 20); 
+   ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly3, 26, 26); 
+   ctx.fillStyle='#000000'; ctx.fillText('Lista (+50)', lx+36, ly3+18);
+   
+   // Marchita
+   const ly4=ly3+spacing; 
+   ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly4, 26, 26); 
+   ctx.fillStyle='#9e9e9e'; ctx.fillRect(lx+3, ly4+3, 20, 20); 
+   ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly4, 26, 26); 
+   ctx.fillStyle='#000000'; ctx.fillText('Marchita', lx+36, ly4+18);
+   
+   // Plagas
+   const ly5=ly4+spacing; 
+   ctx.fillStyle='#6d4c41'; ctx.fillRect(lx, ly5, 26, 26); 
+   ctx.fillStyle='#a1887f'; ctx.fillRect(lx+3, ly5+3, 20, 20); 
+   ctx.fillStyle='#311b92'; ctx.font='16px Arial'; ctx.fillText('🐛', lx+13, ly5+20); 
+   ctx.strokeStyle='#3e2723'; ctx.strokeRect(lx, ly5, 26, 26); 
+   ctx.fillStyle='#000000'; ctx.font='15px Arial'; ctx.fillText('Plagas', lx+36, ly5+18);
+   
+   // Instrucción para cerrar
+   ctx.fillStyle='#003300';
+   ctx.font='16px Arial'; 
+   ctx.textAlign='center';
+   ctx.fillText('Pulsa "?" o la tecla I para ver esta ayuda. Click para jugar.', canvas.width/2, y+h-24);
+   
+   ctx.restore();
  }
  if(ended){ const w=canvas.width-140, h=150, x=70, y=140; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.fillStyle='rgba(0,0,0,0.75)'; ctx.fillRect(x,y,w,h);} ctx.save(); ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillStyle='#2e7d32'; ctx.fillText('Tiempo agotado', canvas.width/2,y+34); ctx.fillStyle='#333'; ctx.font='18px Arial'; ctx.fillText('Dinero: '+dinero, canvas.width/2,y+64); if(mensajeRecord){ ctx.fillStyle='#ff8f00'; ctx.fillText(mensajeRecord, canvas.width/2,y+92);} ctx.fillStyle='#555'; ctx.font='14px Arial'; ctx.fillText('Click para reiniciar', canvas.width/2,y+118); ctx.restore(); }
 }

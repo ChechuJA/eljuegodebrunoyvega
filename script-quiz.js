@@ -1,11 +1,22 @@
 // Quiz de Conocimiento - Categorías y niveles
 function registerGame(){
   const canvas = document.getElementById('gameCanvas');
-  return initQuiz(canvas);
+  if (!canvas) {
+    console.error("Canvas no encontrado para Quiz");
+    return function cleanup() {};
+  }
+  
+  // Asegurar que el canvas tiene el tamaño correcto
+  canvas.width = 800;
+  canvas.height = 500;
+  
+  const cleanup = [];
+  return initQuiz(canvas, cleanup);
 }
+
 function initQuiz(canvas, cleanupBag) {
   const ctx = canvas.getContext('2d');
-  const ui = window.GameUI;
+  const ui = window.GameUI || null;
   let state = 'categories'; // categories, playing, complete, gameover
   let category = null;
   let level = 1;
@@ -19,6 +30,7 @@ function initQuiz(canvas, cleanupBag) {
   let playerName = localStorage.getItem('playerName') || 'Jugador';
   let high = +(localStorage.getItem('quizHigh') || 0);
   let highName = localStorage.getItem('quizHighName') || '';
+  let animationFrame = null;
   
   // Base de datos de preguntas por categoría
   const questions = {
@@ -205,11 +217,31 @@ function initQuiz(canvas, cleanupBag) {
   // Dibujar interfaz
   function draw() {
     // Fondo y barra superior
-    ui.softBg(ctx, canvas, '#00695c');
-    ui.gradientBar(ctx, canvas, {from: '#00897b', to: '#00695c'});
+    if (ui && typeof ui.softBg === 'function') {
+      ui.softBg(ctx, canvas.width, canvas.height, ['#00695c', '#004d40']);
+      ui.gradientBar(ctx, canvas.width, 70, '#00897b', '#00695c');
+    } else {
+      // Fallback si GameUI no está disponible
+      const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+      bgGradient.addColorStop(0, '#00695c');
+      bgGradient.addColorStop(1, '#004d40');
+      ctx.fillStyle = bgGradient;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      // Barra superior
+      const headerGrad = ctx.createLinearGradient(0, 0, 0, 70);
+      headerGrad.addColorStop(0, '#00897b');
+      headerGrad.addColorStop(1, '#00695c');
+      ctx.fillStyle = headerGrad;
+      ctx.fillRect(0, 0, canvas.width, 70);
+    }
     
     // Título
-    ui.shadowText(ctx, 'Quiz de Conocimiento', 20, 34, {size: 24});
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 24px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText('Quiz de Conocimiento', canvas.width/2, 34);
+    ctx.textAlign = 'left';
     
     // Info general
     ctx.fillStyle = '#fff';
@@ -232,7 +264,16 @@ function initQuiz(canvas, cleanupBag) {
   
   // Dibujar selección de categorías
   function drawCategories() {
-    ui.glassPanel(ctx, canvas.width/2 - 300, 120, 600, 300);
+    if (ui && typeof ui.glassPanel === 'function') {
+      ui.glassPanel(ctx, canvas.width/2 - 300, 120, 600, 300);
+    } else {
+      // Fallback más oscuro para el panel de vidrio
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(canvas.width/2 - 300, 120, 600, 300);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(canvas.width/2 - 300, 120, 600, 300);
+    }
     
     ctx.fillStyle = '#fff';
     ctx.font = '24px Arial';
@@ -340,7 +381,15 @@ function initQuiz(canvas, cleanupBag) {
     ctx.textAlign = 'left';
     
     // Pregunta
-    ui.glassPanel(ctx, 100, 240, canvas.width - 200, 70);
+    if (ui && typeof ui.glassPanel === 'function') {
+      ui.glassPanel(ctx, 100, 240, canvas.width - 200, 70);
+    } else {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(100, 240, canvas.width - 200, 70);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.strokeRect(100, 240, canvas.width - 200, 70);
+    }
+    
     ctx.fillStyle = '#fff';
     ctx.font = '18px Arial';
     ctx.textAlign = 'center';
@@ -402,7 +451,14 @@ function initQuiz(canvas, cleanupBag) {
   
   // Dibujar pantalla de juego completado
   function drawComplete() {
-    ui.glassPanel(ctx, canvas.width/2 - 200, 170, 400, 200);
+    if (ui && typeof ui.glassPanel === 'function') {
+      ui.glassPanel(ctx, canvas.width/2 - 200, 170, 400, 200);
+    } else {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(canvas.width/2 - 200, 170, 400, 200);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.strokeRect(canvas.width/2 - 200, 170, 400, 200);
+    }
     
     ctx.fillStyle = '#fff';
     ctx.font = '24px Arial';
@@ -427,7 +483,14 @@ function initQuiz(canvas, cleanupBag) {
   
   // Dibujar pantalla de juego perdido
   function drawGameOver() {
-    ui.glassPanel(ctx, canvas.width/2 - 200, 170, 400, 220);
+    if (ui && typeof ui.glassPanel === 'function') {
+      ui.glassPanel(ctx, canvas.width/2 - 200, 170, 400, 220);
+    } else {
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(canvas.width/2 - 200, 170, 400, 220);
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.strokeRect(canvas.width/2 - 200, 170, 400, 220);
+    }
     
     ctx.fillStyle = '#fff';
     ctx.font = '24px Arial';
@@ -505,27 +568,23 @@ function initQuiz(canvas, cleanupBag) {
     window.removeEventListener('keydown', keyListener);
     canvas.removeEventListener('click', clickListener);
     clearInterval(timer);
+    if (animationFrame) cancelAnimationFrame(animationFrame);
   });
-  
-  // Ajustar dinámicamente el tamaño del canvas
-  function resizeCanvas() {
-    const dpr = window.devicePixelRatio || 1;
-    const displayWidth = canvas.clientWidth;
-    const displayHeight = Math.round(displayWidth * 0.625); // Mantener proporción 800x500
-    canvas.style.height = displayHeight + 'px';
-    if (canvas.width !== displayWidth * dpr || canvas.height !== displayHeight * dpr) {
-      canvas.width = displayWidth * dpr;
-      canvas.height = displayHeight * dpr;
-    }
-  }
-  window.addEventListener('resize', resizeCanvas);
-  resizeCanvas();
   
   // Loop principal
   function loop() {
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
-  loop();
+  animationFrame = requestAnimationFrame(loop);
+  
+  // Función de limpieza
+  return function cleanup() {
+    window.removeEventListener('keydown', keyListener);
+    canvas.removeEventListener('click', clickListener);
+    clearInterval(timer);
+    if (animationFrame) cancelAnimationFrame(animationFrame);
+  };
 }
-window.registerGame=registerGame;
+
+window.registerGame = registerGame;

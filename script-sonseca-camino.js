@@ -141,15 +141,12 @@
     requestAnimationFrame(loop);
   }
 
-  window.registerGame = function(canvas) {
-    const cleanup = (function(){
-      start(canvas);
-      return function cleanup() {
-        document.removeEventListener('keydown', keydown);
-        document.removeEventListener('keyup', keyup);
-      };
-    })();
+  window.registerGame = function() {
+    const canvas = document.getElementById('gameCanvas');
     start(canvas);
-    return cleanup;
+    return function cleanup() {
+      document.removeEventListener('keydown', keydown);
+      document.removeEventListener('keyup', keyup);
+    };
   };
 })();
