@@ -1,598 +1,491 @@
-function registerGame(){
+function registerGame() {
   const canvas = document.getElementById('gameCanvas');
+
+  if (!canvas || !canvas.getContext) {
+    console.error("Canvas no disponible para Atrapa la Bola");
+    return function cleanup() {};
+  }
+
+  canvas.width = 800;
+  canvas.height = 500;
+
   return initAtrapa(canvas);
 }
 
 function initAtrapa(canvas) {
   const ctx = canvas.getContext('2d');
   let animationFrame = null;
-  canvas.width = 800;
-  canvas.height = 500;
-  
-  // Configuración del juego
-  const ui = window.GameUI;
-  const bucketHeight = 50;
-  const bucketWidth = 80;
-  let bucketX = (canvas.width - bucketWidth) / 2;
-  
-  const dropRadius = 10;
-  let drops = []; // Array para múltiples gotas
-  let dropSpeed = 3; // Velocidad inicial de las gotas
-  
-  // Niveles
+
+  // Configuración inicial
+  const basketHeight = 60;
+  const basketWidth = 100;
+  let basketX = (canvas.width - basketWidth) / 2;
+
+  const ballRadius = 15;
+  let balls = [];
+  let ballSpeed = 4;
+
   let level = 1;
-  let dropCount = 0; // Contador de gotas atrapadas
-  let dropsToNextLevel = 15; // Gotas necesarias para pasar de nivel
-  
+  let ballsCaught = 0;
+  let ballsToNextLevel = 15;
+
   let score = 0;
   let lives = 3;
   let highScore = +(localStorage.getItem('atrapaBallHigh') || 0);
   let highScoreName = localStorage.getItem('atrapaBallHighName') || '';
   let playerName = localStorage.getItem('playerName') || 'Jugador';
-  
-  // Estado del juego
+
   let showIntro = true;
   let gameOver = false;
   let particles = [];
-  let bucketFill = 0; // 0-100%, cuánto se ha llenado el cubo
-  
-  
-  // Variables para el movimiento del cubo
+  let basketScore = 0;
+
   let rightPressed = false;
   let leftPressed = false;
-  let upPressed = false;
-  let downPressed = false;
-  
-  // Crear un arreglo de colores para los elementos del juego
+
   const COLORS = {
-    drop: ['#4db6ac', '#26a69a', '#0288d1'], // Azules para gotas de agua
-    bucket: ['#8d6e63', '#795548', '#5d4037'], // Marrones para el cubo
-    water: ['#29b6f6', '#03a9f4', '#0288d1'], // Azules para el agua dentro del cubo
-    background: ['#e0f7fa', '#b2ebf2'], // Fondo celeste claro
-    particleColors: ['#81d4fa', '#4fc3f7', '#29b6f6', '#03a9f4', '#0288d1'] // Partículas azules
+    ball: ['#ff7043', '#f4511e', '#e64a19'],
+    basket: ['#795548', '#6d4c41', '#5d4037'],
+    net: ['#e0e0e0', '#bdbdbd', '#9e9e9e'],
+    court: ['#81c784', '#66bb6a', '#4caf50'],
+    particleColors: ['#ffeb3b', '#fdd835', '#fbc02d', '#f9a825', '#f57f17']
   };
-  
-  // Función para crear una nueva gota
-  function createDrop() {
-    drops.push({
-      x: Math.random() * (canvas.width - 2 * dropRadius) + dropRadius,
-      y: -dropRadius,
-      speed: dropSpeed * (0.8 + Math.random() * 0.4) // Variación en la velocidad
-    });
+
+  // ---------------------------
+  // FUNCIONES DE DIBUJO
+  // ---------------------------
+  function drawBall(x, y) {
+    // Dibujar sombra bajo la pelota
+    ctx.beginPath();
+    ctx.arc(x + 2, y + 2, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(0,0,0,0.3)";
+    ctx.fill();
+    
+    // Dibujar balón de baloncesto
+    const gradient = ctx.createRadialGradient(x, y, 0, x, y, ballRadius);
+    gradient.addColorStop(0, COLORS.ball[0]);
+    gradient.addColorStop(0.6, COLORS.ball[1]);
+    gradient.addColorStop(1, COLORS.ball[2]);
+
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius, 0, Math.PI * 2);
+    ctx.fillStyle = gradient;
+    ctx.fill();
+    
+    // Líneas del balón
+    ctx.beginPath();
+    ctx.arc(x, y, ballRadius * 0.8, 0, Math.PI * 2);
+    ctx.strokeStyle = "#7e3300";
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    // Líneas del balón
+    ctx.beginPath();
+    ctx.moveTo(x - ballRadius * 0.7, y);
+    ctx.lineTo(x + ballRadius * 0.7, y);
+    ctx.moveTo(x, y - ballRadius * 0.7);
+    ctx.lineTo(x, y + ballRadius * 0.7);
+    ctx.strokeStyle = "#7e3300";
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+    
+    // Brillo
+    ctx.beginPath();
+    ctx.arc(x - ballRadius/3, y - ballRadius/3, ballRadius/4, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(255,255,255,0.3)";
+    ctx.fill();
   }
+
+  function drawBasket() {
+    // Dibujar el aro de la canasta
+    const rimWidth = basketWidth * 0.9;
+    const rimHeight = basketHeight * 0.3;
+    const rimX = basketX + (basketWidth - rimWidth) / 2;
+    const rimY = canvas.height - basketHeight;
+    
+    // Sombra para profundidad
+    ctx.fillStyle = "rgba(0,0,0,0.2)";
+    ctx.fillRect(rimX + 3, rimY + 3, rimWidth, rimHeight);
+    
+    // Tablero de la canasta
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(basketX, rimY - 30, basketWidth, 30);
+    ctx.strokeStyle = "#000000";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(basketX, rimY - 30, basketWidth, 30);
+    
+    // Cuadrado dentro del tablero
+    const squareSize = 30;
+    const squareX = basketX + (basketWidth - squareSize) / 2;
+    const squareY = rimY - 30 + 3;
+    ctx.strokeStyle = "#e53935";
+    ctx.strokeRect(squareX, squareY, squareSize, squareSize - 5);
+    
+    // Soporte del aro
+    ctx.fillStyle = COLORS.basket[0];
+    ctx.fillRect(rimX - 5, rimY, 5, rimHeight);
+    ctx.fillRect(rimX + rimWidth, rimY, 5, rimHeight);
+    
+    // Aro de la canasta
+    const rimGradient = ctx.createLinearGradient(rimX, rimY, rimX, rimY + rimHeight);
+    rimGradient.addColorStop(0, "#ff5722");
+    rimGradient.addColorStop(0.5, "#e64a19");
+    rimGradient.addColorStop(1, "#bf360c");
+    
+    ctx.fillStyle = rimGradient;
+    ctx.fillRect(rimX, rimY, rimWidth, rimHeight);
+    ctx.strokeStyle = "#7e3300";
+    ctx.lineWidth = 2;
+    ctx.strokeRect(rimX, rimY, rimWidth, rimHeight);
+    
+    // Red de la canasta
+    const netHeight = basketHeight * 0.7;
+    const netY = rimY + rimHeight;
+    
+    ctx.beginPath();
+    ctx.moveTo(rimX, netY);
+    
+    // Dibujar la malla con patrón en zigzag
+    const netSegments = 10;
+    const segmentWidth = rimWidth / netSegments;
+    
+    for (let i = 0; i <= netSegments; i++) {
+      const offset = i % 2 === 0 ? 0 : 5;
+      ctx.lineTo(rimX + i * segmentWidth, netY + offset);
+    }
+    
+    // Líneas verticales de la red
+    for (let i = 0; i <= netSegments; i++) {
+      const x = rimX + i * segmentWidth;
+      const startOffset = i % 2 === 0 ? 0 : 5;
+      
+      ctx.moveTo(x, netY + startOffset);
+      
+      // Patrón en zigzag hacia abajo
+      for (let j = 0; j < 8; j++) {
+        const yOffset = j % 2 === 0 ? 5 : -5;
+        ctx.lineTo(x + yOffset, netY + startOffset + (j + 1) * 7);
+      }
+    }
+    
+    ctx.strokeStyle = COLORS.net[1];
+    ctx.lineWidth = 1;
+    ctx.stroke();
+    
+    // Efecto visual cuando se mete un balón
+    if (basketScore > 0) {
+      // Mostrar una animación o indicador cuando se anota
+      ctx.fillStyle = "rgba(255,255,0,0.3)";
+      ctx.fillRect(rimX, rimY, rimWidth, rimHeight);
+      basketScore -= 1;
+    }
+  }
+
+  function drawInfo() {
+    // Barra superior de estadísticas
+    const headerGrad = ctx.createLinearGradient(0, 0, 0, 50);
+    headerGrad.addColorStop(0, '#2e7d32');
+    headerGrad.addColorStop(1, '#1b5e20');
+    ctx.fillStyle = headerGrad;
+    ctx.fillRect(0, 0, canvas.width, 50);
+
+    // Marcador con diseño de baloncesto
+    ctx.font = 'bold 18px Arial';
+    ctx.fillStyle = '#fff';
+    ctx.fillText(`Nivel: ${level}`, 20, 30);
+    ctx.fillText(`Canastas: ${ballsCaught}/${ballsToNextLevel}`, 120, 30);
+    ctx.fillText(`Vidas: ${lives}`, 300, 30);
+    ctx.fillText(`Puntos: ${score}`, 400, 30);
+    
+    // Récord
+    ctx.font = '14px Arial';
+    ctx.fillText(`Récord: ${highScore} (${highScoreName || "---"})`, 520, 30);
+  }
+
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Dibujar la cancha de baloncesto
+    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bgGradient.addColorStop(0, COLORS.court[0]);
+    bgGradient.addColorStop(1, COLORS.court[2]);
+    ctx.fillStyle = bgGradient;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Dibujar líneas de la cancha
+    ctx.strokeStyle = "rgba(255,255,255,0.7)";
+    ctx.lineWidth = 2;
+    
+    // Círculo central
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, 70, 0, Math.PI*2);
+    ctx.stroke();
+    
+    // Línea central
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height/2);
+    ctx.lineTo(canvas.width, canvas.height/2);
+    ctx.stroke();
+    
+    // Otros elementos decorativos de cancha
+    ctx.beginPath();
+    ctx.arc(canvas.width/2, canvas.height/2, 15, 0, Math.PI*2);
+    ctx.fillStyle = "rgba(255,255,255,0.7)";
+    ctx.fill();
+
+    drawInfo();
+
+    if (showIntro) {
+      // Panel de introducción
+      const introWidth = 500;
+      const introHeight = 300;
+      const introX = (canvas.width - introWidth) / 2;
+      const introY = (canvas.height - introHeight) / 2;
+      
+      ctx.fillStyle = "rgba(0,0,0,0.7)";
+      ctx.fillRect(introX, introY, introWidth, introHeight);
+      ctx.strokeStyle = "#ff6f00";
+      ctx.lineWidth = 3;
+      ctx.strokeRect(introX, introY, introWidth, introHeight);
+      
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 28px Arial";
+      ctx.fillText("BASKET BALL CHALLENGE", canvas.width / 2 - 170, introY + 60);
+      
+      ctx.font = "18px Arial";
+      ctx.fillText("Usa las flechas ← → para mover la canasta", canvas.width / 2 - 160, introY + 120);
+      ctx.fillText("Intenta atrapar todas las pelotas que puedas", canvas.width / 2 - 170, introY + 160);
+      ctx.fillText("¡Cada 15 canastas subes de nivel!", canvas.width / 2 - 140, introY + 200);
+      
+      ctx.font = "bold 22px Arial";
+      ctx.fillStyle = "#ffeb3b";
+      ctx.fillText("Pulsa cualquier tecla para empezar", canvas.width / 2 - 180, introY + 250);
+      return;
+    }
+
+    if (gameOver) {
+      // Panel de fin de juego
+      const gameOverWidth = 500;
+      const gameOverHeight = 300;
+      const gameOverX = (canvas.width - gameOverWidth) / 2;
+      const gameOverY = (canvas.height - gameOverHeight) / 2;
+      
+      ctx.fillStyle = "rgba(0,0,0,0.85)";
+      ctx.fillRect(gameOverX, gameOverY, gameOverWidth, gameOverHeight);
+      ctx.strokeStyle = "#d32f2f";
+      ctx.lineWidth = 4;
+      ctx.strokeRect(gameOverX, gameOverY, gameOverWidth, gameOverHeight);
+      
+      ctx.fillStyle = "#fff";
+      ctx.font = "bold 32px Arial";
+      ctx.fillText("GAME OVER", canvas.width / 2 - 100, gameOverY + 70);
+      
+      ctx.font = "22px Arial";
+      ctx.fillText(`Puntuación Final: ${score}`, canvas.width / 2 - 90, gameOverY + 120);
+      
+      if (score > highScore) {
+        ctx.fillStyle = "#ffd600";
+        ctx.fillText("¡NUEVO RÉCORD!", canvas.width / 2 - 90, gameOverY + 160);
+      } else {
+        ctx.fillText(`Récord actual: ${highScore}`, canvas.width / 2 - 85, gameOverY + 160);
+      }
+      
+      ctx.fillStyle = "#4caf50";
+      ctx.font = "bold 22px Arial";
+      ctx.fillText("Pulsa ESPACIO para jugar de nuevo", canvas.width / 2 - 180, gameOverY + 220);
+      return;
+    }
+
+    // Dibujar partículas si hay
+    particles.forEach((p, i) => {
+      p.life--;
+      p.x += p.vx;
+      p.y += p.vy;
+      p.size *= 0.95;
+      
+      if (p.life <= 0 || p.size < 0.5) {
+        particles.splice(i, 1);
+      } else {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = p.color;
+        ctx.globalAlpha = p.life / 30;
+        ctx.fill();
+        ctx.globalAlpha = 1;
+      }
+    });
+
+    // Dibujar pelotas y canasta
+    balls.forEach(ball => drawBall(ball.x, ball.y));
+    drawBasket();
+  }
+
+  // ---------------------------
+  // FUNCIONES DE JUEGO
+  // ---------------------------
   
-  // Función para crear partículas
-  function createParticles(x, y, count, colors) {
+  function createParticles(x, y, count, isScore) {
     for (let i = 0; i < count; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed = Math.random() * 2 + 1;
+      const size = Math.random() * 4 + 2;
+      const life = Math.random() * 20 + 10;
+      
+      const colors = isScore ? COLORS.particleColors : ["#ffffff", "#e0e0e0"];
+      const color = colors[Math.floor(Math.random() * colors.length)];
+      
       particles.push({
-        x: x,
-        y: y,
-        size: Math.random() * 4 + 2,
-        speedX: (Math.random() - 0.5) * 6,
-        speedY: (Math.random() - 0.5) * 6,
-        color: colors[Math.floor(Math.random() * colors.length)],
-        life: 40 + Math.random() * 20
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        size,
+        life,
+        color
       });
     }
   }
   
-  // Función para actualizar partículas
-  function updateParticles() {
-    for (let i = particles.length - 1; i >= 0; i--) {
-      particles[i].x += particles[i].speedX;
-      particles[i].y += particles[i].speedY;
-      particles[i].life--;
-      particles[i].size *= 0.96;
+  function spawnBall() {
+    const x = Math.random() * (canvas.width - 100) + 50;
+    const y = -ballRadius * 2;
+    balls.push({
+      x,
+      y,
+      speed: ballSpeed * (0.8 + Math.random() * 0.4)
+    });
+  }
+  
+  function updateBalls() {
+    // Mover pelotas
+    for (let i = balls.length - 1; i >= 0; i--) {
+      const ball = balls[i];
+      ball.y += ball.speed;
       
-      if (particles[i].life <= 0 || particles[i].size <= 0.5) {
-        particles.splice(i, 1);
+      // Verificar colisión con la canasta
+      const rimWidth = basketWidth * 0.9;
+      const rimHeight = basketHeight * 0.3;
+      const rimX = basketX + (basketWidth - rimWidth) / 2;
+      const rimY = canvas.height - basketHeight;
+      
+      if (ball.y >= rimY - ballRadius && 
+          ball.y <= rimY + rimHeight && 
+          ball.x >= rimX - ballRadius && 
+          ball.x <= rimX + rimWidth + ballRadius) {
+        
+        // ¡Canasta!
+        balls.splice(i, 1);
+        ballsCaught++;
+        score += level * 10;
+        basketScore = 5; // Duración del efecto visual
+        
+        // Actualizar récord
+        if (score > highScore) {
+          highScore = score;
+          highScoreName = playerName;
+          localStorage.setItem('atrapaBallHigh', String(highScore));
+          localStorage.setItem('atrapaBallHighName', highScoreName);
+        }
+        
+        // Crear partículas para celebrar
+        createParticles(ball.x, ball.y, 15, true);
+        
+        // Subir de nivel
+        if (ballsCaught >= ballsToNextLevel) {
+          level++;
+          ballsCaught = 0;
+          ballSpeed += 0.5;
+        }
+        
+      } else if (ball.y > canvas.height + ballRadius) {
+        // La pelota cayó fuera
+        balls.splice(i, 1);
+        lives--;
+        createParticles(ball.x, canvas.height - 10, 10, false);
+        
+        if (lives <= 0) {
+          gameOver = true;
+        }
       }
     }
-  }
-  
-  // Función para dibujar partículas
-  function drawParticles() {
-    particles.forEach(p => {
-      ctx.globalAlpha = p.life / 60;
-      ctx.fillStyle = p.color;
-      ctx.beginPath();
-      ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-      ctx.fill();
-    });
-    ctx.globalAlpha = 1;
-  }
-  
-  // Función para dibujar una gota de agua
-  function drawDrop(x, y) {
-    // Sombra
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
-    ctx.shadowBlur = 5;
-    ctx.shadowOffsetY = 2;
     
-    // Gota con gradiente
-    const gradient = ctx.createRadialGradient(
-      x, y, 0,
-      x, y, dropRadius
-    );
-    gradient.addColorStop(0, COLORS.drop[0]);
-    gradient.addColorStop(0.6, COLORS.drop[1]);
-    gradient.addColorStop(1, COLORS.drop[2]);
-    
-    // Forma de gota (combinación de círculo y triángulo)
-    ctx.beginPath();
-    ctx.arc(x, y, dropRadius, 0, Math.PI);
-    ctx.lineTo(x, y - dropRadius * 1.5);
-    ctx.closePath();
-    ctx.fillStyle = gradient;
-    ctx.fill();
-    
-    // Brillo
-    ctx.beginPath();
-    ctx.arc(x - dropRadius * 0.3, y - dropRadius * 0.3, dropRadius * 0.2, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    ctx.fill();
-    
-    // Restaurar sombra
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
-  }
-  
-  // Función para dibujar el cubo
-  function drawBucket() {
-    // Sombra
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.3)';
-    ctx.shadowBlur = 8;
-    ctx.shadowOffsetY = 5;
-    
-    // Cubo
-    ctx.beginPath();
-    // Base del cubo
-    ctx.moveTo(bucketX, canvas.height - bucketHeight);
-    ctx.lineTo(bucketX + bucketWidth, canvas.height - bucketHeight);
-    ctx.lineTo(bucketX + bucketWidth - 5, canvas.height);
-    ctx.lineTo(bucketX + 5, canvas.height);
-    ctx.closePath();
-    
-    // Gradiente del cubo
-    const bucketGradient = ctx.createLinearGradient(
-      bucketX, canvas.height - bucketHeight,
-      bucketX, canvas.height
-    );
-    bucketGradient.addColorStop(0, COLORS.bucket[0]);
-    bucketGradient.addColorStop(0.5, COLORS.bucket[1]);
-    bucketGradient.addColorStop(1, COLORS.bucket[2]);
-    
-    ctx.fillStyle = bucketGradient;
-    ctx.fill();
-    
-    // Contorno del cubo
-    ctx.strokeStyle = '#4e342e';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    
-    // Agua dentro del cubo (si hay)
-    if (bucketFill > 0) {
-      const waterHeight = (bucketHeight - 5) * (bucketFill / 100);
-      
-      ctx.beginPath();
-      ctx.moveTo(bucketX + 5, canvas.height - waterHeight);
-      ctx.lineTo(bucketX + bucketWidth - 5, canvas.height - waterHeight);
-      ctx.lineTo(bucketX + bucketWidth - 9, canvas.height - 5);
-      ctx.lineTo(bucketX + 9, canvas.height - 5);
-      ctx.closePath();
-      
-      // Gradiente del agua
-      const waterGradient = ctx.createLinearGradient(
-        bucketX, canvas.height - waterHeight,
-        bucketX, canvas.height
-      );
-      waterGradient.addColorStop(0, COLORS.water[0]);
-      waterGradient.addColorStop(0.7, COLORS.water[1]);
-      waterGradient.addColorStop(1, COLORS.water[2]);
-      
-      ctx.fillStyle = waterGradient;
-      ctx.fill();
-      
-      // Brillo en el agua
-      ctx.beginPath();
-      ctx.moveTo(bucketX + 10, canvas.height - waterHeight + 3);
-      ctx.lineTo(bucketX + bucketWidth - 20, canvas.height - waterHeight + 3);
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
+    // Generar nuevas pelotas aleatoriamente
+    if (!gameOver && !showIntro && Math.random() < 0.02 + (level * 0.005)) {
+      spawnBall();
     }
-    
-    // Restaurar sombra
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
-    ctx.shadowOffsetY = 0;
   }
   
-  // Eventos del teclado
-  function keyDownHandler(e) {
+  function updateBasketPosition() {
+    const moveSpeed = 7 + level;
+    
+    if (rightPressed) {
+      basketX = Math.min(canvas.width - basketWidth, basketX + moveSpeed);
+    }
+    if (leftPressed) {
+      basketX = Math.max(0, basketX - moveSpeed);
+    }
+  }
+  
+  // ---------------------------
+  // GAME LOOP
+  // ---------------------------
+  function gameLoop() {
+    try {
+      if (!showIntro && !gameOver) {
+        updateBasketPosition();
+        updateBalls();
+      }
+      draw();
+    } catch (err) {
+      console.error("Error en gameLoop:", err);
+    }
+    animationFrame = requestAnimationFrame(gameLoop);
+  }
+
+  // ---------------------------
+  // INPUT
+  // ---------------------------
+  document.addEventListener('keydown', e => {
     if (showIntro) {
       showIntro = false;
       return;
     }
-    
-    if (gameOver && (e.key === ' ' || e.code === 'Space')) {
+    if (gameOver && e.code === "Space") {
       resetGame();
       return;
     }
-    
-    if (e.key === 'Right' || e.key === 'ArrowRight') {
-      rightPressed = true;
-    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
-      leftPressed = true;
-    } else if (e.key === 'Up' || e.key === 'ArrowUp') {
-      upPressed = true;
-    } else if (e.key === 'Down' || e.key === 'ArrowDown') {
-      downPressed = true;
-    }
-  }
-  
-  function keyUpHandler(e) {
-    if (e.key === 'Right' || e.key === 'ArrowRight') {
-      rightPressed = false;
-    } else if (e.key === 'Left' || e.key === 'ArrowLeft') {
-      leftPressed = false;
-    } else if (e.key === 'Up' || e.key === 'ArrowUp') {
-      upPressed = false;
-    } else if (e.key === 'Down' || e.key === 'ArrowDown') {
-      downPressed = false;
-    }
-  }
-  
-  function mouseMoveHandler(e) {
-    if (showIntro || gameOver) return;
-    
-    const rect = canvas.getBoundingClientRect();
-    const relativeX = e.clientX - rect.left;
-    if (relativeX > 0 && relativeX < canvas.width) {
-      bucketX = relativeX - bucketWidth / 2;
-      
-      // Evitar que el cubo salga del canvas
-      if (bucketX < 0) {
-        bucketX = 0;
-      } else if (bucketX + bucketWidth > canvas.width) {
-        bucketX = canvas.width - bucketWidth;
-      }
-    }
-  }
-  
-  // Función para dibujar información del juego
-  function drawInfo() {
-    // Barra superior
-    if (ui) {
-      ui.gradientBar(ctx, canvas, {from: '#0288d1', to: '#01579b'});
-      ui.shadowText(ctx, 'Gotas de Agua', 20, 25, {size: 20});
-    } else {
-      const headerGrad = ctx.createLinearGradient(0, 0, 0, 50);
-      headerGrad.addColorStop(0, '#0288d1');
-      headerGrad.addColorStop(1, '#01579b');
-      ctx.fillStyle = headerGrad;
-      ctx.fillRect(0, 0, canvas.width, 50);
-      
-      ctx.font = 'bold 20px Arial';
-      ctx.fillStyle = '#fff';
-      ctx.fillText('Gotas de Agua', 20, 25);
-    }
-    
-    // Información del juego
-    ctx.font = '16px Arial';
-    ctx.fillStyle = '#fff';
-    ctx.fillText('Nivel: ' + level, 220, 25);
-    ctx.fillText('Gotas: ' + dropCount + '/' + dropsToNextLevel, 300, 25);
-    ctx.fillText('Vidas: ' + lives, 420, 25);
-    ctx.textAlign = 'right';
-    ctx.fillText('Récord: ' + highScore + (highScoreName ? ' (' + highScoreName + ')' : ''), canvas.width - 20, 25);
-    ctx.textAlign = 'left';
-  }
-  
-  // Función para dibujar la pantalla de introducción
-  function drawIntro() {
-    if (ui) {
-      const lines = [
-        "Usa cualquier FLECHA o el ratón para mover el cubo.",
-        "Atrapa las gotas de agua que caen del cielo.",
-        "Llena el cubo con 15 gotas para subir de nivel.",
-        "Cada nivel las gotas caen más rápido.",
-        "Tienes 3 vidas para conseguir la mejor puntuación.",
-        "Pulsa cualquier tecla para empezar."
-      ];
-      
-      ui.drawInstructionPanel(ctx, "Gotas de Agua", lines, {
-        bgColor: 'rgba(15, 25, 40, 0.95)',
-        titleColor: '#29b6f6'
-      });
-      
-      // Dibujar ejemplo de gota y cubo
-      drawDrop(canvas.width/2, canvas.height/2 - 50);
-      bucketX = canvas.width/2 - bucketWidth/2;
-      drawBucket();
-      
-    } else {
-      // Versión manual del panel si GameUI no está disponible
-      const w = canvas.width - 140;
-      const h = 270;
-      const x = 70;
-      const y = 120;
-      
-      // Panel semi-transparente
-      ctx.fillStyle = 'rgba(15, 25, 40, 0.95)';
-      ctx.beginPath();
-      ctx.roundRect(x, y, w, h, 16);
-      ctx.fill();
-      
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.25)';
-      ctx.lineWidth = 2;
-      ctx.stroke();
-      
-      // Título
-      ctx.fillStyle = '#29b6f6';
-      ctx.font = 'bold 28px Arial';
-      ctx.textAlign = 'center';
-      ctx.shadowColor = '#000';
-      ctx.shadowBlur = 8;
-      ctx.fillText('Gotas de Agua', canvas.width/2, y + 40);
-      
-      // Texto de instrucciones
-      ctx.shadowBlur = 0;
-      ctx.fillStyle = '#ffffff';
-      ctx.font = '15px Arial';
-      ctx.fillText('Usa cualquier FLECHA o el ratón para mover el cubo.', canvas.width/2, y + 80);
-      ctx.fillText('Atrapa las gotas de agua que caen del cielo.', canvas.width/2, y + 110);
-      ctx.fillText('Llena el cubo con 15 gotas para subir de nivel.', canvas.width/2, y + 140);
-      ctx.fillText('Cada nivel las gotas caen más rápido.', canvas.width/2, y + 170);
-      ctx.fillText('Tienes 3 vidas para conseguir la mejor puntuación.', canvas.width/2, y + 200);
-      ctx.fillText('Pulsa cualquier tecla para empezar.', canvas.width/2, y + 230);
-      
-      // Dibujar ejemplo de gota y cubo
-      drawDrop(canvas.width/2, canvas.height/2 + 50);
-      bucketX = canvas.width/2 - bucketWidth/2;
-      drawBucket();
-    }
-  }
-  
-  // Función para dibujar la pantalla de Game Over
-  function drawGameOver() {
-    // Fondo oscuro semitransparente
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-    ctx.fillRect(0, 50, canvas.width, canvas.height - 50);
-    
-    // Panel de Game Over
-    const w = canvas.width - 200;
-    const h = 220;
-    const x = 100;
-    const y = 140;
-    
-    ctx.fillStyle = 'rgba(40, 80, 120, 0.9)';
-    ctx.beginPath();
-    ctx.roundRect(x, y, w, h, 16);
-    ctx.fill();
-    
-    ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
-    
-    // Texto de Game Over
-    ctx.fillStyle = '#ffffff';
-    ctx.font = 'bold 32px Arial';
-    ctx.textAlign = 'center';
-    ctx.shadowColor = 'rgba(0,0,0,0.5)';
-    ctx.shadowBlur = 8;
-    ctx.fillText('¡GAME OVER!', canvas.width/2, y + 50);
-    
-    // Puntuación final
-    ctx.font = '22px Arial';
-    ctx.fillText('Nivel alcanzado: ' + level, canvas.width/2, y + 90);
-    ctx.fillText('Gotas atrapadas: ' + score, canvas.width/2, y + 120);
-    
-    // Récord
-    if (score > highScore) {
-      ctx.fillStyle = '#ffeb3b';
-      ctx.fillText('¡NUEVO RÉCORD!', canvas.width/2, y + 160);
-    }
-    
-    // Indicación para reiniciar
-    ctx.font = '16px Arial';
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#ffffff';
-    
-    // Efecto pulsante
-    const pulse = Math.sin(Date.now() / 300) * 0.1 + 0.9;
-    ctx.globalAlpha = pulse;
-    ctx.fillText('Pulsa ESPACIO para jugar de nuevo', canvas.width/2, y + 190);
-    ctx.globalAlpha = 1;
-  }
-  
-  // Función principal de dibujo
-  function draw() {
-    // Limpiar canvas
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Dibujar fondo con gradiente
-    const bgGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
-    bgGradient.addColorStop(0, COLORS.background[0]);
-    bgGradient.addColorStop(1, COLORS.background[1]);
-    ctx.fillStyle = bgGradient;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    
-    // Dibujar nubes en el fondo
-    drawClouds();
-    
-    // Dibujar información
-    drawInfo();
-    
-    // Si estamos en la pantalla de intro
-    if (showIntro) {
-      drawIntro();
-      return;
-    }
-    
-    // Si el juego ha terminado
-    if (gameOver) {
-      drawGameOver();
-      drawParticles();
-      return;
-    }
-    
-    // Dibujar elementos del juego
-    drops.forEach(drop => {
-      drawDrop(drop.x, drop.y);
-    });
-    drawBucket();
-    drawParticles();
-    
-    // Actualizar posición de las gotas
-    updateDrops();
-    
-    // Mover el cubo
-    if (rightPressed && bucketX < canvas.width - bucketWidth) {
-      bucketX += 8;
-    } else if (leftPressed && bucketX > 0) {
-      bucketX -= 8;
-    } else if (upPressed && bucketX < canvas.width - bucketWidth) {
-      bucketX += 8;
-    } else if (downPressed && bucketX > 0) {
-      bucketX -= 8;
-    }
-    
-    // Actualizar partículas
-    updateParticles();
-  }
-  
-  // Función para dibujar nubes
-  function drawClouds() {
-    const cloudPositions = [
-      {x: canvas.width * 0.1, y: canvas.height * 0.15, size: 40},
-      {x: canvas.width * 0.4, y: canvas.height * 0.1, size: 50},
-      {x: canvas.width * 0.7, y: canvas.height * 0.2, size: 35},
-      {x: canvas.width * 0.9, y: canvas.height * 0.12, size: 45}
-    ];
-    
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    
-    cloudPositions.forEach(cloud => {
-      // Nubes suaves con varias formas circulares
-      ctx.beginPath();
-      ctx.arc(cloud.x, cloud.y, cloud.size, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.size * 0.8, cloud.y, cloud.size * 0.7, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.size * 1.5, cloud.y, cloud.size * 0.9, 0, Math.PI * 2);
-      ctx.arc(cloud.x + cloud.size * 0.6, cloud.y - cloud.size * 0.4, cloud.size * 0.8, 0, Math.PI * 2);
-      ctx.fill();
-    });
-  }
-  
-  // Función para actualizar las gotas
-  let dropSpawnTimer = 0;
-  function updateDrops() {
-    // Generar nuevas gotas
-    dropSpawnTimer++;
-    if (dropSpawnTimer >= 60 - level * 5) { // Más frecuente en niveles más altos
-      dropSpawnTimer = 0;
-      createDrop();
-    }
-    
-    // Mover y verificar colisiones
-    for (let i = drops.length - 1; i >= 0; i--) {
-      const drop = drops[i];
-      drop.y += drop.speed;
-      
-      // Verificar colisión con el cubo
-      if (drop.y + dropRadius > canvas.height - bucketHeight && 
-          drop.y - dropRadius < canvas.height &&
-          drop.x > bucketX && drop.x < bucketX + bucketWidth) {
-        
-        // La gota cayó en el cubo
-        drops.splice(i, 1);
-        score++;
-        dropCount++;
-        
-        // Efectos visuales
-        createParticles(drop.x, drop.y, 15, COLORS.particleColors);
-        
-        // Aumentar el nivel de agua en el cubo
-        bucketFill += 100 / dropsToNextLevel;
-        
-        // Verificar si se ha llenado el cubo
-        if (dropCount >= dropsToNextLevel) {
-          // Subir de nivel
-          level++;
-          dropCount = 0;
-          bucketFill = 0;
-          dropSpeed += 0.5; // Aumentar velocidad
-          
-          // Efectos visuales para el cambio de nivel
-          createParticles(bucketX + bucketWidth/2, canvas.height - bucketHeight/2, 40, ['#ffeb3b', '#ffc107', '#ff9800']);
-        }
-        
-      } 
-      // Verificar si la gota tocó el suelo
-      else if (drop.y - dropRadius > canvas.height) {
-        drops.splice(i, 1);
-        lives--;
-        
-        // Efectos visuales
-        createParticles(drop.x, canvas.height, 15, ['#f44336', '#e53935', '#c62828']);
-        
-        if (lives <= 0) {
-          gameOver = true;
-          
-          // Actualizar récord si es necesario
-          if (score > highScore) {
-            highScore = score;
-            highScoreName = playerName;
-            localStorage.setItem('atrapaBallHigh', highScore);
-            localStorage.setItem('atrapaBallHighName', highScoreName);
-            
-            // Efectos visuales para récord
-            createParticles(canvas.width/2, canvas.height/2, 100, ['#ffd700', '#ffeb3b', '#ffc107']);
-          }
-        }
-      }
-    }
-  }
-  
-  // Función para reiniciar el juego
+    if (e.code === "ArrowRight") rightPressed = true;
+    if (e.code === "ArrowLeft") leftPressed = true;
+  });
+
+  document.addEventListener('keyup', e => {
+    if (e.code === "ArrowRight") rightPressed = false;
+    if (e.code === "ArrowLeft") leftPressed = false;
+  });
+
+  // ---------------------------
+  // RESET
+  // ---------------------------
   function resetGame() {
     score = 0;
     level = 1;
-    dropCount = 0;
-    bucketFill = 0;
+    ballsCaught = 0;
+    basketScore = 0;
     lives = 3;
-    dropSpeed = 3;
-    drops = [];
-    bucketX = (canvas.width - bucketWidth) / 2;
-    gameOver = false;
+    ballSpeed = 4;
+    balls = [];
     particles = [];
-    dropSpawnTimer = 0;
+    basketX = (canvas.width - basketWidth) / 2;
+    gameOver = false;
+    showIntro = false;
   }
-  
-  // Registrar eventos
-  const keyDownListener = e => keyDownHandler(e);
-  const keyUpListener = e => keyUpHandler(e);
-  const mouseMoveListener = e => mouseMoveHandler(e);
-  
-  document.addEventListener('keydown', keyDownListener);
-  document.addEventListener('keyup', keyUpListener);
-  canvas.addEventListener('mousemove', mouseMoveListener);
-  
-  // Función de loop principal
-  function gameLoop() {
-    draw();
-    animationFrame = requestAnimationFrame(gameLoop);
-  }
-  
-  // Iniciar el juego
+
+  // ---------------------------
+  // START
+  // ---------------------------
   gameLoop();
-  
-  // Función de limpieza
+
   return function cleanup() {
-    document.removeEventListener('keydown', keyDownListener);
-    document.removeEventListener('keyup', keyUpListener);
-    canvas.removeEventListener('mousemove', mouseMoveListener);
     if (animationFrame) cancelAnimationFrame(animationFrame);
   };
 }

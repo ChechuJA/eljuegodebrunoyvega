@@ -1,7 +1,8 @@
 function registerGame(){
 	// Empuja Cajas (mini Sokoban con récord de menos movimientos)
 	const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
-	const TILE=40; const mapaBase=[
+	const TILE=50; // Aumentado de 40 a 50 para hacer el juego más grande
+	const mapaBase=[
 		'#########',
 		'#   .  #',
 		'# # #  #',
@@ -10,8 +11,8 @@ function registerGame(){
 		'#  .   #',
 		'#########'
 	];
-	// Ajustar el tamaño exacto del canvas para evitar espacio en blanco
-	canvas.width=mapaBase[0].length*TILE; canvas.height=mapaBase.length*TILE+72; // Ajustado a 72 para encajar con el panel superior
+	// Ajustar el tamaño exacto del canvas para evitar espacio en blanco - más grande que antes
+	canvas.width=mapaBase[0].length*TILE; canvas.height=mapaBase.length*TILE+90; // Ajustado a 90 para encajar con el panel superior
 	let level=0; let movimientos=0; let mejor=Number(localStorage.getItem('sokobanBest')||0); let mejorName=localStorage.getItem('sokobanBestName')||'-'; const playerName=localStorage.getItem('playerName')||'';
 	const MAX_MOVIMIENTOS = 30; // Máximo de movimientos permitidos
 	let gameOver = false; // Estado de game over
@@ -210,17 +211,17 @@ function registerGame(){
 		drawClouds();
 		
 		// Barra superior más vistosa con degradado más colorido
-		let barGradient = ctx.createLinearGradient(0, 0, 0, 72);
+		let barGradient = ctx.createLinearGradient(0, 0, 0, 90);
 		barGradient.addColorStop(0, '#7c4dff');  // Púrpura intenso
 		barGradient.addColorStop(1, '#448aff');  // Azul brillante
 		ctx.fillStyle = barGradient;
-		ctx.fillRect(0, 0, canvas.width, 72);
+		ctx.fillRect(0, 0, canvas.width, 90);
 		
 		// Decoración de la barra: pequeñas estrellas o burbujas
 		ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
 		for (let i = 0; i < 8; i++) {
 			const x = Math.random() * canvas.width;
-			const y = Math.random() * 60;
+			const y = Math.random() * 75;
 			const size = 2 + Math.random() * 4;
 			ctx.beginPath();
 			ctx.arc(x, y, size, 0, Math.PI * 2);
@@ -231,25 +232,25 @@ function registerGame(){
 		ctx.fillStyle = '#fff';
 		ctx.shadowColor = 'rgba(0,0,0,0.3)';
 		ctx.shadowBlur = 4;
-		ctx.font = 'bold 24px Comic Sans MS, Arial';
+		ctx.font = 'bold 28px Comic Sans MS, Arial';
 		ctx.textBaseline = 'middle';
 		ctx.textAlign = 'left';
-		ctx.fillText('¡Empuja Cajas!', 14, 26);
+		ctx.fillText('¡Empuja Cajas!', 16, 32);
 		
 		// Indicador de movimientos más visual
-		ctx.font = 'bold 16px Comic Sans MS, Arial';
-		ctx.fillText('Movimientos: ' + movimientos + '/' + MAX_MOVIMIENTOS, 14, 52);
+		ctx.font = 'bold 18px Comic Sans MS, Arial';
+		ctx.fillText('Movimientos: ' + movimientos + '/' + MAX_MOVIMIENTOS, 16, 65);
 		
 		// Récord con icono de trofeo
 		ctx.textAlign = 'right';
-		ctx.fillText('🏆 Récord: ' + (mejor > 0 ? mejor : '-') + ' (' + mejorName + ')', canvas.width - 12, 26);
-		ctx.fillText('🔄 (R) Reiniciar', canvas.width - 12, 52);
+		ctx.fillText('🏆 Récord: ' + (mejor > 0 ? mejor : '-') + ' (' + mejorName + ')', canvas.width - 16, 32);
+		ctx.fillText('🔄 (R) Reiniciar', canvas.width - 16, 65);
 		ctx.shadowBlur = 0;
 		ctx.textAlign = 'left'; 
 		
 		for(let y=0;y<mapa.length;y++) for(let x=0;x<mapa[0].length;x++){ 
 			const ch=mapa[y][x]; 
-			const baseY=y*TILE+72; 
+			const baseY=y*TILE+90; 
 			if(ch==='#'){ 
 				// Muros más interesantes con textura tipo ladrillo
 				const wallGradient = ctx.createLinearGradient(x*TILE, baseY, x*TILE+TILE, baseY+TILE);
@@ -308,38 +309,38 @@ function registerGame(){
 		
 		for(let c of cajas){ 
 			// Caja de madera con detalles
-			const boxGradient = ctx.createLinearGradient(c.x*TILE, c.y*TILE+72, c.x*TILE+TILE, c.y*TILE+72+TILE);
+			const boxGradient = ctx.createLinearGradient(c.x*TILE, c.y*TILE+90, c.x*TILE+TILE, c.y*TILE+90+TILE);
 			boxGradient.addColorStop(0, '#8d6e63'); // Marrón
 			boxGradient.addColorStop(0.5, '#a1887f'); // Marrón más claro
 			boxGradient.addColorStop(1, '#8d6e63'); // Marrón
 			
 			ctx.fillStyle = boxGradient;
-			ctx.fillRect(c.x*TILE+4, c.y*TILE+76, TILE-8, TILE-8);
+			ctx.fillRect(c.x*TILE+5, c.y*TILE+95, TILE-10, TILE-10);
 			
 			// Bordes de la caja
 			ctx.strokeStyle = '#5d4037'; // Marrón más oscuro
 			ctx.lineWidth = 2;
-			ctx.strokeRect(c.x*TILE+4, c.y*TILE+76, TILE-8, TILE-8);
+			ctx.strokeRect(c.x*TILE+5, c.y*TILE+95, TILE-10, TILE-10);
 			
 			// Detalles de la caja (clavos o tornillos)
 			ctx.fillStyle = '#3e2723'; // Marrón muy oscuro
 			ctx.beginPath();
-			ctx.arc(c.x*TILE+10, c.y*TILE+82, 2, 0, Math.PI*2);
-			ctx.arc(c.x*TILE+TILE-10, c.y*TILE+82, 2, 0, Math.PI*2);
-			ctx.arc(c.x*TILE+10, c.y*TILE+TILE-10, 2, 0, Math.PI*2);
-			ctx.arc(c.x*TILE+TILE-10, c.y*TILE+TILE-10, 2, 0, Math.PI*2);
+			ctx.arc(c.x*TILE+12, c.y*TILE+102, 2, 0, Math.PI*2);
+			ctx.arc(c.x*TILE+TILE-12, c.y*TILE+102, 2, 0, Math.PI*2);
+			ctx.arc(c.x*TILE+12, c.y*TILE+TILE-12, 2, 0, Math.PI*2);
+			ctx.arc(c.x*TILE+TILE-12, c.y*TILE+TILE-12, 2, 0, Math.PI*2);
 			ctx.fill();
 			
 			// Adornos de la caja (símbolo o logo)
 			ctx.fillStyle = '#d7ccc8'; // Beige claro
-			ctx.font = '14px Arial';
+			ctx.font = '18px Arial';
 			ctx.textAlign = 'center';
 			ctx.textBaseline = 'middle';
-			ctx.fillText('📦', c.x*TILE+TILE/2, c.y*TILE+TILE/2+72);
+			ctx.fillText('📦', c.x*TILE+TILE/2, c.y*TILE+TILE/2+90);
 		} 
 		
 		// Jugador más divertido (personaje niño en lugar de círculo)
-		drawPlayer(jugador.x*TILE+TILE/2, jugador.y*TILE+72+TILE/2, TILE/2); 
+		drawPlayer(jugador.x*TILE+TILE/2, jugador.y*TILE+90+TILE/2, TILE/2-2); 
 		
 		// Mostrar pantalla de introducción
 		if(showIntro && window.GameUI) {

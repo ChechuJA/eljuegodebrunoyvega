@@ -37,17 +37,30 @@ function drawHUD(){
  else { ctx.fillStyle='#e91e63'; ctx.fillText('Memoria de Animales', canvas.width/2,42); }
  ctx.font='16px Arial'; ctx.fillStyle=window.GameUI? '#fce4ec':'#333';
  ctx.fillText('Aciertos: '+aciertos+' / '+(total/2)+'  Intentos: '+intentos + '  Mejor: ' + (bestIntentos>0?bestIntentos:'-'), canvas.width/2, 62);
- if (mostrarInicio){
-	 if(window.GameUI){ GameUI.glassPanel(ctx,40,canvas.height-90,canvas.width-80,60,18); ctx.fillStyle='#0d47a1'; }
-	 else ctx.fillStyle='#444';
-	 ctx.font='18px Arial';
-	 ctx.fillText('Haz clic para voltear cartas y encontrar parejas.', canvas.width/2, canvas.height-50);
- }
  ctx.restore();
 }
 function draw(){
  drawHUD();
  for (let c of cards) drawCard(c);
+ 
+ // Mostrar instrucciones DESPUÉS de las cartas para que aparezcan encima
+ if (mostrarInicio){
+   ctx.save();
+   // Panel de instrucciones con fondo semi-transparente
+   if(window.GameUI){ 
+     GameUI.glassPanel(ctx,40,canvas.height-90,canvas.width-80,60,18);
+     ctx.fillStyle='#0d47a1';
+   } else {
+     ctx.fillStyle='rgba(0,0,0,0.7)';
+     ctx.fillRect(40,canvas.height-90,canvas.width-80,60);
+     ctx.fillStyle='#fff';
+   }
+   ctx.font='18px Arial';
+   ctx.textAlign='center';
+   ctx.fillText('Haz clic para voltear cartas y encontrar parejas.', canvas.width/2, canvas.height-50);
+   ctx.restore();
+ }
+ 
  if (aciertos===total/2){
   if(bestIntentos===0 || intentos<bestIntentos){ bestIntentos=intentos; localStorage.setItem('memoriaBest', String(bestIntentos)); }
   ctx.save();

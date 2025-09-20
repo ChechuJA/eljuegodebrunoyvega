@@ -91,9 +91,13 @@
     </div>
     <h2>Elige tu juego</h2>
     
-    <!-- Panel de acceso rápido -->
+    <!-- Panel de jugador y acceso rápido -->
     <div style="max-width:820px;margin:10px auto 20px;padding:12px 15px;background:rgba(25,118,210,0.1);border-radius:10px;display:flex;flex-wrap:wrap;justify-content:center;gap:10px;align-items:center;">
-      <span style="font-size:14px;font-weight:600;color:#0d47a1;margin-right:5px;">Acceso rápido:</span>
+      <div id="playerInfoDisplay" style="display:flex;align-items:center;margin-right:15px;">
+        <span style="font-size:14px;font-weight:600;color:#0d47a1;margin-right:5px;">Jugador/a:</span>
+        <span id="currentPlayerName" style="font-size:15px;font-weight:700;color:#e91e63;background:rgba(255,255,255,0.4);padding:4px 10px;border-radius:16px;"></span>
+        <button style="background:#00796b;padding:4px 8px;margin-left:8px;border-radius:4px;font-size:12px;" onclick="showChangeNameDialog()">Cambiar</button>
+      </div>
       <button style="background:#ff4081;padding:8px 14px;" onclick="showGlobalScores()">Ver Marcadores ⭐</button>
     </div>
     
@@ -135,10 +139,13 @@
   <!-- Overlay nombre -->
   <div id="playerOverlay">
     <div style="background:#fff;padding:24px 28px;border-radius:14px;max-width:420px;font-family:Arial;box-shadow:0 6px 18px rgba(0,0,0,.35);text-align:center;">
-      <h3 style="margin-top:0;color:#0d47a1;">Antes de empezar</h3>
+      <h3 id="playerOverlayTitle" style="margin-top:0;color:#0d47a1;">Antes de empezar</h3>
       <p style="font-size:14px;line-height:1.35;margin:8px 0 14px;">Escribe tu nombre para registrar récords.</p>
       <input id="playerNameInput" type="text" placeholder="Tu nombre" style="width:100%;padding:10px 12px;font-size:15px;border:1px solid #90caf9;border-radius:8px;" maxlength="20" />
-      <button id="savePlayerNameBtn" style="margin-top:14px;padding:10px 18px;font-size:15px;background:#1976d2;color:#fff;border:none;border-radius:8px;cursor:pointer;">Guardar y continuar</button>
+      <div style="margin-top:18px;display:flex;justify-content:center;gap:10px;">
+        <button id="savePlayerNameBtn" style="padding:10px 18px;font-size:15px;background:#1976d2;color:#fff;border:none;border-radius:8px;cursor:pointer;">Guardar</button>
+        <button id="cancelNameChangeBtn" style="padding:10px 18px;font-size:15px;background:#e0e0e0;color:#333;border:none;border-radius:8px;cursor:pointer;display:none;">Cancelar</button>
+      </div>
     </div>
   </div>
 
@@ -166,16 +173,51 @@
       if(!localStorage.getItem('playerName')){
         document.getElementById('playerOverlay').style.display='flex';
       }
+      updatePlayerNameDisplay();
     }
+    
+    function updatePlayerNameDisplay() {
+      const playerName = localStorage.getItem('playerName') || 'Invitado';
+      const playerDisplay = document.getElementById('currentPlayerName');
+      if (playerDisplay) {
+        playerDisplay.textContent = playerName;
+      }
+    }
+    
+    function showChangeNameDialog() {
+      const currentName = localStorage.getItem('playerName') || '';
+      document.getElementById('playerNameInput').value = currentName;
+      document.getElementById('playerOverlayTitle').textContent = 'Cambiar nombre';
+      document.getElementById('cancelNameChangeBtn').style.display = 'block';
+      document.getElementById('playerOverlay').style.display='flex';
+    }
+    
+    function hideNameDialog() {
+      document.getElementById('playerOverlay').style.display='none';
+      // Resetear para próximas veces
+      document.getElementById('cancelNameChangeBtn').style.display = 'none';
+      document.getElementById('playerOverlayTitle').textContent = 'Antes de empezar';
+    }
+    
     document.addEventListener('DOMContentLoaded',()=>{
       ensurePlayerName();
-      const btn=document.getElementById('savePlayerNameBtn');
-      btn.addEventListener('click',()=>{
+      
+      const saveBtn=document.getElementById('savePlayerNameBtn');
+      saveBtn.addEventListener('click',()=>{
         const v=document.getElementById('playerNameInput').value.trim();
-        if(v){ localStorage.setItem('playerName',v); document.getElementById('playerOverlay').style.display='none'; }
+        if(v){ 
+          localStorage.setItem('playerName',v); 
+          hideNameDialog();
+          updatePlayerNameDisplay();
+        }
       });
+      
+      const cancelBtn=document.getElementById('cancelNameChangeBtn');
+      cancelBtn.addEventListener('click', hideNameDialog);
+      
       document.getElementById('playerNameInput').addEventListener('keydown',e=>{
-        if(e.key==='Enter') btn.click();
+        if(e.key==='Enter') saveBtn.click();
+        if(e.key==='Escape') hideNameDialog();
       });
     });
     // Tips rotativos

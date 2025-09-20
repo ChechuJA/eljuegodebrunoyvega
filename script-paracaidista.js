@@ -14,6 +14,7 @@ let baseHeight = 20;
 let gameOver = false;
 let showInstructions = true;
 let humoActivo = false;
+let humoParticulas = []; // Array para partículas de humo
 let score = 0;
 let highScore = Number(localStorage.getItem('paracaHighScore')||0);
 let nivel = 1;
@@ -87,7 +88,15 @@ function drawBruno() {
   // Piernas (anim)
   ctx.beginPath(); ctx.moveTo(bruno.x - 4, bruno.y + 34); ctx.lineTo(bruno.x - 4 - limb*0.2, bruno.y + 46); ctx.moveTo(bruno.x + 4, bruno.y + 34); ctx.lineTo(bruno.x + 4 + limb*0.2, bruno.y + 46); ctx.stroke();
   // Humo
-  if(humoActivo){ ctx.beginPath(); ctx.arc(bruno.x, bruno.y + 50, 12,0,Math.PI*2); ctx.fillStyle='rgba(200,200,200,0.7)'; ctx.fill(); }
+  if(humoActivo){ 
+    // Dibujar partículas de humo existentes
+    for(let p of humoParticulas) {
+      ctx.beginPath(); 
+      ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); 
+      ctx.fillStyle = `rgba(220,220,220,${p.opacity})`; 
+      ctx.fill();
+    }
+  }
   ctx.restore();
 }
 
@@ -249,6 +258,42 @@ function draw() {
   if (preguntaPendiente) drawPregunta();
 }
 
+function updateHumo() {
+  // Crear nuevas partículas de humo si está activo
+  if (humoActivo) {
+    // Añadir 1-3 partículas nuevas por frame
+    const particleCount = 1 + Math.floor(Math.random() * 3);
+    for (let i = 0; i < particleCount; i++) {
+      humoParticulas.push({
+        x: bruno.x + (Math.random() * 20 - 10),
+        y: bruno.y + 50,
+        size: 8 + Math.random() * 6,
+        opacity: 0.8,
+        speedX: (Math.random() * 2 - 1) * 0.5,
+        speedY: Math.random() * 0.5 + 0.5
+      });
+    }
+  }
+  
+  // Actualizar partículas existentes
+  for (let i = humoParticulas.length - 1; i >= 0; i--) {
+    const p = humoParticulas[i];
+    p.x += p.speedX;
+    p.y += p.speedY;
+    p.size *= 1.03;
+    p.opacity -= 0.02;
+    
+    if (p.opacity <= 0 || p.size > 30) {
+      humoParticulas.splice(i, 1);
+    }
+  }
+  
+  // Limitar el número de partículas para evitar problemas de rendimiento
+  if (humoParticulas.length > 100) {
+    humoParticulas = humoParticulas.slice(-100);
+  }
+}
+
 function moveBruno() {
   if (leftPressed && bruno.x - bruno.size > 0) bruno.x -= 7;
   if (rightPressed && bruno.x + bruno.size < canvas.width) bruno.x += 7;
@@ -347,6 +392,7 @@ function reiniciar() {
   bruno.y = canvas.height / 2 + 60;
   obstaculos = [];
   estrellas = [];
+  humoParticulas = [];
   gameOver = false;
   showInstructions = true;
   humoActivo = false;
@@ -393,6 +439,7 @@ function gameLoop() {
   altura -= velocidad * 0.03 + nivel * 0.01;
   // Bruno está fijo, los objetos se mueven
   moveBruno();
+  updateHumo();
   updateObstaculos();
   checkColisiones();
   checkLanding();
