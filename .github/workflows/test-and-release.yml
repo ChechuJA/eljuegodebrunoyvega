@@ -52,6 +52,8 @@ jobs:
     needs: test-games
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main'
+    permissions:
+      contents: write
     
     steps:
     - uses: actions/checkout@v3
@@ -67,29 +69,25 @@ jobs:
         echo "Generated version: $VERSION"
     
     - name: Create Release
-      uses: actions/create-release@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        tag_name: ${{ steps.version.outputs.version }}
-        release_name: "Juegos Bruno y Vega ${{ steps.version.outputs.version }}"
-        body: |
-          🎮 Nueva versión automática de los juegos de Bruno y Vega
-          
-          **Cambios incluidos:**
-          - Pruebas automatizadas de todos los juegos
-          - Verificación de funcionalidad completa
-          - Compatibilidad verificada con navegadores modernos
-          
-          **Juegos disponibles:**
-          - Ping Pong Multijugador (NUEVO)
-          - Arkanoid, Serpiente, Memoria, y muchos más
-          
-          **Cómo jugar:**
-          1. Abre index.html en tu navegador
-          2. Ingresa tu nombre de jugador
-          3. ¡Disfruta jugando!
-          
-          _Generado automáticamente el $(date)_
-        draft: false
-        prerelease: false
+      run: |
+        gh release create "${{ steps.version.outputs.version }}" \
+          --title "Juegos Bruno y Vega ${{ steps.version.outputs.version }}" \
+          --notes "🎮 Nueva versión automática de los juegos de Bruno y Vega
+
+        **Cambios incluidos:**
+        - Pruebas automatizadas de todos los juegos
+        - Verificación de funcionalidad completa
+        - Compatibilidad verificada con navegadores modernos
+
+        **Juegos disponibles:**
+        - Ping Pong Multijugador (NUEVO)
+        - Arkanoid, Serpiente, Memoria, y muchos más
+
+        **Cómo jugar:**
+        1. Abre index.html en tu navegador
+        2. Ingresa tu nombre de jugador
+        3. ¡Disfruta jugando!
+
+        _Generado automáticamente el $(date)_"
