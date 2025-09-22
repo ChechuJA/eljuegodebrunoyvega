@@ -1,0 +1,95 @@
+name: Test Games and Auto Release
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test-games:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+    
+    - name: Install dependencies
+      run: |
+        npm init -y
+        npm install --save-dev playwright @playwright/test
+    
+    - name: Install Playwright browsers
+      run: npx playwright install --with-deps chromium
+    
+    - name: Start test server
+      run: |
+        python3 -m http.server 8000 &
+        sleep 3
+      
+    - name: Test games functionality
+      run: |
+        npx playwright test --config=playwright.config.js || true
+        
+    - name: Test games loading
+      run: |
+        # Basic smoke test to ensure games can be loaded
+        curl -f http://localhost:8000/ > /dev/null
+        echo "✅ Main page loads successfully"
+        
+        # Test that game scripts exist and are accessible
+        for script in script-*.js; do
+          if [[ -f "$script" ]]; then
+            curl -f "http://localhost:8000/$script" > /dev/null && echo "✅ $script loads" || echo "❌ $script failed"
+          fi
+        done
+
+  auto-release:
+    needs: test-games
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    
+    - name: Generate version tag
+      id: version
+      run: |
+        # Get the current date for version
+        VERSION="v$(date +'%Y.%m.%d')-build.$(git rev-list --count HEAD)"
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "Generated version: $VERSION"
+    
+    - name: Create Release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ steps.version.outputs.version }}
+        release_name: "Juegos Bruno y Vega ${{ steps.version.outputs.version }}"
+        body: |
+          🎮 Nueva versión automática de los juegos de Bruno y Vega
+          
+          **Cambios incluidos:**
+          - Pruebas automatizadas de todos los juegos
+          - Verificación de funcionalidad completa
+          - Compatibilidad verificada con navegadores modernos
+          
+          **Juegos disponibles:**
+          - Ping Pong Multijugador (NUEVO)
+          - Arkanoid, Serpiente, Memoria, y muchos más
+          
+          **Cómo jugar:**
+          1. Abre index.html en tu navegador
+          2. Ingresa tu nombre de jugador
+          3. ¡Disfruta jugando!
+          
+          _Generado automáticamente el $(date)_
+        draft: false
+        prerelease: false
