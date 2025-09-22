@@ -3,10 +3,52 @@ function registerGame(){
 const canvas=document.getElementById('gameCanvas'); const ctx=canvas.getContext('2d'); let af=null;
 const SIZE=20, COLS=30, ROWS=20; canvas.width=COLS*SIZE; canvas.height=ROWS*SIZE+70;
 let dir={x:1,y:0}; let snake=[{x:5,y:10},{x:4,y:10},{x:3,y:10}]; let food=spawn(); let score=0; let speed=160; let last=0; let gameOver=false; let high=Number(localStorage.getItem('snakeHigh')||0); let highName=localStorage.getItem('snakeHighName')||'-'; const playerName=localStorage.getItem('playerName')||'';
+
+// Background image loading
+const backgroundImage = new Image();
+backgroundImage.src = 'assets/serpiente-background.png';
+backgroundImage.onerror = () => { backgroundImage.src = 'assets/serpiente-background.svg'; };
+
+function backgroundReady() {
+  return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth > 0;
+}
+
 function spawn(){ return {x:Math.floor(Math.random()*COLS),y:Math.floor(Math.random()*ROWS)}; }
 function update(t){ if(gameOver) return; if(!last) last=t; const d=t-last; if(d>speed){ last=t; const head={x:snake[0].x+dir.x,y:snake[0].y+dir.y}; if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS|| snake.some(s=>s.x===head.x&&s.y===head.y)){ gameOver=true; if(score>high){ high=score; localStorage.setItem('snakeHigh', String(high)); } return;} snake.unshift(head); if(head.x===food.x&&head.y===food.y){ score+=10; speed=Math.max(60, speed-4); food=spawn(); } else snake.pop(); }
 }
-function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#e8f5e9','#c8e6c9']); if(window.GameUI){ GameUI.gradientBar(ctx,canvas.width,60,'#1b5e20','#2e7d32'); } else { ctx.fillStyle='#1b5e20'; ctx.fillRect(0,0,canvas.width,60);} ctx.fillStyle='#fff'; ctx.font='20px Arial'; ctx.fillText('Serpiente', 10,38); ctx.font='14px Arial'; ctx.fillText('Puntos: '+score, 160,24); ctx.fillText('Récord: '+high+' ('+highName+')', 160,44); 
+function draw(){ 
+  ctx.clearRect(0,0,canvas.width,canvas.height); 
+  
+  // Draw background image if available
+  if (backgroundReady()) {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    // Add slight overlay to make game elements more visible
+    ctx.save();
+    ctx.globalAlpha = 0.3;
+    ctx.fillStyle = '#e8f5e9';
+    ctx.fillRect(0, 60, canvas.width, canvas.height - 60);
+    ctx.restore();
+  } else if(window.GameUI) {
+    GameUI.softBg(ctx,canvas.width,canvas.height,['#e8f5e9','#c8e6c9']);
+  } else {
+    ctx.fillStyle = '#e8f5e9';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+  }
+  
+  // Top bar
+  if(window.GameUI){ 
+    GameUI.gradientBar(ctx,canvas.width,60,'#1b5e20','#2e7d32'); 
+  } else { 
+    ctx.fillStyle='#1b5e20'; 
+    ctx.fillRect(0,0,canvas.width,60);
+  } 
+  
+  ctx.fillStyle='#fff'; 
+  ctx.font='20px Arial'; 
+  ctx.fillText('Serpiente', 10,38); 
+  ctx.font='14px Arial'; 
+  ctx.fillText('Puntos: '+score, 160,24); 
+  ctx.fillText('Récord: '+high+' ('+highName+')', 160,44); 
 
     // Dibujar un camino ligeramente visible detrás de la serpiente
     ctx.fillStyle = 'rgba(76, 175, 80, 0.15)';

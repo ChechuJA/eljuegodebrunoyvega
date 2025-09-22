@@ -65,21 +65,36 @@ createBlocks();
 let rightPressed = false;
 let leftPressed = false;
 
+// Background image loading
+const backgroundImage = new Image();
+backgroundImage.src = 'assets/arkanoid-background.png';
+backgroundImage.onerror = () => { backgroundImage.src = 'assets/arkanoid-background.svg'; };
+
+function backgroundReady() {
+  return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth > 0;
+}
+
 // Dibuja fondo con texto bonito
 function drawBackground() {
-		ctx.save();
-		ctx.globalAlpha = 0.15;
-		ctx.font = 'bold 48px Comic Sans MS, Arial';
-		ctx.fillStyle = '#e91e63';
-		ctx.textAlign = 'center';
-		ctx.fillText('El juego de', canvas.width / 2, canvas.height / 2 - 40);
-		ctx.font = 'bold 54px Comic Sans MS, Arial';
-		ctx.fillStyle = '#0288d1';
-		ctx.fillText('Bruno y Vega', canvas.width / 2, canvas.height / 2 + 10);
-		ctx.font = 'bold 32px Comic Sans MS, Arial';
-		ctx.fillStyle = '#333';
-		ctx.fillText('Nivel: ' + level, canvas.width / 2, canvas.height / 2 + 60);
-		ctx.restore();
+  // Draw space background if available
+  if (backgroundReady()) {
+    ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+  }
+  
+  // Text overlay with semi-transparent background for readability
+  ctx.save();
+  ctx.globalAlpha = 0.15;
+  ctx.font = 'bold 48px Comic Sans MS, Arial';
+  ctx.fillStyle = '#e91e63';
+  ctx.textAlign = 'center';
+  ctx.fillText('El juego de', canvas.width / 2, canvas.height / 2 - 40);
+  ctx.font = 'bold 54px Comic Sans MS, Arial';
+  ctx.fillStyle = '#0288d1';
+  ctx.fillText('Bruno y Vega', canvas.width / 2, canvas.height / 2 + 10);
+  ctx.font = 'bold 32px Comic Sans MS, Arial';
+  ctx.fillStyle = '#333';
+  ctx.fillText('Nivel: ' + level, canvas.width / 2, canvas.height / 2 + 60);
+  ctx.restore();
 }
 
 // Dibuja bloques
