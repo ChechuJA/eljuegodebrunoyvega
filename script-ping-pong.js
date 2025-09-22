@@ -44,6 +44,15 @@ function registerGame(){
   const keys = {};
   const maxScore = 5; // Win condition
 
+  // Background image loading
+  const backgroundImage = new Image();
+  backgroundImage.src = 'assets/ping-pong-background.png';
+  backgroundImage.onerror = () => { backgroundImage.src = 'assets/ping-pong-background.svg'; };
+
+  function backgroundReady() {
+    return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth > 0;
+  }
+
   function resetBall() {
     ball.x = canvas.width / 2;
     ball.y = canvas.height / 2;
@@ -138,10 +147,22 @@ function registerGame(){
   }
 
   function drawIntro() {
-    // Background gradient
-    if (window.GameUI) {
+    // Background image or gradient fallback
+    if (backgroundReady()) {
+      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    } else if (window.GameUI) {
       GameUI.softBg(ctx, canvas.width, canvas.height, ['#1a0033', '#2d1b69']);
+    } else {
+      ctx.fillStyle = '#1a0033';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+
+    // Semi-transparent overlay for better text readability
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = '#1a0033';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     // Title
     ctx.save();
@@ -178,10 +199,22 @@ function registerGame(){
   }
 
   function drawNameInput() {
-    // Background
-    if (window.GameUI) {
+    // Background image or gradient fallback
+    if (backgroundReady()) {
+      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+    } else if (window.GameUI) {
       GameUI.softBg(ctx, canvas.width, canvas.height, ['#1a0033', '#2d1b69']);
+    } else {
+      ctx.fillStyle = '#1a0033';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
+
+    // Semi-transparent overlay for better text readability
+    ctx.save();
+    ctx.globalAlpha = 0.7;
+    ctx.fillStyle = '#1a0033';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
     ctx.save();
     ctx.fillStyle = '#fff';
@@ -198,9 +231,19 @@ function registerGame(){
   }
 
   function drawGame() {
-    // Game background
-    ctx.fillStyle = '#0f1419';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    // Game background with image
+    if (backgroundReady()) {
+      ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+      // Add slight overlay to darken for better gameplay visibility
+      ctx.save();
+      ctx.globalAlpha = 0.3;
+      ctx.fillStyle = '#0f1419';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.restore();
+    } else {
+      ctx.fillStyle = '#0f1419';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
 
     // Center line
     ctx.setLineDash([10, 10]);
