@@ -7,6 +7,8 @@ const laneCount=3; const laneWidth=160; const roadMargin=(canvas.width - laneCou
 let player={lane:1,y:canvas.height-120,w:70,h:120,color:'#ff1744'};
 let speed=6; let baseSpeed=6; let distance=0; let high=Number(localStorage.getItem('carreraHigh')||0); let highName=localStorage.getItem('carreraHighName')||''; let obstacles=[]; let spawnTimer=0; let spawnEvery=1200; let lastT=0; let crashed=false; let playerName=localStorage.getItem('playerName')||'';
 let powerTimer=0; // futuro para boosts
+// Variable global para controlar la velocidad del juego
+let gameSpeed = 1;
 function laneX(l){ return roadMargin + l*laneWidth + laneWidth/2; }
 function spawn(){ const freeLane=Math.floor(Math.random()*laneCount); const car={lane:freeLane,y:-150,w:70,h:120,color:randomCarColor()}; obstacles.push(car); }
 function randomCarColor(){ const c=['#1976d2','#388e3c','#ffa000','#7b1fa2','#c2185b']; return c[Math.floor(Math.random()*c.length)]; }
@@ -167,7 +169,7 @@ function drawIntro(){
 }
 function drawCrash(){ ctx.save(); ctx.globalAlpha=0.85; ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalAlpha=1; ctx.fillStyle='#ffeb3b'; ctx.font='bold 30px Arial'; ctx.textAlign='center'; ctx.fillText('¡Choque!', canvas.width/2,canvas.height/2-40); ctx.font='20px Arial'; ctx.fillText('Distancia: '+Math.floor(distance), canvas.width/2, canvas.height/2); ctx.fillText('Pulsa R para reiniciar', canvas.width/2, canvas.height/2+40); ctx.restore(); }
 function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawRoad(); drawCars(); drawHUD(); if(showIntro) drawIntro(); if(crashed) drawCrash(); }
-function loop(t){ if(!lastT) lastT=t; const dt=t-lastT; lastT=t; update(dt); draw(); af=requestAnimationFrame(loop); }
+function loop(t){ if(!lastT) lastT=t; const dt=t-lastT; lastT=t; update(dt); drawRoad(); setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
 function key(e){ if(showIntro){ showIntro=false; return; } if(crashed && e.key.toLowerCase()==='r'){ // reset
  distance=0; speed=baseSpeed; obstacles=[]; crashed=false; player.lane=1; return; }
  if(e.key==='ArrowLeft' && player.lane>0) player.lane--; else if(e.key==='ArrowRight' && player.lane<laneCount-1) player.lane++; }

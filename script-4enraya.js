@@ -10,6 +10,8 @@ function registerGame(){
   let turn = 1; // 1=jugador, 2=IA
   let winner = 0;
   let showIntro = true;
+  // Variable global para controlar la velocidad del juego
+  let gameSpeed = 1;
   function reset(){
     board = Array.from({length:ROWS},()=>Array(COLS).fill(0));
     turn = 1;
@@ -133,11 +135,33 @@ function registerGame(){
     if(showIntro){ showIntro=false; return; }
     if(winner && e.key.toLowerCase()==='r'){ reset(); return; }
   }
+  // Función para ajustar la velocidad
+  function adjustSpeed(delta) {
+      gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+      console.log(`Velocidad del juego: ${gameSpeed}`);
+  }
+
+  // Escuchar teclas para ajustar la velocidad
+  document.addEventListener('keydown', (e) => {
+      if (e.key === '+') adjustSpeed(0.1);
+      if (e.key === '-') adjustSpeed(-0.1);
+  });
+
   canvas.addEventListener('click',handleClick);
   window.addEventListener('keydown',keydown);
   reset();
   function loop(){ draw(); requestAnimationFrame(loop); }
-  loop();
+  function gameLoop() {
+    if (showIntro) {
+        drawIntro();
+    } else {
+        drawBoard();
+    }
+    setTimeout(() => {
+        requestAnimationFrame(gameLoop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
+  }
+  gameLoop();
   return function cleanup(){
     canvas.removeEventListener('click',handleClick);
     window.removeEventListener('keydown',keydown);

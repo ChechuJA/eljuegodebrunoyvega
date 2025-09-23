@@ -10,6 +10,7 @@
   const CANA_WIDTH = 18, CANA_HEIGHT = 60;
   const GAME_TIME = 40; // segundos
   const CANA_COUNT = 6;
+  let gameSpeed = 1; // Variable global para controlar la velocidad del juego
   function bgReady(){ return backgroundImage && backgroundImage.complete && backgroundImage.naturalWidth>0; }
   function playerReady(){ return playerImage && playerImage.complete && playerImage.naturalWidth>0; }
   function canaReady(){ return canaImage && canaImage.complete && canaImage.naturalWidth>0; }
@@ -112,7 +113,9 @@
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    setTimeout(() => {
+      requestAnimationFrame(loop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
   }
 
   function keydown(e) {
@@ -150,4 +153,16 @@
       if(timer) clearInterval(timer);
     };
   };
+
+  // Función para ajustar la velocidad
+  function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+  }
+
+  // Escuchar teclas para ajustar la velocidad
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+  });
 })();

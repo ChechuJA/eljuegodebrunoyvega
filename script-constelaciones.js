@@ -557,6 +557,46 @@ function loop(){
   
   af=requestAnimationFrame(loop); 
 }
+// Variable global para controlar la velocidad del juego
+let gameSpeed = 1;
+
+// Función para ajustar la velocidad
+function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+}
+
+// Escuchar teclas para ajustar la velocidad
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+});
+
+// Modificar el bucle principal para incluir la velocidad
+function loop() {
+    drawFondo(); 
+    drawConstelacion(); 
+    drawHUD(); 
+    // Reducir el timer más lentamente para que la información permanezca más tiempo
+    if(infoTimer>0) infoTimer-=0.008; // Reducido a la mitad para duplicar el tiempo de visualización 
+    
+    // Gestionar el temporizador de transición entre constelaciones
+    if(transicionTimer>0) {
+      transicionTimer-=0.01; // Decrementar lentamente
+      if(transicionTimer <= 0) {
+        // Cuando llega a cero, pasar a la siguiente constelación
+        transicionTimer = 0;
+        idx = (idx + 1) % figuras.length; 
+        current = figuras[idx]; 
+        progreso = 0;
+      }
+    }
+    
+    setTimeout(() => {
+        af = requestAnimationFrame(loop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
+}
+
 function click(e){ 
   const rect=canvas.getBoundingClientRect(); 
   const mx=e.clientX-rect.left, my=e.clientY-rect.top; 

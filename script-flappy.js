@@ -410,6 +410,22 @@ function initFlappy(canvas) {
   document.addEventListener('keydown', keyDownListener);
   canvas.addEventListener('click', clickListener);
 
+  // Variable global para controlar la velocidad del juego
+  let gameSpeed = 1;
+
+  // Función para ajustar la velocidad
+  function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+  }
+
+  // Escuchar teclas para ajustar la velocidad
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+  });
+
+  // Bucle principal
   function gameLoop() {
     try {
       update();
@@ -417,7 +433,9 @@ function initFlappy(canvas) {
     } catch (err) {
       console.error("Error en gameLoop:", err);
     }
-    animationFrame = requestAnimationFrame(gameLoop);
+    setTimeout(() => {
+      animationFrame = requestAnimationFrame(gameLoop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
   }
 
   gameLoop();

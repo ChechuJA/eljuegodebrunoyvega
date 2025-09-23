@@ -376,7 +376,19 @@ function draw(){
   // Mostrar pantalla de inicio si es necesario
   if(showIntro) drawIntro(); 
 }
-function loop(){ update(); draw(); af=requestAnimationFrame(loop); }
+let gameSpeed = 1;
+// Función para ajustar la velocidad
+function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+}
+
+// Escuchar teclas para ajustar la velocidad
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+});
+function loop(){ update(); draw(); setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
 function key(e){ if(showIntro){ showIntro=false; return; } }
 function mouseMove(e){ const rect=canvas.getBoundingClientRect(); const mx=e.clientX-rect.left; const my=e.clientY-rect.top; const ang=Math.atan2(shooter.y - my, mx - shooter.x); shooter.angle = ang; }
 function mouseClick(e){ if(showIntro) return; if(currentBall.moving) return; currentBall.moving=true; const speed=10; const ang=shooter.angle; currentBall.vx = Math.cos(ang)*speed; currentBall.vy = -Math.sin(ang)*speed; }

@@ -45,7 +45,28 @@ function draw(){
  if(gameOver){ ctx.fillStyle='rgba(0,0,0,0.65)'; ctx.fillRect(0,0,COLS*SIZE,ROWS*SIZE); ctx.fillStyle='#ffeb3b'; ctx.font='24px Arial'; ctx.textAlign='center'; ctx.fillText('GAME OVER', (COLS*SIZE)/2, 120); ctx.font='16px Arial'; ctx.fillStyle='#fff'; ctx.fillText('Pulsa R para reiniciar', (COLS*SIZE)/2, 150);} 
  ctx.restore();
 }
-function loop(t){ update(t); draw(); af=requestAnimationFrame(loop); }
+// Variable global para controlar la velocidad del juego
+let gameSpeed = 1;
+
+// Función para ajustar la velocidad
+function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+}
+
+// Escuchar teclas para ajustar la velocidad
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+});
+
+function loop(t) {
+    update(t);
+    draw();
+    setTimeout(() => {
+        af = requestAnimationFrame(loop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
+}
 function key(e){ if(gameOver && e.key.toLowerCase()==='r'){ grid=Array.from({length:ROWS},()=>Array(COLS).fill(0)); score=0; level=1; dropInterval=700; gameOver=false; newPiece(); return; }
  if(e.key==='ArrowLeft'&&!collide(-1,0,current)) x--; else if(e.key==='ArrowRight'&&!collide(1,0,current)) x++; else if(e.key==='ArrowDown'){ if(!collide(0,1,current)) y++; } else if(e.key==='ArrowUp'){ const rot=rotate(current); if(!collide(0,0,rot)) current=rot; } else if(e.key===' '){ while(!collide(0,1,current)) y++; merge(); clearLines(); spawn(); }
 }

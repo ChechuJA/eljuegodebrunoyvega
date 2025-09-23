@@ -11,6 +11,9 @@ function registerGame() {
   let intro = true, ended = false;
   let particles = [];
 
+  // Variable global para controlar la velocidad del juego
+  let gameSpeed = 1;
+
   function createParticles(x,y,count,colorRange=0){
     for(let i=0;i<count;i++){
       particles.push({
@@ -219,6 +222,27 @@ function registerGame() {
         if(x>=bx && x<=bx+w && y>=by && y<=by+h) guess(ch);
       });
     });
+  }
+
+  // Función para ajustar la velocidad
+  function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+  }
+
+  // Escuchar teclas para ajustar la velocidad
+  document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+  });
+
+  // Modificar el bucle principal para incluir la velocidad
+  function gameLoop() {
+    updateParticles();
+    drawParticles();
+    setTimeout(() => {
+        requestAnimationFrame(gameLoop);
+    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
   }
 
   window.addEventListener('keydown', keyHandler);

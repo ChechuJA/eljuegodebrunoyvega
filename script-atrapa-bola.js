@@ -463,6 +463,21 @@ function initAtrapa(canvas) {
     if (e.code === "ArrowLeft") leftPressed = false;
   });
 
+  // Variable global para controlar la velocidad del juego
+let gameSpeed = 1;
+
+// Función para ajustar la velocidad
+function adjustSpeed(delta) {
+    gameSpeed = Math.max(0.1, gameSpeed + delta); // Evita que sea menor a 0.1
+    console.log(`Velocidad del juego: ${gameSpeed}`);
+}
+
+// Escuchar teclas para ajustar la velocidad
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+') adjustSpeed(0.1);
+    if (e.key === '-') adjustSpeed(-0.1);
+});
+
   // ---------------------------
   // RESET
   // ---------------------------
