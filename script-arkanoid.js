@@ -92,7 +92,7 @@ function drawBackground() {
   ctx.fillStyle = '#0288d1';
   ctx.fillText('Bruno y Vega', canvas.width / 2, canvas.height / 2 + 10);
   ctx.font = 'bold 32px Comic Sans MS, Arial';
-  ctx.fillStyle = '#333';
+  ctx.fillStyle = '#00ffcc'; // Cambié el color a un fluorescente claro
   ctx.fillText('Nivel: ' + level, canvas.width / 2, canvas.height / 2 + 60);
   ctx.restore();
 }
