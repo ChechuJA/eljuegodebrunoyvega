@@ -2,7 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,m      <button style="background:#4bace1" onclick="startGame('flappy')">Flappy Bird 🐦</button>
+      <button style="background:#ff5722" onclick="startGame('mario-flappy')">Mario Volador 🍄</button>
+      <button style="background:#8bc34a" onclick="startGame('atrapa-bola')">Atrapa Bola ⚽</button>imum-scale=1,user-scalable=no" />
   <title>El juego de Bruno y Vega</title>
   <link rel="stylesheet" href="style.css">
   <style>
@@ -137,6 +139,7 @@
       <button style="background:#ff5722" onclick="startGame('juego-habilidad')">Esquiva Obstáculos 🚀</button>
       <button style="background:#795548" onclick="startGame('moto-desierto')">Moto en el Desierto 🏍️</button>
       <button style="background:#4bace1" onclick="startGame('flappy')">Flappy Bird 🐦</button>
+      <button style="background:#ff5722" onclick="startGame('mario-flappy')">Mario Volador 🍄</button>
       <button style="background:#0288d1" onclick="startGame('atrapa-bola')">Atrapa Bolas 🏀</button>
     </div>
     
@@ -275,6 +278,7 @@
         ['Ahorcado','ahorcadoHigh','ahorcadoHighName'],
         ['Quiz','quizHigh','quizHighName'],
         ['Flappy','flappyHighScore','flappyHighScoreName'],
+        ['Mario Volador','marioflappyHighScore','marioflappyHighScoreName'],
         ['Atrapa Bola','atrapaBallHigh','atrapaBallHighName']
       ];
       const wrap=document.getElementById('globalScoresContent');
@@ -323,6 +327,7 @@
         'juego-habilidad':'script-juego-habilidad.js',
         'moto-desierto':'script-moto-desierto.js',
         'flappy':'script-flappy.js',
+        'mario-flappy':'script-mario-flappy.js',
         'atrapa-bola':'script-atrapa-bola.js'
       };
       loadScript(map[game]);
