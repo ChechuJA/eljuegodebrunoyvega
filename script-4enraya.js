@@ -152,15 +152,12 @@ function registerGame(){
   reset();
   function loop(){ draw(); requestAnimationFrame(loop); }
   function gameLoop() {
-    if (showIntro) {
-        drawIntro();
-    } else {
-        drawBoard();
-    }
     setTimeout(() => {
-        requestAnimationFrame(gameLoop);
-    }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
-  }
+        // ...existing game logic...
+        gameLoop();
+    }, 1000 / gameSpeed);
+}
+
   gameLoop();
   return function cleanup(){
     canvas.removeEventListener('click',handleClick);

@@ -169,11 +169,25 @@ function drawIntro(){
 }
 function drawCrash(){ ctx.save(); ctx.globalAlpha=0.85; ctx.fillStyle='#000'; ctx.fillRect(0,0,canvas.width,canvas.height); ctx.globalAlpha=1; ctx.fillStyle='#ffeb3b'; ctx.font='bold 30px Arial'; ctx.textAlign='center'; ctx.fillText('¡Choque!', canvas.width/2,canvas.height/2-40); ctx.font='20px Arial'; ctx.fillText('Distancia: '+Math.floor(distance), canvas.width/2, canvas.height/2); ctx.fillText('Pulsa R para reiniciar', canvas.width/2, canvas.height/2+40); ctx.restore(); }
 function draw(){ ctx.clearRect(0,0,canvas.width,canvas.height); drawRoad(); drawCars(); drawHUD(); if(showIntro) drawIntro(); if(crashed) drawCrash(); }
-function loop(t){ if(!lastT) lastT=t; const dt=t-lastT; lastT=t; update(dt); drawRoad(); setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
+function loop(t){ if(!lastT) lastT=t; const dt=t-lastT; lastT=t; update(dt); drawRoad(); drawPlayerCar(); setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
 function key(e){ if(showIntro){ showIntro=false; return; } if(crashed && e.key.toLowerCase()==='r'){ // reset
  distance=0; speed=baseSpeed; obstacles=[]; crashed=false; player.lane=1; return; }
  if(e.key==='ArrowLeft' && player.lane>0) player.lane--; else if(e.key==='ArrowRight' && player.lane<laneCount-1) player.lane++; }
 window.addEventListener('keydown',key); requestAnimationFrame(loop);
+// Escuchar teclas para ajustar la velocidad
+document.addEventListener('keydown', (e) => {
+    if (e.key === '+') {
+        gameSpeed = Math.min(3, gameSpeed + 0.1); // Límite superior
+        speed = baseSpeed * gameSpeed;
+        console.log(`Velocidad aumentada: ${speed}`);
+    }
+    if (e.key === '-') {
+        gameSpeed = Math.max(0.5, gameSpeed - 0.1); // Límite inferior
+        speed = baseSpeed * gameSpeed;
+        console.log(`Velocidad reducida: ${speed}`);
+    }
+});
+
 return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',key); };
 }
 window.registerGame=registerGame;

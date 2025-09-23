@@ -5,21 +5,16 @@
 (function(){
   // Frases curiosas y datos de Sonseca
   const curiosidades = [
-    "El nombre Sonseca viene del latín 'fonte sica', que significa 'fuente seca'.",
-    "Sonseca es famosa por su industria del mazapán y el mueble.",
-    "En Sonseca se encuentra la presa romana de Alcantarilla, declarada Bien de Interés Cultural.",
-    "El municipio está rodeado de suaves colinas y llanuras, ideal para la agricultura.",
-    "La altitud media de Sonseca es de 754 metros sobre el nivel del mar.",
-    "El arroyo de Casalgordo y el Guajaraz son parte de su red de arroyos.",
-    "En el siglo XVIII se desarrolló la industria textil en Sonseca.",
-    "El lema popular es: 'Andándose hace el camino'.",
-    "En Sonseca se celebran fiestas como San Juan Evangelista y la Virgen de los Remedios.",
-    "La villa fue independiente de Toledo desde 1629.",
-    "El clima es semiárido frío, con veranos calurosos y secos.",
-    "La plaza del pueblo no está en el centro geográfico, sino al este de la localidad.",
-    "En la zona de El Berrocal se alcanza la mayor altitud del municipio: 895 metros.",
-    "La economía local destaca por el mazapán, el mueble y la agricultura de secano.",
-    "En Sonseca se han hallado restos arqueológicos del Calcolítico y la Edad del Bronce."
+    "Sonseca tiene una población de 11,000 habitantes censados.",
+    "La superficie de Sonseca es de 145 km².",
+    "El mazapán de Sonseca es reconocido a nivel nacional.",
+    "La industria del mueble en Sonseca tiene más de 50 años de historia.",
+    "El dedal es un pequeño objeto usado para proteger los dedos al coser.",
+    "La rueca es una herramienta antigua para hilar fibras naturales.",
+    "La madera de olivo es muy valorada por su resistencia y belleza.",
+    "El bordado es una técnica de costura decorativa con hilos de colores.",
+    "El martillo de carpintero tiene una cara plana y una uña para clavos.",
+    "La gubia es una herramienta usada para tallar madera con precisión."
   ];
 
   let canvas, ctx, width, height;
@@ -46,7 +41,7 @@
     // Fondo
     ctx.fillStyle = '#e0e0e0';
     ctx.fillRect(0,0,width,height);
-    // Camino
+    // Camino con costura
     for(let i=0; i<camino.length; i++) {
       if(camino[i].visible) {
         ctx.fillStyle = '#8d6e63';
@@ -54,6 +49,14 @@
         ctx.fillStyle = '#fff';
         ctx.font = '16px Arial';
         ctx.fillText((i+1), camino[i].x+10, camino[i].y+22);
+      } else {
+        // Dibujar costura detrás del jugador
+        ctx.strokeStyle = '#000';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(camino[i].x + PASO_SIZE / 2, camino[i].y + PASO_SIZE / 2);
+        ctx.lineTo(player.x + PLAYER_SIZE / 2, player.y + PLAYER_SIZE / 2);
+        ctx.stroke();
       }
     }
     // Jugador
@@ -68,7 +71,7 @@
       ctx.fillRect(0, height/2-60, width, 120);
       ctx.fillStyle = '#fffde7';
       ctx.font = '20px Arial';
-      ctx.fillText('Curiosidad de Sonseca:', width/2-120, height/2-10);
+      ctx.fillText('Dato curioso:', width/2-80, height/2-10);
       ctx.font = '18px Arial';
       ctx.fillText(curiosidades[fraseIndex], width/2-ctx.measureText(curiosidades[fraseIndex]).width/2, height/2+30);
       ctx.font = '16px Arial';
@@ -77,7 +80,7 @@
     // Lema
     ctx.fillStyle = '#388e3c';
     ctx.font = 'bold 18px Arial';
-    ctx.fillText('"Andándose hace el camino"', width/2-110, 36);
+    ctx.fillText('"Andando se hace el camino"', width/2-110, 36);
     if(gameOver) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, height/2-40, width, 80);

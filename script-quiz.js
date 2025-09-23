@@ -54,7 +54,11 @@ function initQuiz(canvas, cleanupBag) {
       { letter: 'I', question: '¿Qué animal puede cambiar de color para camuflarse?', options: ['Iguana', 'Camaleón', 'Pulpo'], answer: 2,
         fact: 'Los pulpos tienen células especializadas llamadas cromatóforos que les permiten cambiar de color en segundos.' },
       { letter: 'J', question: '¿Qué animal es el más grande del mundo?', options: ['Jirafa', 'Elefante', 'Ballena azul'], answer: 2,
-        fact: 'La ballena azul puede pesar hasta 180 toneladas, equivalente a 33 elefantes.' }
+        fact: 'La ballena azul puede pesar hasta 180 toneladas, equivalente a 33 elefantes.' },
+      { letter: 'K', question: '¿Qué animal es conocido por su capacidad de imitar sonidos humanos?', options: ['Loro', 'Perro', 'Gato'], answer: 0,
+        fact: 'Los loros tienen una lengua musculosa que les permite imitar sonidos con precisión.' },
+      { letter: 'L', question: '¿Qué animal tiene el corazón más grande?', options: ['Ballena azul', 'Elefante', 'Rinoceronte'], answer: 0,
+        fact: 'El corazón de una ballena azul puede pesar hasta 180 kg.' }
     ],
     insectos: [
       { letter: 'A', question: '¿Qué insecto puede cargar 50 veces su peso?', options: ['Abeja', 'Hormiga', 'Escarabajo'], answer: 1,
@@ -76,7 +80,11 @@ function initQuiz(canvas, cleanupBag) {
       { letter: 'I', question: '¿Qué insecto puede sobrevivir sin cabeza?', options: ['Cucaracha', 'Mosca', 'Araña'], answer: 0,
         fact: 'Las cucarachas pueden vivir hasta una semana sin cabeza, hasta que mueren de deshidratación.' },
       { letter: 'J', question: '¿Qué insecto es responsable de la polinización de muchas plantas?', options: ['Mosquito', 'Abeja', 'Hormiga'], answer: 1,
-        fact: 'Las abejas polinizan aproximadamente un tercio de todos los cultivos que consumimos.' }
+        fact: 'Las abejas polinizan aproximadamente un tercio de todos los cultivos que consumimos.' },
+      { letter: 'K', question: '¿Qué insecto puede vivir hasta 50 años?', options: ['Termita reina', 'Abeja reina', 'Hormiga reina'], answer: 0,
+        fact: 'La termita reina puede vivir hasta 50 años, produciendo millones de huevos.' },
+      { letter: 'L', question: '¿Qué insecto tiene alas transparentes?', options: ['Mariposa de cristal', 'Libélula', 'Avispa'], answer: 0,
+        fact: 'La mariposa de cristal tiene alas casi invisibles, lo que la hace difícil de detectar.' }
     ],
     dinosaurios: [
       { letter: 'A', question: '¿Qué dinosaurio tenía placas óseas en la espalda?', options: ['Apatosaurus', 'Stegosaurus', 'Ankylosaurus'], answer: 1,
@@ -98,7 +106,11 @@ function initQuiz(canvas, cleanupBag) {
       { letter: 'I', question: '¿Qué dinosaurio es conocido por sus enormes garras?', options: ['Iguanodon', 'Deinonico', 'Velociraptor'], answer: 2,
         fact: 'El Velociraptor era mucho más pequeño que en las películas, del tamaño de un pavo grande.' },
       { letter: 'J', question: '¿Qué dinosaurio era el más grande?', options: ['Argentinosaurus', 'Diplodocus', 'Brachiosaurus'], answer: 0,
-        fact: 'El Argentinosaurus podía medir hasta 35 metros y pesar 90 toneladas, como 14 elefantes juntos.' }
+        fact: 'El Argentinosaurus podía medir hasta 35 metros y pesar 90 toneladas, como 14 elefantes juntos.' },
+      { letter: 'K', question: '¿Qué dinosaurio tenía una cola en forma de maza?', options: ['Ankylosaurus', 'Triceratops', 'Stegosaurus'], answer: 0,
+        fact: 'El Ankylosaurus usaba su cola en forma de maza para defenderse de depredadores.' },
+      { letter: 'L', question: '¿Qué dinosaurio tenía dientes afilados como cuchillas?', options: ['Velociraptor', 'Tyrannosaurus Rex', 'Allosaurus'], answer: 2,
+        fact: 'El Allosaurus tenía dientes afilados que podían cortar carne con facilidad.' }
     ],
     marinos: [
       { letter: 'A', question: '¿Qué animal marino puede regenerar sus tentáculos?', options: ['Anémona', 'Pulpo', 'Sepia'], answer: 1,

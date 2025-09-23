@@ -54,6 +54,7 @@
     ctx.font = '18px Arial';
     ctx.fillText('Cañas: '+score, 10, 24);
     ctx.fillText('Tiempo: '+timeLeft+'s', width-120, 24);
+    ctx.fillText('Récord: '+(localStorage.getItem('canaverasRecord') || 0), width-120, 50); // Mostrar récord
     if(gameOver) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
       ctx.fillRect(0, height/2-40, width, 80);
