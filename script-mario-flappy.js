@@ -27,7 +27,7 @@
     '"La Bella y la Bestia" (1991) fue la primera película animada nominada al Oscar a Mejor Película.'
   ];
 
-  // Definición de tiles: 0 = vacío, 1 = suelo, 2 = bloque sólido, 3 = estrella (coleccionable), 4 = enemigo, 5 = pinchos
+  // Definición de tiles: 0 = vacío, 1 = suelo, 2 = bloque sólido, 3 = estrella, 4 = enemigo, 5 = pinchos, B = bloque rompible
   levels = [];
 
   // Nivel 1 (intro)
@@ -69,7 +69,7 @@
     const raw = levels[idx];
     entities = [];
     cameraX = 0;
-    player = { x: TILE*2, y: CANVAS_H - TILE*3, vx:0, vy:0, w:32, h:36, onGround:false, facing:1 };
+    player = { x: TILE*2, y: 0, vx:0, vy:0, baseW:32, baseH:36, scale:1, w:32, h:36, onGround:false, facing:1 };
     score = 0;
     lives = 3;
     paused = false;
@@ -89,6 +89,15 @@
           // place star entity
           entities.push({ type:'star', x:x*TILE+TILE/2, y:y*TILE+TILE/2, w:20, h:20, collected:false });
         }
+        if(ch==='B' || ch==='b'){
+          // breakable block tile
+          tiles[y][x] = 'B';
+          // hide a mushroom occasionally
+          if(Math.random()<0.15){
+            entities.push({ type:'mushroomHidden', x:x*TILE, y:y*TILE, w:TILE, h:TILE, revealed:false });
+          }
+          continue;
+        }
         if(ch==='E' || ch==='e') {
           entities.push({ type:'enemy', x:x*TILE, y:y*TILE, w:32, h:32, dir:-1, speed:1.2 });
         }
@@ -103,6 +112,15 @@
       }
     }
     levels[idx].tilesNumeric = tiles;
+    // place player on top of the ground for this level
+    const startTx = Math.floor(player.x / TILE);
+    // find lowest solid tile in that column
+    let groundTy = raw.heightTiles - 1;
+    for(let ty=raw.heightTiles-1; ty>=0; ty--){
+      if(tiles[ty] && (tiles[ty][startTx]===1 || tiles[ty][startTx]===2)) { groundTy = ty; break; }
+    }
+    player.y = groundTy * TILE - player.h - 1;
+    player.vx = 0; player.vy = 0; player.onGround = true;
     // Add some enemies and moving platforms for level 2
     if(idx===1){
       // add moving platform entities
@@ -134,7 +152,7 @@
     for(let ty=top; ty<=bottom; ty++){
       for(let tx=left; tx<=right; tx++){
         const t = (raw.tilesNumeric[ty] && raw.tilesNumeric[ty][tx]) || 0;
-        if(t===1 || t===2){
+        if(t===1 || t===2 || t==='B'){
           // solid tile
           const tileRect = { x: tx*TILE, y: ty*TILE, w:TILE, h:TILE };
           if(rectsOverlap(entity, tileRect)){
@@ -148,8 +166,25 @@
               if(overlapX>0) entity.x += ox; else entity.x -= ox;
               entity.vx = 0;
             } else {
-              if(overlapY>0) entity.y += oy; else entity.y -= oy;
-              entity.vy = 0;
+              // If collision is from below (player hitting the bottom of tile)
+              if(overlapY>0){
+                // collision from below
+                // if tile is breakable, break it and maybe reveal mushroom
+                if(t==='B'){
+                  levels[levelIndex].tilesNumeric[ty][tx]=0;
+                  // reveal any hidden mushroom at that tile
+                  for(const ent of entities){
+                    if(ent.type==='mushroomHidden' && !ent.revealed && Math.abs(ent.x - tx*TILE)<2 && Math.abs(ent.y - ty*TILE)<2){
+                      ent.revealed=true; ent.type='mushroom'; ent.y = ty*TILE; ent.x = tx*TILE+TILE/2; ent.w=20; ent.h=20; break;
+                    }
+                  }
+                }
+                if(overlapY>0) entity.y += oy; else entity.y -= oy;
+                entity.vy = 0;
+              } else {
+                if(overlapY>0) entity.y += oy; else entity.y -= oy;
+                entity.vy = 0;
+              }
             }
           }
         }
@@ -166,7 +201,15 @@
 
   function hurtPlayer(){
     lives--;
-    player.x = TILE*2; player.y = CANVAS_H - TILE*3; player.vx=0; player.vy=0;
+    player.x = TILE*2; player.vx=0; player.vy=0;
+    // place on top of ground similar to loadLevel
+    const raw = levels[levelIndex];
+    const startTx = Math.floor(player.x / TILE);
+    let groundTy = raw.heightTiles - 1;
+    for(let ty=raw.heightTiles-1; ty>=0; ty--){
+      if(raw.tilesNumeric[ty] && (raw.tilesNumeric[ty][startTx]===1 || raw.tilesNumeric[ty][startTx]===2)) { groundTy = ty; break; }
+    }
+    player.y = groundTy * TILE - player.h - 1;
     if(lives<=0) endGame();
   }
 
@@ -212,9 +255,10 @@
         // collide with player?
         if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h}, {x:ent.x,y:ent.y,w:ent.w,h:ent.h} )){
           // if player is falling onto enemy, kill enemy else hurt player
-          if(player.vy>0 && player.y+player.h - ent.y < 16){
-            // kill enemy
-            ent.dead = true; score += 200;
+          if(player.vy>0 && player.y+player.h - ent.y < 18){
+            // kill enemy by stomping
+            ent.dead = true; score += 5; // 5 points per stomp
+            player.vy = JUMP_POWER/2; // small bounce
           } else {
             hurtPlayer();
           }
@@ -223,6 +267,27 @@
       if(ent.type==='star' && !ent.collected){
         if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h}, {x:ent.x-ent.w/2,y:ent.y-ent.h/2,w:ent.w,h:ent.h})){
           ent.collected=true; score += 500; showCuriosity();
+        }
+      }
+      if(ent.type==='mushroom'){
+        // simple pickup
+        if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h}, {x:ent.x-ent.w/2,y:ent.y-ent.h/2,w:ent.w,h:ent.h})){
+          // grow player
+          ent.collected = true;
+          // increase scale up to 4x
+          player.scale = Math.min(4, (player.scale || 1) + 1);
+          player.w = player.baseW * player.scale; player.h = player.baseH * player.scale;
+          // if reached size 4, schedule a shrink later by spawning a 'shrink' star after some time
+          if(player.scale>=4){
+            // create a 'shrink' mushroom somewhere ahead
+            entities.push({ type:'shrink', x: (player.x + 8*TILE), y: player.y - 100, w:20, h:20 });
+          }
+        }
+      }
+      if(ent.type==='shrink'){
+        if(rectsOverlap({x:player.x,y:player.y,w:player.w,h:player.h}, {x:ent.x-ent.w/2,y:ent.y-ent.h/2,w:ent.w,h:ent.h})){
+          ent.collected = true;
+          player.scale = 1; player.w = player.baseW; player.h = player.baseH;
         }
       }
       if(ent.type==='platform'){
@@ -272,6 +337,10 @@
             ctx.fillStyle = '#8d6e63'; ctx.fillRect(px,py,TILE,TILE);
             ctx.fillStyle='#5d4037'; ctx.fillRect(px+4,py+4,TILE-8,TILE-8);
           }
+          if(t==='B'){
+            ctx.fillStyle='#ffb74d'; ctx.fillRect(px,py,TILE,TILE);
+            ctx.fillStyle='#ff8a65'; ctx.fillRect(px+6,py+6,TILE-12,TILE-12);
+          }
           if(t===5){ ctx.fillStyle='#ff1744'; ctx.fillRect(px,py,TILE,TILE); }
         }
       }
@@ -287,22 +356,32 @@
       if(ent.type==='star' && !ent.collected){
         ctx.fillStyle='#ffea00'; ctx.beginPath(); ctx.moveTo(ex+10, ent.y-10); ctx.lineTo(ex+20, ent.y+6); ctx.lineTo(ex, ent.y-2); ctx.fill();
       }
+      if(ent.type==='mushroom' && !ent.collected){
+        const mx = ent.x - cameraX - ent.w/2; const my = ent.y - ent.h/2;
+        ctx.fillStyle='#ff3d00'; ctx.fillRect(mx, my, ent.w, ent.h);
+      }
+      if(ent.type==='shrink' && !ent.collected){
+        const sx = ent.x - cameraX - ent.w/2; const sy = ent.y - ent.h/2;
+        ctx.fillStyle='#00e676'; ctx.fillRect(sx, sy, ent.w, ent.h);
+      }
       if(ent.type==='platform'){
         ctx.fillStyle='#6d4c41'; ctx.fillRect(ex, ent.y, ent.w, ent.h);
       }
     }
 
-    // player draw
-    ctx.save();
-    ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
-    if(player.facing<0) ctx.scale(-1,1);
-    // body
-    ctx.fillStyle='#d32f2f'; ctx.fillRect(-player.w/2+4, -player.h/2+8, player.w-8, player.h-16);
-    // head
-    ctx.fillStyle='#ffd6a5'; ctx.fillRect(-player.w/2+6, -player.h/2+2, player.w-12, 12);
-    // cap
-    ctx.fillStyle='#b71c1c'; ctx.fillRect(-player.w/2+2, -player.h/2, player.w-4, 8);
-    ctx.restore();
+  // player draw (apply scale)
+  player.w = player.baseW * (player.scale || 1);
+  player.h = player.baseH * (player.scale || 1);
+  ctx.save();
+  ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
+  if(player.facing<0) ctx.scale(-1,1);
+  // body
+  ctx.fillStyle='#d32f2f'; ctx.fillRect(-player.w/2+4, -player.h/2+8, player.w-8, player.h-16);
+  // head
+  ctx.fillStyle='#ffd6a5'; ctx.fillRect(-player.w/2+6, -player.h/2+2, player.w-12, 12);
+  // cap
+  ctx.fillStyle='#b71c1c'; ctx.fillRect(-player.w/2+2, -player.h/2, player.w-4, 8);
+  ctx.restore();
 
     // HUD
     ctx.fillStyle='#000'; ctx.font='18px Arial'; ctx.fillText(`Score: ${score}`, 12, 24);
