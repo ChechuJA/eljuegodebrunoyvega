@@ -111,6 +111,23 @@
         tiles[y][x]=t;
       }
     }
+    levelTimer = 0; // seconds elapsed
+    levelTimeLimit = 120; // seconds per level
+    levelCompleted = false;
+
+    // place flag at rightmost ground column if not present
+    if (!entities.find(e => e.type === 'flag')) {
+      for (let x = cols - 1; x >= 0; x--) {
+        for (let y = 0; y < rows; y++) {
+          const ch = map[y][x];
+          if (ch === 'G' || ch === '#') {
+            entities.push({type: 'flag', x: x * tileSize + 8, y: y * tileSize - tileSize, w: 10, h: 24});
+            x = -1; // break outer
+            break;
+          }
+        }
+      }
+    }
     levels[idx].tilesNumeric = tiles;
     // place player on top of the ground for this level
     const startTx = Math.floor(player.x / TILE);
@@ -328,6 +345,9 @@
     const raw = levels[levelIndex];
     const tiles = raw.tilesNumeric;
     if(tiles){
+    // HUD: timer (countdown)
+    const timeLeft = Math.max(0, Math.ceil(levelTimeLimit - levelTimer));
+    ctx.fillText('Time: ' + timeLeft + 's', 10, 40);
       for(let y=0;y<raw.heightTiles;y++){
         for(let x=0;x<raw.widthTiles;x++){
           const t = tiles[y][x];
