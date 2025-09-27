@@ -139,6 +139,7 @@
       <button style="background:#4bace1" onclick="startGame('flappy')">Flappy Bird 🐦</button>
       <button style="background:#ff5722" onclick="startGame('mario-flappy')">Mario Volador 🍄</button>
       <button style="background:#0288d1" onclick="startGame('atrapa-bola')">Atrapa Bolas 🏀</button>
+      <button style="background:#8b4513" onclick="startGame('ajedrez')">Ajedrez ♔♚</button>
     </div>
     
     <!-- He eliminado los juegos 3D no funcionales del menú principal -->
@@ -326,7 +327,8 @@
         'moto-desierto':'script-moto-desierto.js',
         'flappy':'script-flappy.js',
         'mario-flappy':'script-mario-flappy.js',
-        'atrapa-bola':'script-atrapa-bola.js'
+        'atrapa-bola':'script-atrapa-bola.js',
+        'ajedrez':'script-ajedrez.js'
       };
       loadScript(map[game]);
     }
