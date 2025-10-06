@@ -107,6 +107,7 @@
       <p style="margin:0 0 14px 0;font-size:14px;text-align:center;color:#666;">Juegos para dos personas en el mismo dispositivo</p>
       <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
         <button style="background:#e91e63;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(233,30,99,0.3);" onclick="startGame('ping-pong')">🏓 Ping Pong</button>
+        <button style="background:#2e7d32;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(46,125,50,0.3);" onclick="startGame('uno')">🎴 Cartas UNO</button>
       </div>
     </div>
     
@@ -328,7 +329,8 @@
         'flappy':'script-flappy.js',
         'mario-flappy':'script-mario-flappy.js',
         'atrapa-bola':'script-atrapa-bola.js',
-        'ajedrez':'script-ajedrez.js'
+        'ajedrez':'script-ajedrez.js',
+        'uno':'script-uno.js'
       };
       loadScript(map[game]);
     }
