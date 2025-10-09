@@ -38,6 +38,7 @@ function registerGame() {
   let selectedCardIndex = -1;
   let mustDrawCard = false;
   let drawCount = 0;
+  let aiIsThinking = false; // Bandera para evitar que la IA juegue múltiples veces
   
   // Crear mazo de cartas
   function createDeck() {
@@ -92,6 +93,7 @@ function registerGame() {
     selectedCardIndex = -1;
     mustDrawCard = false;
     drawCount = 0;
+    aiIsThinking = false;
     
     // Repartir 7 cartas a cada jugador
     for (let i = 0; i < 7; i++) {
@@ -196,27 +198,27 @@ function registerGame() {
   // Aplicar efectos de cartas especiales
   function applyCardEffect(card) {
     if (card.type === CARD_TYPES.SKIP) {
-      setMessage('¡Carta Saltar! El siguiente jugador pierde su turno.');
+      setMessage('¡Carta Saltar! El siguiente jugador pierde su turno.', 2500);
       switchTurn();
       switchTurn(); // Saltar el turno
     } else if (card.type === CARD_TYPES.REVERSE) {
       direction *= -1;
-      setMessage('¡Carta Reversa! Se invierte el sentido del juego.');
+      setMessage('¡Carta Reversa! Se invierte el sentido del juego.', 2500);
       // En juego de 2 jugadores, reversa actúa como saltar
       switchTurn();
       switchTurn();
     } else if (card.type === CARD_TYPES.DRAW2) {
       mustDrawCard = true;
       drawCount = 2;
-      setMessage('¡Carta +2! El siguiente jugador debe robar 2 cartas.');
+      setMessage('¡Carta +2! El siguiente jugador debe robar 2 cartas.', 2500);
       switchTurn();
     } else if (card.type === CARD_TYPES.WILD_DRAW4) {
       mustDrawCard = true;
       drawCount = 4;
-      setMessage(`¡Carta +4! Nuevo color: ${COLOR_NAMES[COLORS.indexOf(card.color)]}. El siguiente jugador roba 4 cartas.`);
+      setMessage(`¡Carta +4! Nuevo color: ${COLOR_NAMES[COLORS.indexOf(card.color)]}. El siguiente jugador roba 4 cartas.`, 3000);
       switchTurn();
     } else if (card.type === CARD_TYPES.WILD) {
-      setMessage(`¡Comodín! Nuevo color: ${COLOR_NAMES[COLORS.indexOf(card.color)]}`);
+      setMessage(`¡Comodín! Nuevo color: ${COLOR_NAMES[COLORS.indexOf(card.color)]}`, 2500);
     }
   }
   
@@ -263,7 +265,9 @@ function registerGame() {
   
   // Turno de IA
   function aiTurn() {
-    if (currentPlayer !== 'ai' || winner) return;
+    if (currentPlayer !== 'ai' || winner || aiIsThinking) return;
+    
+    aiIsThinking = true; // Marcar que la IA está pensando
     
     setTimeout(() => {
       const topCard = discardPile[discardPile.length - 1];
@@ -273,10 +277,11 @@ function registerGame() {
         for (let i = 0; i < drawCount; i++) {
           drawCard(aiHand);
         }
-        setMessage(`La IA robó ${drawCount} carta${drawCount > 1 ? 's' : ''}.`);
+        setMessage(`La IA robó ${drawCount} carta${drawCount > 1 ? 's' : ''}.`, 2500);
         mustDrawCard = false;
         drawCount = 0;
         switchTurn();
+        aiIsThinking = false;
         return;
       }
       
@@ -295,22 +300,25 @@ function registerGame() {
         });
         
         playCard(playableCards[0], aiHand);
+        aiIsThinking = false;
       } else {
         // Robar carta
         drawCard(aiHand);
-        setMessage('La IA robó una carta.');
+        setMessage('La IA robó una carta.', 2500);
         
         // Verificar si la carta robada se puede jugar
         const drawnCard = aiHand[aiHand.length - 1];
         if (canPlayCard(drawnCard, topCard)) {
           setTimeout(() => {
             playCard(drawnCard, aiHand);
-          }, 500);
+            aiIsThinking = false;
+          }, 1500);
         } else {
           switchTurn();
+          aiIsThinking = false;
         }
       }
-    }, 800);
+    }, 1200);
   }
   
   // Dibujar carta
