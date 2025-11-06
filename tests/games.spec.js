@@ -80,4 +80,37 @@ test.describe('Bruno y Vega Games', () => {
     await expect(page.locator('#menu')).toBeVisible();
     await expect(page.locator('#gameArea')).toBeHidden();
   });
+
+  test('ecogames section exists', async ({ page }) => {
+    await page.goto('/');
+    
+    // Check Ecogames section header
+    await expect(page.locator('text=Ecogames - Juegos Ambientales')).toBeVisible();
+  });
+
+  test('all ecogames can be loaded', async ({ page }) => {
+    await page.goto('/');
+    
+    // Set player name if needed
+    const nameInput = page.locator('#playerNameInput');
+    if (await nameInput.isVisible()) {
+      await nameInput.fill('TestPlayer');
+      await page.locator('#savePlayerNameBtn').click();
+    }
+
+    const ecogames = ['salva-costa', 'bosque-verde', 'aire-limpio', 'energia-sabia', 'planeta-azul'];
+    
+    for (const game of ecogames) {
+      // Load the game
+      await page.locator(`button[onclick*="${game}"]`).click();
+      
+      // Should show game area
+      await expect(page.locator('#gameArea')).toBeVisible();
+      await expect(page.locator('#gameCanvas')).toBeVisible();
+      
+      // Go back to menu
+      await page.locator('#menuBtn').click();
+      await expect(page.locator('#menu')).toBeVisible();
+    }
+  });
 });
