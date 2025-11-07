@@ -111,6 +111,19 @@
       </div>
     </div>
     
+    <!-- Sección Ecogames -->
+    <div style="max-width:820px;margin:0 auto 25px;padding:14px 18px;border:2px solid #4caf50;border-radius:14px;background:linear-gradient(135deg,rgba(76,175,80,0.1),rgba(139,195,74,0.1));">
+      <h3 style="margin:0 0 12px 0;color:#2e7d32;font-size:20px;text-align:center;">🌍 Ecogames - Juegos Ambientales</h3>
+      <p style="margin:0 0 14px 0;font-size:14px;text-align:center;color:#666;">Aprende sobre el medio ambiente y toma acción</p>
+      <div style="display:flex;justify-content:center;gap:10px;flex-wrap:wrap;">
+        <button style="background:#0288d1;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(2,136,209,0.3);" onclick="startGame('salva-costa')">🛢️ Salva la Costa</button>
+        <button style="background:#43a047;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(67,160,71,0.3);" onclick="startGame('bosque-verde')">🌲 Bosque Verde</button>
+        <button style="background:#78909c;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(120,144,156,0.3);" onclick="startGame('aire-limpio')">🏙️ Aire Limpio</button>
+        <button style="background:#fbc02d;padding:8px 16px;border:none;border-radius:8px;color:#333;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(251,192,45,0.3);" onclick="startGame('energia-sabia')">⚡ Energía Sabia</button>
+        <button style="background:#0277bd;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(2,119,189,0.3);" onclick="startGame('planeta-azul')">🌊 Planeta Azul</button>
+      </div>
+    </div>
+    
     <h3 style="text-align:center;margin:20px 0 15px;color:#666;">Juegos Individuales</h3>
     <div id="gameButtons">
       <button style="background:#1976d2" onclick="startGame('arkanoid')">Arkanoid</button>
@@ -279,7 +292,12 @@
         ['Quiz','quizHigh','quizHighName'],
         ['Flappy','flappyHighScore','flappyHighScoreName'],
         ['Mario Volador','marioflappyHighScore','marioflappyHighScoreName'],
-        ['Atrapa Bola','atrapaBallHigh','atrapaBallHighName']
+        ['Atrapa Bola','atrapaBallHigh','atrapaBallHighName'],
+        ['Salva la Costa','salvaCostaDinero','salvaCostaName'],
+        ['Bosque Verde','bosqueVerdePuntos','bosqueVerdeName'],
+        ['Aire Limpio','aireLimpioPuntos','aireLimpioName'],
+        ['Energía Sabia','energiaSabiaPuntos','energiaSabiaName'],
+        ['Planeta Azul','planetaAzulPuntos','planetaAzulName']
       ];
       const wrap=document.getElementById('globalScoresContent');
       wrap.innerHTML=map.map(([label,key,keyName])=>{
@@ -330,7 +348,12 @@
         'mario-flappy':'script-mario-flappy.js',
         'atrapa-bola':'script-atrapa-bola.js',
         'ajedrez':'script-ajedrez.js',
-        'uno':'script-uno.js'
+        'uno':'script-uno.js',
+        'salva-costa':'script-salva-costa.js',
+        'bosque-verde':'script-bosque-verde.js',
+        'aire-limpio':'script-aire-limpio.js',
+        'energia-sabia':'script-energia-sabia.js',
+        'planeta-azul':'script-planeta-azul.js'
       };
       loadScript(map[game]);
     }

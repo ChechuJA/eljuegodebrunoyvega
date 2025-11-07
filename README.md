@@ -4,6 +4,39 @@ Una colección de juegos educativos e interactivos para niños, desarrollada con
 
 ## ✨ Características
 
+### 🌍 **NUEVO: Ecogames - Juegos Ambientales**
+Una nueva sección de juegos educativos sobre catástrofes ambientales y conciencia ecológica:
+
+- **🛢️ Salva la Costa**: Basado en el desastre del Prestige (España, 2002)
+  - Protege los peces del petróleo con barreras ecológicas
+  - Recoge peces limpios para salvarlos
+  - Aprende sobre el impacto de los vertidos de petróleo
+  - Controles: ← → para mover, ESPACIO para colocar barreras
+
+- **🌲 Bosque Verde**: Prevención y control de incendios forestales
+  - Apaga incendios con agua desde un helicóptero
+  - Planta nuevos árboles para recuperar el bosque
+  - Gestiona la humedad del suelo para prevenir fuegos
+  - Controles: ← → para mover, ESPACIO para lanzar agua, P para plantar
+
+- **🏙️ Aire Limpio**: Gestión de contaminación urbana
+  - Reduce el tráfico de coches y aumenta bicicletas
+  - Invierte en vehículos eléctricos y transporte público
+  - Planta árboles para limpiar el aire
+  - Controles: Clic en botones de acciones
+
+- **⚡ Energía Sabia**: Fuentes de energía sostenibles
+  - Construye centrales para satisfacer la demanda energética
+  - Prioriza energías renovables (solar, eólica)
+  - Evita energías con alto riesgo de accidentes
+  - Controles: Clic para seleccionar y construir centrales
+
+- **🌊 Planeta Azul**: Limpieza de océanos
+  - Recoge plásticos y residuos del océano
+  - Lleva la basura al centro de reciclaje
+  - Protege la fauna marina de la contaminación
+  - Controles: ⬅️➡️⬆️⬇️ mover, ESPACIO recoger, R reciclar
+
 ### 🎯 Juegos Individuales
 - **Arkanoid**: Rompe bloques con tu pelota
 - **Bruno el paracaidista**: Aventura de salto libre  
