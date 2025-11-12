@@ -4,8 +4,8 @@ Una colección de juegos educativos e interactivos para niños, desarrollada con
 
 ## ✨ Características
 
-### 🌍 **NUEVO: Ecogames - Juegos Ambientales**
-Una nueva sección de juegos educativos sobre catástrofes ambientales y conciencia ecológica:
+### 🌍 **Proyecto "Semillas del Cambio" - No dejes que vuelva a ocurrir**
+Nueva sección de juegos educativos sobre el **ODS 13: Acción por el Clima** de la Agenda 2030. Aprende sobre catástrofes ambientales del pasado, comprende el cambio climático y descubre qué podemos hacer para que no vuelvan a ocurrir:
 
 - **🛢️ Salva la Costa**: Basado en el desastre del Prestige (España, 2002)
   - Protege los peces del petróleo con barreras ecológicas
