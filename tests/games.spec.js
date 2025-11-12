@@ -81,14 +81,14 @@ test.describe('Bruno y Vega Games', () => {
     await expect(page.locator('#gameArea')).toBeHidden();
   });
 
-  test('ecogames section exists', async ({ page }) => {
+  test('climate action section exists', async ({ page }) => {
     await page.goto('/');
     
-    // Check Ecogames section header
-    await expect(page.locator('text=Ecogames - Juegos Ambientales')).toBeVisible();
+    // Check Climate Action section header
+    await expect(page.locator('text=No dejes que vuelva a ocurrir - Acción por el Clima')).toBeVisible();
   });
 
-  test('all ecogames can be loaded', async ({ page }) => {
+  test('all climate action games can be loaded', async ({ page }) => {
     await page.goto('/');
     
     // Set player name if needed
