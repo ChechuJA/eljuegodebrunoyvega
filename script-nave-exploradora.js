@@ -17,157 +17,263 @@ const playerName = localStorage.getItem('playerName')||'';
 let infoActual = null;
 let mostrarInstrucciones = true;
 let nivel = 1;
-let maxNivel = 5;
-let metaOrbes = 5; // orbes necesarios por nivel
+let maxNivel = 8; // 8 planetas
+let metaOrbes = 7; // orbes necesarios por nivel (reducido para mejor ritmo)
 let orbesNivel = 0; // contador independiente de orbes en el nivel actual
+let planetasDescubiertos = 0; // Contar cuántos planetas ha descubierto en este nivel
+let totalPlanetasNivel = 3; // Total de planetas en el nivel
+let curiosidadesMostradas = []; // Guardar las curiosidades que vio el jugador
+let modoPregunta = false;
+let preguntaActual = null;
+let idioma = 'es';
+let zonaRespuesta = -1; // 0=izq, 1=centro, 2=der
+let tiempoEnZona = 0;
+let feedbackMsg = '';
+let feedbackTime = 0;
+let modoQuizFinal = false;
+let preguntasQuizFinal = [];
+let indicePreguntaActual = 0;
+let respuestasCorrectasQuiz = 0;
+let planetaActual = null; // El planeta que estamos estudiando este nivel
+let juegoPausado = false; // Pausa completa para leer info
+let esperandoTeclaDespausar = false; // Esperando que pulse tecla para continuar
+let timerQuiz = 60; // 60 segundos para responder cada pregunta (más tiempo)
+let timerQuizActivo = false;
+let juegoTerminado = false; // Flag para GAME OVER
 
 const datosPlanetas = [
   { 
-    nombre: 'Mercurio', 
-    color: '#BFB9AB', 
+    nombre: { es: 'Mercurio', en: 'Mercury' },
+    color: '#BFB9AB',
     datos: [
-      'El más cercano al Sol y el más rápido.',
-      'Su superficie está llena de cráteres como una luna.',
-      'Un día en Mercurio dura 59 días terrestres.',
-      'Es el planeta más pequeño del sistema solar.',
-      'Tiene una temperatura extrema: muy caliente y muy frío.',
-      'No tiene atmósfera significativa para protegerlo.',
-      'Rota muy lentamente pero orbita muy rápido.',
-      'Desde Mercurio, el Sol parece tres veces más grande.',
-      'Fue explorado por la sonda MESSENGER de la NASA.',
-      'Su núcleo metálico ocupa casi toda su estructura.'
+      { es: 'El más cercano al Sol y el más rápido.', en: 'The closest to the Sun and the fastest.' },
+      { es: 'Su superficie está llena de cráteres.', en: 'Its surface is full of craters.' },
+      { es: 'Un día dura 59 días terrestres.', en: 'One day lasts 59 Earth days.' },
+      { es: 'Es el planeta más pequeño.', en: 'It is the smallest planet.' },
+      { es: 'Tiene temperaturas extremas.', en: 'It has extreme temperatures.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Cuál es el planeta más cercano al Sol?', en: 'Which planet is closest to the Sun?' },
+        correcta: 'Mercury',
+        opciones: ['Mercury', 'Venus', 'Mars']
+      },
+      {
+        pregunta: { es: '¿Qué planeta es el más pequeño?', en: 'Which planet is the smallest?' },
+        correcta: 'Mercury',
+        opciones: ['Earth', 'Mercury', 'Mars']
+      }
     ]
   },
   { 
-    nombre: 'Venus', 
-    color: '#E8CA9A', 
+    nombre: { es: 'Venus', en: 'Venus' },
+    color: '#E8CA9A',
     datos: [
-      'Tiene una atmósfera muy densa y caliente.',
-      'Es el planeta más caliente aunque no el más cercano al Sol.',
-      'Gira en sentido contrario a la mayoría de planetas.',
-      'Un día en Venus es más largo que su año.',
-      'Está cubierto permanentemente por nubes de ácido sulfúrico.',
-      'Es conocido como el gemelo de la Tierra por su tamaño similar.',
-      'Su presión atmosférica es 90 veces mayor que la terrestre.',
-      'No tiene satélites naturales.',
-      'Brilla intensamente en nuestro cielo al amanecer o anochecer.',
-      'Su superficie está llena de volcanes y llanuras de lava.'
+      { es: 'Es el planeta más caliente.', en: 'It is the hottest planet.' },
+      { es: 'Gira en sentido contrario.', en: 'It rotates backwards.' },
+      { es: 'Un día es más largo que su año.', en: 'One day is longer than its year.' },
+      { es: 'Tiene nubes de ácido sulfúrico.', en: 'It has sulfuric acid clouds.' },
+      { es: 'Es el gemelo de la Tierra.', en: 'It is Earth\'s twin.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Cuál es el planeta más caliente?', en: 'Which is the hottest planet?' },
+        correcta: 'Venus',
+        opciones: ['Mercury', 'Venus', 'Mars']
+      },
+      {
+        pregunta: { es: '¿Qué planeta gira al revés?', en: 'Which planet rotates backwards?' },
+        correcta: 'Venus',
+        opciones: ['Venus', 'Uranus', 'Neptune']
+      }
     ]
   },
   { 
-    nombre: 'Tierra', 
-    color: '#3282B8', 
+    nombre: { es: 'Tierra', en: 'Earth' },
+    color: '#3282B8',
     datos: [
-      'Nuestro hogar, único con vida conocida.',
-      'El 71% de su superficie está cubierta por agua líquida.',
-      'Su atmósfera contiene oxígeno que permite la vida.',
-      'Es el único planeta con placas tectónicas activas.',
-      'Tiene un potente campo magnético que nos protege.',
-      'Es el planeta más denso del sistema solar.',
-      'Su única luna estabiliza su eje de rotación.',
-      'Tiene cuatro capas principales: corteza, manto, núcleo externo y núcleo interno.',
-      'Es el único planeta cuyo nombre no proviene de la mitología.',
-      'Desde el espacio se ve azul debido a sus océanos.'
+      { es: 'Nuestro hogar con vida conocida.', en: 'Our home with known life.' },
+      { es: 'Tiene océanos de agua líquida.', en: 'It has liquid water oceans.' },
+      { es: 'Su atmósfera tiene oxígeno.', en: 'Its atmosphere has oxygen.' },
+      { es: 'Tiene placas tectónicas activas.', en: 'It has active tectonic plates.' },
+      { es: 'Tiene un campo magnético protector.', en: 'It has a protective magnetic field.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Dónde vivimos nosotros?', en: 'Where do we live?' },
+        correcta: 'Earth',
+        opciones: ['Mars', 'Earth', 'Venus']
+      },
+      {
+        pregunta: { es: '¿Qué planeta tiene agua líquida?', en: 'Which planet has liquid water?' },
+        correcta: 'Earth',
+        opciones: ['Earth', 'Mars', 'Venus']
+      }
     ]
   },
   { 
-    nombre: 'Marte', 
-    color: '#CD6133', 
+    nombre: { es: 'Marte', en: 'Mars' },
+    color: '#CD6133',
     datos: [
-      'Conocido como el planeta rojo por su óxido de hierro.',
-      'Tiene el monte más alto del sistema solar: Olympus Mons.',
-      'Posee dos pequeñas lunas: Fobos y Deimos.',
-      'Sus días duran aproximadamente lo mismo que en la Tierra.',
-      'Tiene estaciones debido a la inclinación de su eje.',
-      'Muestra evidencias de que tuvo agua líquida en el pasado.',
-      'Sus polos están cubiertos de hielo de agua y dióxido de carbono.',
-      'Tiene la mayor tormenta de polvo conocida del sistema solar.',
-      'Es el planeta más explorado por misiones robóticas.',
-      'Su gravedad es aproximadamente un tercio de la terrestre.'
+      { es: 'El planeta rojo por su óxido.', en: 'The red planet from its rust.' },
+      { es: 'Tiene el monte más alto: Olympus Mons.', en: 'It has the highest mountain: Olympus Mons.' },
+      { es: 'Tiene dos lunas: Fobos y Deimos.', en: 'It has two moons: Phobos and Deimos.' },
+      { es: 'Tuvo agua líquida en el pasado.', en: 'It had liquid water in the past.' },
+      { es: 'Es el más explorado por robots.', en: 'It is the most explored by robots.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Cuál es el planeta rojo?', en: 'Which is the red planet?' },
+        correcta: 'Mars',
+        opciones: ['Mars', 'Venus', 'Mercury']
+      },
+      {
+        pregunta: { es: '¿Qué planeta tiene el monte más alto?', en: 'Which planet has the highest mountain?' },
+        correcta: 'Mars',
+        opciones: ['Earth', 'Mars', 'Venus']
+      }
     ]
   },
   { 
-    nombre: 'Júpiter', 
-    color: '#E6C98C', 
+    nombre: { es: 'Júpiter', en: 'Jupiter' },
+    color: '#E6C98C',
     datos: [
-      'El más grande, con una gran tormenta llamada Gran Mancha Roja.',
-      'Tiene al menos 79 lunas conocidas.',
-      'Es un gigante gaseoso sin superficie sólida.',
-      'Su día es el más corto: solo 10 horas terrestres.',
-      'Tiene un débil sistema de anillos casi invisible.',
-      'Su atmósfera está compuesta principalmente de hidrógeno y helio.',
-      'Su masa es 318 veces la de la Tierra.',
-      'Su campo magnético es el más potente de todos los planetas.',
-      'Protege al sistema solar interior atrayendo asteroides.',
-      'Emite más energía de la que recibe del Sol.'
+      { es: 'El planeta más grande.', en: 'The largest planet.' },
+      { es: 'Tiene la Gran Mancha Roja.', en: 'It has the Great Red Spot.' },
+      { es: 'Tiene al menos 79 lunas.', en: 'It has at least 79 moons.' },
+      { es: 'Es un gigante gaseoso.', en: 'It is a gas giant.' },
+      { es: 'Su día dura solo 10 horas.', en: 'Its day lasts only 10 hours.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Cuál es el planeta más grande?', en: 'Which is the largest planet?' },
+        correcta: 'Jupiter',
+        opciones: ['Saturn', 'Jupiter', 'Uranus']
+      },
+      {
+        pregunta: { es: '¿Qué planeta tiene la Gran Mancha Roja?', en: 'Which planet has the Great Red Spot?' },
+        correcta: 'Jupiter',
+        opciones: ['Jupiter', 'Mars', 'Saturn']
+      }
     ]
   },
   { 
-    nombre: 'Saturno', 
-    color: '#F7EABC', 
+    nombre: { es: 'Saturno', en: 'Saturn' },
+    color: '#F7EABC',
     datos: [
-      'Famoso por sus espectaculares anillos de hielo y roca.',
-      'Es el segundo planeta más grande del sistema solar.',
-      'Es tan poco denso que flotaría en agua si existiera un océano lo suficientemente grande.',
-      'Sus anillos se extienden hasta 282.000 km desde el planeta.',
-      'Tiene al menos 82 lunas, incluyendo Titán, con atmósfera densa.',
-      'Sus vientos pueden alcanzar los 1.800 km/h.',
-      'Un año en Saturno equivale a 29 años terrestres.',
-      'Sus anillos son extremadamente finos: apenas 10 metros de grosor.',
-      'Tiene hexágonos atmosféricos misteriosos en sus polos.',
-      'Fue visitado de cerca por las sondas Voyager y Cassini.'
+      { es: 'Famoso por sus anillos espectaculares.', en: 'Famous for its spectacular rings.' },
+      { es: 'Flotaría en agua por su baja densidad.', en: 'It would float in water due to low density.' },
+      { es: 'Tiene al menos 82 lunas.', en: 'It has at least 82 moons.' },
+      { es: 'Sus vientos alcanzan 1.800 km/h.', en: 'Its winds reach 1,800 km/h.' },
+      { es: 'Tiene hexágonos en sus polos.', en: 'It has hexagons at its poles.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Qué planeta tiene anillos famosos?', en: 'Which planet has famous rings?' },
+        correcta: 'Saturn',
+        opciones: ['Jupiter', 'Saturn', 'Uranus']
+      },
+      {
+        pregunta: { es: '¿Cuál flotaría en agua?', en: 'Which would float in water?' },
+        correcta: 'Saturn',
+        opciones: ['Saturn', 'Jupiter', 'Neptune']
+      }
     ]
   },
   { 
-    nombre: 'Urano', 
-    color: '#9AD4D6', 
+    nombre: { es: 'Urano', en: 'Uranus' },
+    color: '#9AD4D6',
     datos: [
-      'Gira casi tumbado de lado debido a una antigua colisión.',
-      'Es el primer planeta descubierto con telescopio.',
-      'Tiene anillos oscuros casi invisibles desde la Tierra.',
-      'Su atmósfera contiene metano que le da su color azul verdoso.',
-      'Sus estaciones duran 21 años terrestres cada una.',
-      'Tiene 27 lunas conocidas, nombradas por personajes literarios.',
-      'Es un gigante helado compuesto principalmente de agua, metano y amoníaco.',
-      'Su temperatura mínima es la más baja entre los planetas: -224°C.',
-      'Fue visitado una sola vez por la sonda Voyager 2 en 1986.',
-      'Un día en Urano dura aproximadamente 17 horas terrestres.'
+      { es: 'Gira tumbado de lado.', en: 'It rotates on its side.' },
+      { es: 'Primer planeta descubierto con telescopio.', en: 'First planet discovered with telescope.' },
+      { es: 'Su color es azul verdoso por el metano.', en: 'Its color is blue-green from methane.' },
+      { es: 'Sus estaciones duran 21 años cada una.', en: 'Its seasons last 21 years each.' },
+      { es: 'Es un gigante helado.', en: 'It is an ice giant.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Qué planeta gira de lado?', en: 'Which planet rotates sideways?' },
+        correcta: 'Uranus',
+        opciones: ['Neptune', 'Uranus', 'Saturn']
+      },
+      {
+        pregunta: { es: '¿Cuál fue descubierto con telescopio?', en: 'Which was discovered with telescope?' },
+        correcta: 'Uranus',
+        opciones: ['Uranus', 'Neptune', 'Jupiter']
+      }
     ]
   },
   { 
-    nombre: 'Neptuno', 
-    color: '#5151D3', 
+    nombre: { es: 'Neptuno', en: 'Neptune' },
+    color: '#5151D3',
     datos: [
-      'El más distante, muy ventoso con ráfagas de 2.100 km/h.',
-      'Fue descubierto mediante cálculos matemáticos antes de ser visto.',
-      'Tiene 14 lunas conocidas, siendo Tritón la más grande.',
-      'Tritón orbita en dirección opuesta a la rotación de Neptuno.',
-      'Presenta manchas oscuras similares a huracanes que aparecen y desaparecen.',
-      'Un año neptuniano equivale a 165 años terrestres.',
-      'Es ligeramente más pequeño pero más masivo que Urano.',
-      'Su color azul intenso se debe al metano en su atmósfera.',
-      'Tiene anillos tenues y fragmentados.',
-      'Fue visitado por la sonda Voyager 2 en 1989.'
+      { es: 'El más distante del Sol.', en: 'The most distant from the Sun.' },
+      { es: 'Tiene vientos de 2.100 km/h.', en: 'It has winds of 2,100 km/h.' },
+      { es: 'Fue descubierto por cálculos matemáticos.', en: 'It was discovered by math calculations.' },
+      { es: 'Tiene 14 lunas conocidas.', en: 'It has 14 known moons.' },
+      { es: 'Su color azul es por el metano.', en: 'Its blue color is from methane.' }
+    ],
+    quiz: [
+      {
+        pregunta: { es: '¿Cuál es el planeta más lejano?', en: 'Which is the most distant planet?' },
+        correcta: 'Neptune',
+        opciones: ['Uranus', 'Neptune', 'Saturn']
+      },
+      {
+        pregunta: { es: '¿Qué planeta tiene los vientos más rápidos?', en: 'Which planet has the fastest winds?' },
+        correcta: 'Neptune',
+        opciones: ['Jupiter', 'Saturn', 'Neptune']
+      }
     ]
   }
 ];
 
+function getPlanetaDelNivel(nivelNum) {
+  // Cada nivel corresponde a un planeta en orden
+  const index = Math.min(nivelNum - 1, datosPlanetas.length - 1);
+  return datosPlanetas[index];
+}
+
 function crearPlanetas() {
   planetas = [];
-  const usados = new Set();
-  for (let i = 0; i < 3; i++) {
-    let idx;
-    do { idx = Math.floor(Math.random() * datosPlanetas.length); } while (usados.has(idx));
-    usados.add(idx);
-    const datoAleatorio = datosPlanetas[idx].datos[Math.floor(Math.random() * datosPlanetas[idx].datos.length)];
+  planetasDescubiertos = 0; // Reset contador
+  curiosidadesMostradas = []; // Reset curiosidades vistas
+  
+  // El nivel actual determina qué planeta estudiamos
+  const planetaData = getPlanetaDelNivel(nivel);
+  planetaActual = planetaData;
+  
+  // Crear el planeta principal del nivel (más grande, centrado)
+  const datoIdx = Math.floor(Math.random() * planetaData.datos.length);
+  const datoAleatorio = planetaData.datos[datoIdx];
+  
+  planetas.push({
+    x: canvas.width / 2,
+    y: 150,
+    r: 45, // Más grande
+    nombreES: planetaData.nombre.es,
+    nombreEN: planetaData.nombre.en,
+    dato: datoAleatorio,
+    color: planetaData.color,
+    descubierto: false,
+    planetaData: planetaData,
+    esPrincipal: true
+  });
+  
+  // Añadir 2 mini-planetas informativos adicionales
+  for (let i = 0; i < 2; i++) {
+    const datoIdx2 = Math.floor(Math.random() * planetaData.datos.length);
     planetas.push({
-      x: 60 + Math.random() * (canvas.width - 120),
-      y: 60 + Math.random() * (canvas.height / 2),
-      r: 25 + Math.random() * 15,
-      nombre: datosPlanetas[idx].nombre,
-      dato: datoAleatorio,
-      color: datosPlanetas[idx].color,
-      descubierto: false
+      x: 80 + Math.random() * (canvas.width - 160),
+      y: 250 + Math.random() * 150,
+      r: 20 + Math.random() * 10,
+      nombreES: planetaData.nombre.es,
+      nombreEN: planetaData.nombre.en,
+      dato: planetaData.datos[datoIdx2],
+      color: planetaData.color,
+      descubierto: false,
+      planetaData: planetaData,
+      esPrincipal: false
     });
   }
 }
@@ -388,8 +494,8 @@ function drawPlanetas() {
       ctx.strokeStyle = '#000';
       ctx.lineWidth = 3;
       ctx.textAlign = 'center';
-      ctx.strokeText(p.nombre, p.x, p.y - p.r - 10);
-      ctx.fillText(p.nombre, p.x, p.y - p.r - 10);
+      ctx.strokeText(p.nombreES, p.x, p.y - p.r - 10);
+      ctx.fillText(p.nombreES, p.x, p.y - p.r - 10);
     }
   }
 }
@@ -430,10 +536,26 @@ function drawHUD() {
   ctx.fillStyle = '#fff';
   ctx.textAlign = 'left';
   ctx.fillText('Puntos: ' + score, 12, 24);
-  ctx.fillText('Nivel: ' + nivel + ' / ' + maxNivel, 12, 44);
+  
+  // Mostrar planeta actual del nivel (bilingüe)
+  if (planetaActual) {
+    const textoNivel = 'Level ' + nivel + ': ' + planetaActual.nombre.en + ' (' + planetaActual.nombre.es + ')';
+    ctx.fillText(textoNivel, 12, 44);
+  } else {
+    ctx.fillText('Level ' + nivel, 12, 44);
+  }
+  
   ctx.textAlign = 'right';
   ctx.fillText('Orbes: ' + orbesNivel + ' / ' + metaOrbes, canvas.width - 12, 24);
-  ctx.fillText('Récord: ' + highScore + ' ('+highName+')', canvas.width - 12, 44);
+  
+  // Mostrar progreso de descubrimientos
+  const completoOrbes = orbesNivel >= metaOrbes ? '✓' : '';
+  const completoPlanetas = planetasDescubiertos >= totalPlanetasNivel ? '✓' : '';
+  ctx.fillText(`Planetas: ${planetasDescubiertos}/${totalPlanetasNivel} ${completoPlanetas}`, canvas.width - 12, 44);
+  
+  ctx.textAlign = 'left';
+  ctx.font = '12px Arial';
+  ctx.fillText('Récord: ' + highScore, 12, canvas.height - 10);
   ctx.restore();
 }
 
@@ -455,7 +577,7 @@ function drawInfo() {
   
   // Buscar el planeta en la lista para obtener su color
   for (const planeta of planetas) {
-    if (planeta.nombre === infoActual.nombre) {
+    if (planeta.nombreES === infoActual.nombre || planeta.nombreEN === infoActual.nombre) {
       // Usar el color del planeta para el fondo
       bgColor = planeta.color;
       // Determinar un color de borde más oscuro
@@ -513,6 +635,14 @@ function drawInfo() {
   ctx.fillStyle = textColor;
   ctx.fillText(`${iconEmoji} ${infoActual.nombre}`, boxX + 20, boxY + 35);
   
+  // Mostrar progreso si existe
+  if (infoActual.descubiertos) {
+    ctx.font = '14px Arial';
+    ctx.fillStyle = isLightBg ? 'rgba(0, 0, 0, 0.6)' : 'rgba(255, 255, 255, 0.6)';
+    ctx.textAlign = 'right';
+    ctx.fillText(`Descubiertos: ${infoActual.descubiertos}`, boxX + boxWidth - 20, boxY + 35);
+  }
+  
   // Línea divisoria
   ctx.strokeStyle = isLightBg ? 'rgba(0, 0, 0, 0.2)' : 'rgba(255, 255, 255, 0.2)';
   ctx.lineWidth = 1;
@@ -524,9 +654,29 @@ function drawInfo() {
   // Dato del planeta
   ctx.font = '16px Arial';
   ctx.fillStyle = textColor;
+  ctx.textAlign = 'left';
   
-  // Dibujar el texto con ajuste de línea
-  wrapText(ctx, infoActual.dato, boxX + 20, boxY + 70, boxWidth - 40, 20);
+  // Dibujar el texto con ajuste de línea (verificar que existe)
+  if (infoActual.dato && typeof infoActual.dato === 'string') {
+    wrapText(ctx, infoActual.dato, boxX + 20, boxY + 70, boxWidth - 40, 20);
+  } else if (infoActual.dato) {
+    // Si dato es un objeto, intentar mostrar la versión en español
+    const textoMostrar = infoActual.dato.es || infoActual.dato.en || '';
+    wrapText(ctx, textoMostrar, boxX + 20, boxY + 70, boxWidth - 40, 20);
+  }
+  
+  // Indicación para continuar (si está pausado)
+  if (esperandoTeclaDespausar) {
+    ctx.font = 'bold 14px Arial';
+    ctx.fillStyle = isLightBg ? 'rgba(0, 0, 0, 0.7)' : 'rgba(255, 255, 255, 0.9)';
+    ctx.textAlign = 'center';
+    
+    // Efecto parpadeante
+    const parpadeo = Math.floor(Date.now() / 500) % 2 === 0 ? 1 : 0.5;
+    ctx.globalAlpha = parpadeo;
+    ctx.fillText('▼ Pulsa ESPACIO o cualquier letra para continuar ▼', canvas.width / 2, boxY + boxHeight - 15);
+    ctx.globalAlpha = 1;
+  }
   
   ctx.restore();
 }
@@ -589,12 +739,64 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 
 function drawInstrucciones() {
   if (!mostrarInstrucciones) return;
-  const x=40,y=80,w=canvas.width-80,h=160; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='#000'; ctx.fillRect(x,y,w,h); ctx.restore(); }
-  ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('Nave exploradora', canvas.width/2, y+36); ctx.font='14px Arial'; ctx.fillText('Flechas: mover | Arriba: acelerar | Reúne orbes', canvas.width/2, y+70); ctx.fillText('Acércate a un planeta para descubrir un dato.', canvas.width/2, y+92); ctx.fillText('Completa niveles reuniendo orbes. Pulsa tecla para empezar.', canvas.width/2, y+114); ctx.restore();
+  const x=40,y=80,w=canvas.width-80,h=200; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='#000'; ctx.fillRect(x,y,w,h); ctx.restore(); }
+  ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('🚀 Nave Exploradora', canvas.width/2, y+36); ctx.font='14px Arial'; ctx.fillText('◀ ▲ ▶ ▼ Flechas para mover la nave', canvas.width/2, y+70); ctx.fillText('🔮 Reúne 7 orbes morados', canvas.width/2, y+92); ctx.fillText('🪐 Descubre los 3 planetas (acércate)', canvas.width/2, y+114); ctx.fillText('📝 Quiz final con 60 segundos por pregunta', canvas.width/2, y+136); ctx.fillText('⚠️ GAME OVER si fallas el quiz', canvas.width/2, y+158); ctx.fillText('Pulsa cualquier tecla para empezar', canvas.width/2, y+178); ctx.restore();
 }
 
 function update() {
-  // Movimiento nave
+  // Feedback temporal
+  if (feedbackTime > 0) {
+    feedbackTime--;
+    if (feedbackTime === 0) feedbackMsg = '';
+  }
+
+  // Si el juego terminó (GAME OVER), no actualizar nada
+  if (juegoTerminado) {
+    return;
+  }
+
+  // Si el juego está pausado, no actualizar nada
+  if (juegoPausado) {
+    return;
+  }
+
+  // Modo pregunta: el juego está pausado, solo esperamos tecla A, B o C
+  if (modoPregunta) {
+    // Actualizar timer del quiz
+    if (timerQuizActivo && !juegoPausado) {
+      timerQuiz -= 1/60; // Descontar tiempo (asumiendo 60fps)
+      
+      if (timerQuiz <= 0) {
+        // Se acabó el tiempo - respuesta incorrecta automática
+        timerQuizActivo = false;
+        
+        feedbackMsg = preguntaActual.idiomaPregunta === 'es'
+          ? `⏰ Tiempo agotado. Era: ${preguntaActual.correcta}`
+          : `⏰ Time's up. It was: ${preguntaActual.correcta}`;
+        feedbackTime = 120;
+        
+        juegoPausado = true;
+        indicePreguntaActual++;
+        
+        setTimeout(() => {
+          juegoPausado = false;
+          if (modoQuizFinal) {
+            cargarPreguntaQuizFinal();
+          }
+        }, 2500);
+        
+        modoPregunta = false;
+        preguntaActual = null;
+        zonaRespuesta = -1;
+        tiempoEnZona = 0;
+        return;
+      }
+    }
+    
+    return; // No ejecutar el resto del update en modo pregunta
+  }
+
+  // Movimiento nave normal
   if (teclas['ArrowLeft'] && nave.x - nave.w/2 > 0) nave.x -= nave.speed;
   if (teclas['ArrowRight'] && nave.x + nave.w/2 < canvas.width) nave.x += nave.speed;
   if (teclas['ArrowUp'] && nave.y - nave.h/2 > 0) nave.y -= nave.speed;
@@ -624,7 +826,16 @@ function update() {
     let dist = Math.sqrt(dx*dx + dy*dy);
     if (dist < p.r + 30 && !p.descubierto) {
       p.descubierto = true;
+      planetasDescubiertos++;
       score += 30; // Puntos extra por descubrir un planeta
+      
+      // Guardar curiosidad mostrada para generar preguntas
+      const curiosidad = p.dato.es;
+      curiosidadesMostradas.push({
+        texto: curiosidad,
+        nombreES: p.nombreES,
+        nombreEN: p.nombreEN
+      });
       
       // Efecto visual al descubrir un planeta
       for (let i = 0; i < 20; i++) {
@@ -643,15 +854,16 @@ function update() {
         });
       }
       
-      // Mostrar información sobre el planeta
-      infoActual = { nombre: p.nombre, dato: p.dato };
+      // Mostrar información sobre el planeta y PAUSAR el juego
+      infoActual = { 
+        nombre: p.nombreES, 
+        dato: p.dato.es, // Siempre mostrar datos en español
+        descubiertos: planetasDescubiertos + ' / ' + totalPlanetasNivel
+      };
       
-      // Quitar mensaje después de un tiempo
-      setTimeout(() => { 
-        if (infoActual && infoActual.nombre === p.nombre) {
-          infoActual = null;
-        }
-      }, 5000);
+      // Pausar juego para que pueda leer tranquilo
+      juegoPausado = true;
+      esperandoTeclaDespausar = true;
     }
   }
   
@@ -666,17 +878,127 @@ function update() {
     }
   }
 
-  // Subir nivel
-  if (orbesNivel >= metaOrbes) {
-    nivel++;
-    score += 50; // bonus
-  if(score>highScore){ highScore=score; highName=playerName||'-'; localStorage.setItem('naveHighScore', String(highScore)); localStorage.setItem('naveHighScoreName', highName); }
-    orbesNivel = 0;
-    metaOrbes = Math.min(metaOrbes + 1, 10);
-    crearPlanetas();
-    if (nivel > maxNivel) {
-      infoActual = { nombre: '¡Completado!', dato: 'Has explorado el mini-sistema. ¡Gran trabajo!' };
+  // Al completar orbes Y descubrir todos los planetas → Quiz final
+  if (orbesNivel >= metaOrbes && planetasDescubiertos >= totalPlanetasNivel && !modoQuizFinal) {
+    iniciarQuizFinal();
+  }
+}
+
+function iniciarQuizFinal() {
+  modoQuizFinal = true;
+  modoPregunta = true;
+  indicePreguntaActual = 0;
+  respuestasCorrectasQuiz = 0;
+  
+  // Generar preguntas basadas en las curiosidades que vio
+  preguntasQuizFinal = [];
+  
+  if (curiosidadesMostradas.length > 0 && planetaActual) {
+    // Por cada curiosidad vista, crear una pregunta personalizada
+    curiosidadesMostradas.forEach(curiosidad => {
+      // Usar las preguntas predefinidas del planeta pero relacionadas con lo que vio
+      const preguntasBase = planetaActual.quiz;
+      if (preguntasBase && preguntasBase.length > 0) {
+        // Añadir todas las preguntas del quiz predefinido
+        preguntasQuizFinal.push(...preguntasBase);
+      }
+    });
+    
+    // Mezclar preguntas
+    for (let i = preguntasQuizFinal.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [preguntasQuizFinal[i], preguntasQuizFinal[j]] = [preguntasQuizFinal[j], preguntasQuizFinal[i]];
     }
+    
+    // Cargar primera pregunta
+    cargarPreguntaQuizFinal();
+  }
+}
+
+function cargarPreguntaQuizFinal() {
+  if (indicePreguntaActual >= preguntasQuizFinal.length) {
+    finalizarQuizFinal();
+    return;
+  }
+  
+  zonaRespuesta = -1;
+  tiempoEnZona = 0;
+  timerQuiz = 60; // Reset timer a 60 segundos
+  timerQuizActivo = true;
+  
+  // Alternar idioma
+  idioma = Math.random() < 0.5 ? 'es' : 'en';
+  
+  const q = preguntasQuizFinal[indicePreguntaActual];
+  
+  preguntaActual = {
+    texto: q.pregunta[idioma],
+    opciones: q.opciones,
+    correcta: q.correcta,
+    idiomaPregunta: idioma,
+    numero: indicePreguntaActual + 1,
+    total: preguntasQuizFinal.length
+  };
+}
+
+function finalizarQuizFinal() {
+  modoQuizFinal = false;
+  modoPregunta = false;
+  preguntaActual = null;
+  timerQuizActivo = false;
+  
+  // Pausar para leer resultado final
+  juegoPausado = true;
+  
+  // Necesita al menos 1 respuesta correcta para pasar
+  const aprobado = respuestasCorrectasQuiz >= 1;
+  
+  if (aprobado) {
+    // Bonus por aprobar
+    const bonus = respuestasCorrectasQuiz * 50;
+    score += bonus;
+    
+    feedbackMsg = `¡Nivel completado! +${bonus} bonus`;
+    feedbackTime = 240; // Más tiempo para leer
+    
+    // Avanzar nivel
+    nivel++;
+    if(score>highScore){ 
+      highScore=score; 
+      highName=playerName||'-'; 
+      localStorage.setItem('naveHighScore', String(highScore)); 
+      localStorage.setItem('naveHighScoreName', highName); 
+    }
+    
+    orbesNivel = 0;
+    
+    if (nivel > maxNivel) {
+      infoActual = { nombre: '¡Completado!', dato: '¡Has explorado todos los planetas del sistema solar!' };
+      esperandoTeclaDespausar = true; // Esperar tecla para terminar
+    } else {
+      // Preparar siguiente nivel
+      setTimeout(() => {
+        juegoPausado = false;
+        crearPlanetas();
+      }, 3500); // Más tiempo para disfrutar el logro
+    }
+  } else {
+    // GAME OVER - Reiniciar desde nivel 1
+    juegoTerminado = true; // Activar flag de game over
+    feedbackMsg = '❌ GAME OVER - No aprobaste el quiz';
+    feedbackTime = 300; // Más tiempo para leer
+    
+    setTimeout(() => {
+      // Reiniciar todo el juego
+      juegoTerminado = false;
+      nivel = 1;
+      score = 0;
+      orbesNivel = 0;
+      planetasDescubiertos = 0;
+      curiosidadesMostradas = [];
+      juegoPausado = false;
+      crearPlanetas();
+    }, 5000); // Más tiempo para ver GAME OVER
   }
 }
 
@@ -732,6 +1054,232 @@ function drawFondo() {
   ctx.restore();
 }
 
+function iniciarPregunta(planeta) {
+  modoPregunta = true;
+  zonaRespuesta = -1;
+  tiempoEnZona = 0;
+  
+  // Alternar idioma aleatoriamente
+  idioma = Math.random() < 0.5 ? 'es' : 'en';
+  
+  const q = planeta.planetaData.quiz[Math.floor(Math.random() * planeta.planetaData.quiz.length)];
+  
+  preguntaActual = {
+    texto: q.pregunta[idioma],
+    opciones: q.opciones,
+    correcta: q.correcta,
+    idiomaPregunta: idioma
+  };
+}
+
+function comprobarRespuesta(index) {
+  if (!preguntaActual) return;
+  
+  timerQuizActivo = false; // Detener timer
+  
+  const respuesta = preguntaActual.opciones[index];
+  const esCorrecto = respuesta === preguntaActual.correcta;
+  
+  if (modoQuizFinal) {
+    // En quiz final: contar respuestas y pasar a siguiente
+    if (esCorrecto) {
+      respuestasCorrectasQuiz++;
+      score += 100;
+      feedbackMsg = preguntaActual.idiomaPregunta === 'es' ? '¡Correcto! +100' : 'Correct! +100';
+    } else {
+      feedbackMsg = preguntaActual.idiomaPregunta === 'es' 
+        ? `Incorrecto. Era: ${preguntaActual.correcta}` 
+        : `Wrong. It was: ${preguntaActual.correcta}`;
+    }
+    
+    feedbackTime = 120;
+    
+    // Pausar brevemente para leer feedback
+    juegoPausado = true;
+    
+    // Desactivar pregunta actual temporalmente
+    const preguntaTemp = preguntaActual;
+    preguntaActual = null;
+    
+    // Avanzar a siguiente pregunta del quiz
+    indicePreguntaActual++;
+    
+    setTimeout(() => {
+      juegoPausado = false;
+      if (modoQuizFinal) {
+        cargarPreguntaQuizFinal(); // Esto reactivará modoPregunta si hay más preguntas
+      }
+    }, 2500); // Más tiempo para leer feedback
+    
+  } else {
+    // Preguntas normales (si las hubiera)
+    if (esCorrecto) {
+      score += 100;
+      feedbackMsg = preguntaActual.idiomaPregunta === 'es' ? '¡Correcto! +100' : 'Correct! +100';
+    } else {
+      score = Math.max(0, score - 20);
+      feedbackMsg = preguntaActual.idiomaPregunta === 'es' ? '¡Incorrecto! -20' : 'Wrong! -20';
+    }
+    feedbackTime = 120;
+    
+    modoPregunta = false;
+    preguntaActual = null;
+  }
+  
+  zonaRespuesta = -1;
+  tiempoEnZona = 0;
+}
+
+function drawPregunta() {
+  if (!modoPregunta || !preguntaActual) return;
+  
+  ctx.save();
+  
+  // Fondo oscuro semitransparente
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.88)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  // Título del quiz si es final
+  if (modoQuizFinal && preguntaActual.numero) {
+    ctx.fillStyle = '#FFD700';
+    ctx.font = 'bold 18px Arial';
+    ctx.textAlign = 'center';
+    const tituloQuiz = idioma === 'es' 
+      ? `🎓 QUIZ FINAL - ${planetaActual.nombre.es}` 
+      : `🎓 FINAL QUIZ - ${planetaActual.nombre.en}`;
+    ctx.fillText(tituloQuiz, canvas.width / 2, 100);
+    
+    // Timer prominente
+    const segundosRestantes = Math.ceil(timerQuiz);
+    const colorTimer = segundosRestantes <= 5 ? '#FF5252' : (segundosRestantes <= 10 ? '#FFA726' : '#4CAF50');
+    ctx.fillStyle = colorTimer;
+    ctx.font = 'bold 24px Arial';
+    ctx.fillText(`⏱ ${segundosRestantes}s`, canvas.width / 2, 75);
+    
+    ctx.fillStyle = '#aaa';
+    ctx.font = '14px Arial';
+    ctx.fillText(`${preguntaActual.numero} / ${preguntaActual.total}`, canvas.width / 2, 120);
+  }
+  
+  // Pregunta
+  ctx.fillStyle = 'white';
+  ctx.font = 'bold 22px Arial';
+  ctx.textAlign = 'center';
+  ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+  ctx.shadowBlur = 8;
+  ctx.fillText(preguntaActual.texto, canvas.width / 2, 150);
+  
+  ctx.shadowBlur = 0;
+  
+  // Instrucciones claras con iconos
+  ctx.font = 'bold 20px Arial';
+  ctx.fillStyle = '#FFD700';
+  ctx.textAlign = 'center';
+  const instruccion1 = preguntaActual.idiomaPregunta === 'es' 
+    ? '⌨️ Pulsa la letra de tu respuesta: A, B o C'
+    : '⌨️ Press the letter of your answer: A, B or C';
+  ctx.fillText(instruccion1, canvas.width / 2, 185);
+  
+  ctx.font = '16px Arial';
+  ctx.fillStyle = '#90CAF9';
+  const instruccion2 = preguntaActual.idiomaPregunta === 'es' 
+    ? '✓ Lee bien la pregunta antes de elegir'
+    : '✓ Read the question carefully before choosing';
+  ctx.fillText(instruccion2, canvas.width / 2, 215);
+  
+  // Indicador visual de qué zona está activa (eliminado - ya no se usa)
+  
+  // Zonas de respuesta
+  const zonaWidth = canvas.width / 3;
+  const zonaY = 250;
+  const zonaHeight = 120;
+  
+  for (let i = 0; i < 3; i++) {
+    const x = i * zonaWidth;
+    
+    // Fondo de zona - estilo simple sin hover
+    ctx.fillStyle = 'rgba(50, 50, 100, 0.4)';
+    ctx.fillRect(x + 10, zonaY, zonaWidth - 20, zonaHeight);
+    
+    // Borde de zona
+    ctx.strokeStyle = '#555';
+    ctx.lineWidth = 2;
+    ctx.strokeRect(x + 10, zonaY, zonaWidth - 20, zonaHeight);
+    
+    // Letra de opción grande y clara
+    ctx.font = 'bold 32px Arial';
+    ctx.fillStyle = '#FFD700';
+    ctx.textAlign = 'center';
+    const letras = ['A', 'B', 'C'];
+    ctx.fillText(letras[i], x + zonaWidth / 2, zonaY + 30);
+    
+    // Opción
+    ctx.fillStyle = '#FFF';
+    ctx.font = 'bold 18px Arial';
+    
+    // Ajustar texto de opción si es muy largo
+    const opcion = preguntaActual.opciones[i];
+    const maxWidth = zonaWidth - 30;
+    ctx.fillText(opcion, x + zonaWidth / 2, zonaY + zonaHeight / 2 + 10, maxWidth);
+  }
+  
+  ctx.restore();
+}
+
+function drawFeedback() {
+  if (feedbackTime <= 0 || !feedbackMsg) return;
+  
+  ctx.save();
+  
+  const alpha = Math.min(feedbackTime / 60, 1);
+  const y = canvas.height / 2 - 100;
+  
+  // Si es GAME OVER, pantalla completa
+  if (juegoTerminado) {
+    // Fondo oscuro completo
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.85)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    
+    // Título GAME OVER grande
+    ctx.font = 'bold 48px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#FF5252';
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+    ctx.shadowBlur = 20;
+    ctx.fillText('❌ GAME OVER', canvas.width / 2, canvas.height / 2 - 50);
+    
+    ctx.font = 'bold 24px Arial';
+    ctx.fillStyle = '#FFF';
+    ctx.fillText('No aprobaste el quiz', canvas.width / 2, canvas.height / 2);
+    
+    ctx.font = '18px Arial';
+    ctx.fillStyle = '#AAA';
+    ctx.fillText('Reiniciando en ' + Math.ceil(feedbackTime / 60) + ' segundos...', canvas.width / 2, canvas.height / 2 + 50);
+    
+    ctx.font = '16px Arial';
+    ctx.fillStyle = '#888';
+    ctx.fillText('Puntuación final: ' + score, canvas.width / 2, canvas.height / 2 + 90);
+  } else {
+    // Feedback normal
+    // Sombra
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+    ctx.shadowBlur = 10;
+    
+    // Texto
+    ctx.font = 'bold 28px Arial';
+    ctx.textAlign = 'center';
+    
+    const isCorrect = feedbackMsg.includes('+');
+    ctx.fillStyle = isCorrect 
+      ? `rgba(76, 175, 80, ${alpha})` 
+      : `rgba(244, 67, 54, ${alpha})`;
+    
+    ctx.fillText(feedbackMsg, canvas.width / 2, y);
+  }
+  
+  ctx.restore();
+}
+
 function loop() {
   drawFondo();
   drawPlanetas();
@@ -740,6 +1288,8 @@ function loop() {
   drawNave();
   drawHUD();
   drawInfo();
+  drawPregunta();  // Sistema de preguntas
+  drawFeedback();  // Feedback de respuestas
   drawInstrucciones();
   if (!mostrarInstrucciones) update();
   af = requestAnimationFrame(loop);
@@ -748,6 +1298,41 @@ function loop() {
 // Eventos
 function keydown(e){
   if (mostrarInstrucciones) { mostrarInstrucciones = false; return; }
+  
+  // Si está en modo pregunta (quiz), detectar A, B o C
+  if (modoPregunta && preguntaActual && !juegoPausado) {
+    const tecla = e.key.toUpperCase();
+    
+    if (tecla === 'A') {
+      comprobarRespuesta(0);
+      return;
+    } else if (tecla === 'B') {
+      comprobarRespuesta(1);
+      return;
+    } else if (tecla === 'C') {
+      comprobarRespuesta(2);
+      return;
+    }
+    // Ignorar otras teclas en modo quiz
+    return;
+  }
+  
+  // Si está esperando tecla para despausar (dato curioso)
+  // Solo aceptar espacio o teclas que NO sean flechas
+  if (esperandoTeclaDespausar && juegoPausado) {
+    const esFlechaMovimiento = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key);
+    
+    // Continuar solo si NO es una flecha (acepta espacio, letras, etc.)
+    if (!esFlechaMovimiento) {
+      juegoPausado = false;
+      esperandoTeclaDespausar = false;
+      infoActual = null;
+      return;
+    }
+    // Si es flecha, no hacer nada (no despausar)
+    return;
+  }
+  
   teclas[e.key] = true;
 }
 function keyup(e){ teclas[e.key] = false; }
