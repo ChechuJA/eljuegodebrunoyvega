@@ -179,20 +179,35 @@ function draw(){
 	}
 	
 	if(ended){
-		ctx.fillStyle='rgba(0,0,0,0.8)';
-		ctx.fillRect(100,150,canvas.width-200,220);
+		ctx.fillStyle='rgba(0,0,0,0.88)';
+		ctx.fillRect(60,80,canvas.width-120,400);
 		ctx.fillStyle='#fff'; ctx.font='bold 26px Arial'; ctx.textAlign='center';
-		ctx.fillText('¡Misión terminada!',canvas.width/2,200);
+		ctx.fillText('🚢 ¡Misión terminada! 🌊',canvas.width/2,120);
 		ctx.font='20px Arial';
-		ctx.fillText('Puntuación: '+puntos,canvas.width/2,240);
+		ctx.fillText('Puntuación: '+puntos,canvas.width/2,160);
 		if(mensajeRecord){
 			ctx.fillStyle='#ffeb3b';
-			ctx.fillText(mensajeRecord,canvas.width/2,280);
+			ctx.fillText(mensajeRecord,canvas.width/2,195);
 		}
-		ctx.fillStyle='#aaa'; ctx.font='16px Arial';
-		ctx.fillText('Récord: '+highScore+' por '+highName,canvas.width/2,320);
+		
+		// Datos educativos del Prestige
+		ctx.fillStyle='#ff5722'; ctx.font='bold 18px Arial';
+		ctx.fillText('🚨 EL DESASTRE DEL PRESTIGE (2002)',canvas.width/2,235);
+		
+		ctx.fillStyle='#fff'; ctx.font='14px Arial'; ctx.textAlign='left';
+		const infoX = 90;
+		ctx.fillText('• 63.000 toneladas de fuel vertidas al océano', infoX, 265);
+		ctx.fillText('• 1.900 km de costa afectada (Galicia, Asturias, Cantabria)', infoX, 285);
+		ctx.fillText('• 230.000 aves marinas muertas + miles de peces', infoX, 305);
+		ctx.fillText('• 300.000 voluntarios limpiaron las playas manualmente', infoX, 325);
+		ctx.fillText('• Coste económico: más de 4.000 millones de euros', infoX, 345);
+		ctx.fillText('• Efecto en pesca y turismo durante más de 5 años', infoX, 365);
+		ctx.fillText('• Aún quedan restos de petróleo en el fondo marino', infoX, 385);
+		
+		ctx.fillStyle='#aaa'; ctx.font='14px Arial'; ctx.textAlign='center';
+		ctx.fillText('Récord: '+highScore+' por '+highName,canvas.width/2,420);
 		ctx.fillStyle='#4caf50'; ctx.font='bold 18px Arial';
-		ctx.fillText('Presiona R para reintentar',canvas.width/2,360);
+		ctx.fillText('Presiona R para reintentar',canvas.width/2,455);
 		ctx.textAlign='left';
 		return;
 	}
@@ -244,12 +259,22 @@ function draw(){
 		ctx.globalAlpha=1;
 	}
 	
-	// Mensaje educativo
+	// Mensajes educativos rotativos
 	if(tiempo<5000){
-		ctx.fillStyle='rgba(0,0,0,0.7)';
-		ctx.fillRect(100,450,canvas.width-200,50);
-		ctx.fillStyle='#ffeb3b'; ctx.font='14px Arial'; ctx.textAlign='center';
-		ctx.fillText('El Prestige derramó 63.000 toneladas de petróleo, afectando 1.900 km de costa',canvas.width/2,475);
+		ctx.fillStyle='rgba(0,0,0,0.75)';
+		ctx.fillRect(80,450,canvas.width-160,55);
+		ctx.fillStyle='#ffeb3b'; ctx.font='bold 14px Arial'; ctx.textAlign='center';
+		ctx.fillText('🚨 DATOS DEL PRESTIGE',canvas.width/2,470);
+		ctx.fillStyle='#fff'; ctx.font='13px Arial';
+		ctx.fillText('13 nov 2002: Se hunde frente a Galicia | 63.000 ton de fuel | 1.900 km de costa',canvas.width/2,490);
+		ctx.textAlign='left';
+	} else if(tiempo>=5000 && tiempo<10000){
+		ctx.fillStyle='rgba(0,0,0,0.75)';
+		ctx.fillRect(80,450,canvas.width-160,55);
+		ctx.fillStyle='#ff5722'; ctx.font='bold 14px Arial'; ctx.textAlign='center';
+		ctx.fillText('🐦 IMPACTO EN FAUNA',canvas.width/2,470);
+		ctx.fillStyle='#fff'; ctx.font='13px Arial';
+		ctx.fillText('230.000 aves muertas | Miles de peces y mariscos | Ecosistema dañado 10+ años',canvas.width/2,490);
 		ctx.textAlign='left';
 	}
 }

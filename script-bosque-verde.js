@@ -176,22 +176,34 @@ function draw(){
 	ctx.fillRect(0,280,canvas.width,canvas.height-280);
 	
 	if(showInstructions){
-		ctx.fillStyle='rgba(0,0,0,0.7)';
-		ctx.fillRect(50,80,canvas.width-100,320);
-		ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center';
-		ctx.fillText('🌲 BOSQUE VERDE 🔥',canvas.width/2,120);
-		ctx.font='16px Arial'; ctx.textAlign='left';
-		ctx.fillText('Prevención y control de incendios forestales',80,160);
-		ctx.fillText('',80,190);
-		ctx.fillText('🎯 Objetivos:',80,220);
-		ctx.fillText('  • Apaga los incendios con agua antes de que se propaguen',80,245);
-		ctx.fillText('  • Planta nuevos árboles para recuperar el bosque',80,270);
-		ctx.fillText('  • La humedad del suelo ayuda a prevenir fuegos',80,295);
-		ctx.fillText('',80,320);
-		ctx.fillText('🎮 Controles: ← → para mover | ESPACIO agua | P plantar árbol',80,350);
+		ctx.fillStyle='rgba(0,0,0,0.75)';
+		ctx.fillRect(40,60,canvas.width-80,400);
+		ctx.fillStyle='#fff'; ctx.font='bold 24px Arial'; ctx.textAlign='center';
+		ctx.fillText('🌲 BOSQUE VERDE 🔥',canvas.width/2,100);
+		
+		ctx.font='bold 16px Arial'; ctx.fillStyle='#ff9800';
+		ctx.fillText('Prevención y control de incendios forestales',canvas.width/2,130);
+		
+		ctx.font='15px Arial'; ctx.textAlign='left'; ctx.fillStyle='#fff';
+		const x = 70;
+		ctx.fillText('🎯 Objetivos:',x,165);
+		ctx.fillText('  • Apaga los incendios con agua antes de que se propaguen',x,190);
+		ctx.fillText('  • Planta nuevos árboles para recuperar el bosque',x,215);
+		ctx.fillText('  • La humedad del suelo ayuda a prevenir fuegos',x,240);
+		
+		ctx.fillStyle='#ffeb3b'; ctx.font='bold 15px Arial';
+		ctx.fillText('💡 ¿Sabías que...?',x,275);
+		ctx.fillStyle='#fff'; ctx.font='14px Arial';
+		ctx.fillText('  • El 50% de incendios en España son intencionados',x,300);
+		ctx.fillText('  • Una colilla puede causar un gran incendio forestal',x,320);
+		ctx.fillText('  • Los incendios emiten millones de toneladas de CO₂',x,340);
+		
+		ctx.fillStyle='#90caf9';
+		ctx.fillText('🎮 Controles: ← → mover | ESPACIO agua | P plantar árbol',x,380);
+		
 		ctx.font='bold 18px Arial'; ctx.textAlign='center';
 		ctx.fillStyle='#4caf50';
-		ctx.fillText('Presiona ENTER para comenzar',canvas.width/2,390);
+		ctx.fillText('Presiona ENTER para comenzar',canvas.width/2,420);
 		ctx.textAlign='left';
 		
 		// Botón ayuda
@@ -201,22 +213,37 @@ function draw(){
 	}
 	
 	if(ended){
-		ctx.fillStyle='rgba(0,0,0,0.8)';
-		ctx.fillRect(100,150,canvas.width-200,220);
+		ctx.fillStyle='rgba(0,0,0,0.85)';
+		ctx.fillRect(80,100,canvas.width-160,380);
 		ctx.fillStyle='#fff'; ctx.font='bold 26px Arial'; ctx.textAlign='center';
-		ctx.fillText('¡Misión completada!',canvas.width/2,200);
+		ctx.fillText('🌲 ¡Misión completada! 👩‍🚒',canvas.width/2,140);
 		ctx.font='20px Arial';
 		let sanos=arboles.filter(a=>a.estado==='sano').length;
-		ctx.fillText('Árboles salvados: '+sanos,canvas.width/2,240);
-		ctx.fillText('Puntuación: '+puntos,canvas.width/2,270);
+		let quemados=arboles.filter(a=>a.estado==='quemado').length;
+		ctx.fillText('Árboles salvados: '+sanos,canvas.width/2,180);
+		ctx.fillText('Árboles perdidos: '+quemados,canvas.width/2,210);
+		ctx.fillText('Puntuación: '+puntos,canvas.width/2,240);
 		if(mensajeRecord){
 			ctx.fillStyle='#ffeb3b';
-			ctx.fillText(mensajeRecord,canvas.width/2,300);
+			ctx.fillText(mensajeRecord,canvas.width/2,270);
 		}
-		ctx.fillStyle='#aaa'; ctx.font='16px Arial';
-		ctx.fillText('Récord: '+highScore+' por '+highName,canvas.width/2,330);
+		
+		// Datos educativos reales
+		ctx.fillStyle='#ff9800'; ctx.font='bold 18px Arial';
+		ctx.fillText('🔥 DATOS REALES SOBRE INCENDIOS FORESTALES',canvas.width/2,310);
+		
+		ctx.fillStyle='#fff'; ctx.font='14px Arial'; ctx.textAlign='left';
+		const infoX = 110;
+		ctx.fillText('• En España se queman cada año más de 80.000 hectáreas de bosque', infoX, 340);
+		ctx.fillText('• El 96% de los incendios son causados por el ser humano', infoX, 360);
+		ctx.fillText('• Un incendio puede alcanzar temperaturas de 1.000°C', infoX, 380);
+		ctx.fillText('• 2022: España perdió 306.000 hectáreas (récord histórico)', infoX, 400);
+		ctx.fillText('• El cambio climático aumenta +30% el riesgo de incendios', infoX, 420);
+		
+		ctx.fillStyle='#aaa'; ctx.font='14px Arial'; ctx.textAlign='center';
+		ctx.fillText('Récord: '+highScore+' por '+highName,canvas.width/2,450);
 		ctx.fillStyle='#4caf50'; ctx.font='bold 18px Arial';
-		ctx.fillText('Presiona R para reintentar',canvas.width/2,360);
+		ctx.fillText('Presiona R para reintentar',canvas.width/2,475);
 		ctx.textAlign='left';
 		return;
 	}
