@@ -40,6 +40,7 @@ let esperandoTeclaDespausar = false; // Esperando que pulse tecla para continuar
 let timerQuiz = 60; // 60 segundos para responder cada pregunta (más tiempo)
 let timerQuizActivo = false;
 let juegoTerminado = false; // Flag para GAME OVER
+let mostrarPantallaEntreNiveles = false; // Mostrar frase entre niveles
 
 const datosPlanetas = [
   { 
@@ -739,8 +740,44 @@ function wrapText(ctx, text, x, y, maxWidth, lineHeight) {
 
 function drawInstrucciones() {
   if (!mostrarInstrucciones) return;
-  const x=40,y=80,w=canvas.width-80,h=200; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='#000'; ctx.fillRect(x,y,w,h); ctx.restore(); }
-  ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('🚀 Nave Exploradora', canvas.width/2, y+36); ctx.font='14px Arial'; ctx.fillText('◀ ▲ ▶ ▼ Flechas para mover la nave', canvas.width/2, y+70); ctx.fillText('🔮 Reúne 7 orbes morados', canvas.width/2, y+92); ctx.fillText('🪐 Descubre los 3 planetas (acércate)', canvas.width/2, y+114); ctx.fillText('📝 Quiz final con 60 segundos por pregunta', canvas.width/2, y+136); ctx.fillText('⚠️ GAME OVER si fallas el quiz', canvas.width/2, y+158); ctx.fillText('Pulsa cualquier tecla para empezar', canvas.width/2, y+178); ctx.restore();
+  const x=40,y=80,w=canvas.width-80,h=220; if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.92; ctx.fillStyle='#000'; ctx.fillRect(x,y,w,h); ctx.restore(); }
+  ctx.save(); ctx.fillStyle='#fff'; ctx.font='bold 22px Arial'; ctx.textAlign='center'; ctx.fillText('🚀 Nave Exploradora', canvas.width/2, y+36); ctx.font='bold 20px Arial'; ctx.fillStyle='#FFD700'; ctx.fillText('My very educated Mother just served us Noodles', canvas.width/2, y+68); ctx.fillStyle='#fff'; ctx.font='14px Arial'; ctx.fillText('◀ ▲ ▶ ▼ Flechas para mover la nave', canvas.width/2, y+100); ctx.fillText('🔮 Reúne 7 orbes morados', canvas.width/2, y+122); ctx.fillText('🪐 Descubre los 3 planetas (acércate)', canvas.width/2, y+144); ctx.fillText('📝 Quiz final con 60 segundos por pregunta', canvas.width/2, y+166); ctx.fillText('⚠️ GAME OVER si fallas el quiz', canvas.width/2, y+188); ctx.font='bold 16px Arial'; ctx.fillStyle='#FFD700'; ctx.fillText('⌨️ Pulsa ESPACIO para empezar', canvas.width/2, y+212); ctx.restore();
+}
+
+function drawPantallaEntreNiveles() {
+  if (!mostrarPantallaEntreNiveles) return;
+  
+  // Fondo oscuro completo
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.92)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  
+  ctx.save();
+  
+  // Panel con la frase
+  const x=60,y=130,w=canvas.width-120,h=160;
+  if(window.GameUI){ GameUI.glassPanel(ctx,x,y,w,h,20);} else { ctx.save(); ctx.globalAlpha=0.95; ctx.fillStyle='#1a237e'; ctx.fillRect(x,y,w,h); ctx.restore(); }
+  
+  ctx.fillStyle='#fff'; 
+  ctx.font='bold 28px Arial'; 
+  ctx.textAlign='center'; 
+  ctx.fillText('🎉 ¡Nivel Completado! 🎉', canvas.width/2, y+45);
+  
+  ctx.font='bold 24px Arial'; 
+  ctx.fillStyle='#FFD700'; 
+  ctx.fillText('My very educated Mother just served us Noodles', canvas.width/2, y+85);
+  
+  ctx.font='bold 18px Arial'; 
+  ctx.fillStyle='#4CAF50'; 
+  ctx.fillText('Preparándote para el Nivel ' + nivel, canvas.width/2, y+120);
+  
+  ctx.font='bold 16px Arial'; 
+  ctx.fillStyle='#FFD700'; 
+  const parpadeo = Math.floor(Date.now() / 500) % 2 === 0 ? 1 : 0.5;
+  ctx.globalAlpha = parpadeo;
+  ctx.fillText('⌨️ Pulsa ESPACIO para continuar', canvas.width/2, y+147);
+  ctx.globalAlpha = 1;
+  
+  ctx.restore();
 }
 
 function update() {
@@ -976,11 +1013,9 @@ function finalizarQuizFinal() {
       infoActual = { nombre: '¡Completado!', dato: '¡Has explorado todos los planetas del sistema solar!' };
       esperandoTeclaDespausar = true; // Esperar tecla para terminar
     } else {
-      // Preparar siguiente nivel
-      setTimeout(() => {
-        juegoPausado = false;
-        crearPlanetas();
-      }, 3500); // Más tiempo para disfrutar el logro
+      // Mostrar pantalla entre niveles con la frase
+      mostrarPantallaEntreNiveles = true;
+      juegoPausado = true;
     }
   } else {
     // GAME OVER - Reiniciar desde nivel 1
@@ -1290,6 +1325,7 @@ function loop() {
   drawInfo();
   drawPregunta();  // Sistema de preguntas
   drawFeedback();  // Feedback de respuestas
+  drawPantallaEntreNiveles();  // Pantalla entre niveles
   drawInstrucciones();
   if (!mostrarInstrucciones) update();
   af = requestAnimationFrame(loop);
@@ -1297,7 +1333,22 @@ function loop() {
 
 // Eventos
 function keydown(e){
-  if (mostrarInstrucciones) { mostrarInstrucciones = false; return; }
+  if (mostrarInstrucciones) { 
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      mostrarInstrucciones = false; 
+    }
+    return; 
+  }
+  
+  // Si está en pantalla entre niveles, esperar ESPACIO
+  if (mostrarPantallaEntreNiveles) {
+    if (e.key === ' ' || e.key === 'Spacebar') {
+      mostrarPantallaEntreNiveles = false;
+      juegoPausado = false;
+      crearPlanetas();
+    }
+    return;
+  }
   
   // Si está en modo pregunta (quiz), detectar A, B o C
   if (modoPregunta && preguntaActual && !juegoPausado) {
