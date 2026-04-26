@@ -113,4 +113,23 @@ test.describe('Bruno y Vega Games', () => {
       await expect(page.locator('#menu')).toBeVisible();
     }
   });
+
+  test('teclado rapido game loads', async ({ page }) => {
+    await page.goto('/');
+
+    // Set player name if needed
+    const nameInput = page.locator('#playerNameInput');
+    if (await nameInput.isVisible()) {
+      await nameInput.fill('TestPlayer');
+      await page.locator('#savePlayerNameBtn').click();
+    }
+
+    // Click the Teclado Rápido button
+    await page.locator('button[onclick*="teclado-rapido"]').click();
+
+    // Should hide menu and show game area
+    await expect(page.locator('#menu')).toBeHidden();
+    await expect(page.locator('#gameArea')).toBeVisible();
+    await expect(page.locator('#gameCanvas')).toBeVisible();
+  });
 });

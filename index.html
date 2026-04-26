@@ -156,6 +156,7 @@
       <button style="background:#ff5722" onclick="startGame('mario-flappy')">Mario Volador 🍄</button>
       <button style="background:#0288d1" onclick="startGame('atrapa-bola')">Atrapa Bolas 🏀</button>
       <button style="background:#8b4513" onclick="startGame('ajedrez')">Ajedrez ♔♚</button>
+      <button style="background:#0d47a1" onclick="startGame('teclado-rapido')">Teclado Rápido ⌨️</button>
     </div>
     
     <!-- He eliminado los juegos 3D no funcionales del menú principal -->
@@ -299,7 +300,8 @@
         ['Bosque Verde','bosqueVerdePuntos','bosqueVerdeName'],
         ['Aire Limpio','aireLimpioPuntos','aireLimpioName'],
         ['Energía Sabia','energiaSabiaPuntos','energiaSabiaName'],
-        ['Planeta Azul','planetaAzulPuntos','planetaAzulName']
+        ['Planeta Azul','planetaAzulPuntos','planetaAzulName'],
+        ['Teclado Rápido','tecladoRapidoHigh','tecladoRapidoHighName']
       ];
       const wrap=document.getElementById('globalScoresContent');
       wrap.innerHTML=map.map(([label,key,keyName])=>{
@@ -355,7 +357,8 @@
         'bosque-verde':'script-bosque-verde.js',
         'aire-limpio':'script-aire-limpio.js',
         'energia-sabia':'script-energia-sabia.js',
-        'planeta-azul':'script-planeta-azul.js'
+        'planeta-azul':'script-planeta-azul.js',
+        'teclado-rapido':'script-teclado-rapido.js'
       };
       loadScript(map[game]);
     }
