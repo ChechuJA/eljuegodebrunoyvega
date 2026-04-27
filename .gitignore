@@ -20,3 +20,4 @@ Thumbs.db
 site/
 dist/
 build/
+test-results
