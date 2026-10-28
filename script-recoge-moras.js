@@ -38,8 +38,10 @@
     // Fondo
     if (bgReady()) ctx.drawImage(backgroundImage, 0, 0, width, height);
     else { ctx.fillStyle = '#b6e685'; ctx.fillRect(0,0,width,height); }
+    if (window.GameUI) GameUI.scenery(ctx, 'recoge-moras');
     // Jugador
-    if (playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    if (window.GameUI) GameUI.explorer(ctx, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE, '#9258a6');
+    else if (playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
     else {
       ctx.fillStyle = '#6b3e26';
       ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
@@ -114,7 +116,7 @@
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   function keydown(e) {
@@ -127,15 +129,16 @@
     keys[e.key] = false;
   }
 
+  let animationFrame;
   function start(canvasElement) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
   // Carga de imágenes
-  backgroundImage = new Image(); backgroundImage.src = 'assets/recoge-moras-background.png'; backgroundImage.onerror = ()=>{ backgroundImage.src = 'assets/recoge-moras-background.svg'; };
-  playerImage = new Image(); playerImage.src = 'assets/recoge-moras-player.png'; playerImage.onerror = ()=>{ playerImage.src = 'assets/recoge-moras-player.svg'; };
-  moraImage = new Image(); moraImage.src = 'assets/recoge-moras-mora.png'; moraImage.onerror = ()=>{ moraImage.src = 'assets/recoge-moras-mora.svg'; };
+  backgroundImage = new Image(); backgroundImage.src = 'assets/recoge-moras-background.svg';
+  playerImage = new Image(); playerImage.src = 'assets/recoge-moras-player.svg';
+  moraImage = new Image(); moraImage.src = 'assets/recoge-moras-mora.svg';
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
     initGame();
@@ -146,6 +149,8 @@
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
     return function cleanup(){
+      cancelAnimationFrame(animationFrame);
+      keys = {};
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
       if(timer) clearInterval(timer);

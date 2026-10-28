@@ -52,8 +52,11 @@
       }
     }
     
+    if (window.GameUI) GameUI.scenery(ctx, 'juego-habilidad');
     // Jugador
-    if (charReady()) {
+    if (window.GameUI) {
+      GameUI.vehicle(ctx, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    } else if (charReady()) {
       ctx.drawImage(characterImage, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
     } else {
       // Dibujar una nave más detallada
@@ -184,7 +187,7 @@
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   function keydown(e) {
@@ -197,6 +200,7 @@
     keys[e.key] = false;
   }
 
+  let animationFrame;
   function start(canvasElement) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
@@ -204,10 +208,10 @@
     height = canvas.height;
   // Carga de imágenes
   backgroundImage = new Image();
-  backgroundImage.src = 'assets/juego-habilidad-background.png';
+  backgroundImage.src = 'assets/juego-habilidad-background.svg';
   backgroundImage.onerror = () => { backgroundImage.src = 'assets/juego-habilidad-background.svg'; };
   characterImage = new Image();
-  characterImage.src = 'assets/juego-habilidad-character.png';
+  characterImage.src = 'assets/juego-habilidad-character.svg';
   characterImage.onerror = () => { characterImage.src = 'assets/juego-habilidad-character.svg'; };
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
@@ -219,6 +223,8 @@
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
     return function cleanup() {
+      cancelAnimationFrame(animationFrame);
+      keys = {};
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
     };

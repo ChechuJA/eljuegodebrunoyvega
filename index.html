@@ -18,7 +18,7 @@
     header { width:100%; background:#0d3d91; color:#fff; text-align:center; padding:14px 8px; font-weight:bold; box-shadow:0 2px 6px rgba(0,0,0,.25);}
     #gameArea { display:none; margin:20px 0; }
     #gameCanvas {
-      width:100%; max-width:800px; height:auto;
+      width:100%; max-width:800px; min-width:min(640px,calc(100vw - 24px)); height:auto;
       background:#fff; border:2px solid #333; box-shadow:0 4px 14px rgba(0,0,0,.25);
       touch-action:none;
     }
@@ -46,6 +46,16 @@
       box-shadow:0 2px 5px rgba(0,0,0,.25);
     }
     #gameButtons button:hover { transform:translateY(-2px); box-shadow:0 4px 8px rgba(0,0,0,.35); }
+    .learning-section {
+      max-width:820px; margin:0 auto 25px; padding:16px 18px;
+      border:2px solid #7e57c2; border-radius:14px;
+      background:linear-gradient(135deg,rgba(126,87,194,.12),rgba(66,165,245,.12));
+    }
+    .learning-buttons { display:flex; justify-content:center; gap:10px; flex-wrap:wrap; }
+    .learning-buttons button {
+      border:0; border-radius:8px; padding:10px 16px; color:#fff;
+      font-size:15px; font-weight:700; cursor:pointer;
+    }
     #backBtn { display:none; text-align:center; margin:10px 0 4px; }
     #globalScoresOverlay {
       display:none; position:fixed; inset:0; background:rgba(0,0,20,.82);
@@ -126,9 +136,21 @@
         <button style="background:#0277bd;padding:8px 16px;border:none;border-radius:8px;color:#fff;font-weight:600;cursor:pointer;font-size:14px;box-shadow:0 3px 8px rgba(2,119,189,0.3);" onclick="startGame('planeta-azul')">🌊 Planeta Azul</button>
       </div>
     </div>
+
+    <section class="learning-section" aria-labelledby="keyboardPracticeTitle">
+      <h3 id="keyboardPracticeTitle" style="margin:0 0 8px;color:#512da8;font-size:21px;text-align:center;">⌨️ Entrena tu teclado</h3>
+      <p style="margin:0 0 14px;font-size:14px;line-height:1.45;text-align:center;color:#424242;">
+        Retos para practicar de 8 a 12 años: primero precisión, después rapidez. ¡Cada intento ayuda a mejorar!
+      </p>
+      <div class="learning-buttons">
+        <button style="background:#5e35b1;" onclick="startGame('mecanografia')">📝 Misión mecanografía</button>
+        <button style="background:#00838f;" onclick="startGame('teclado-rapido')">🏃 Teclado Rápido</button>
+      </div>
+    </section>
     
     <h3 style="text-align:center;margin:20px 0 15px;color:#666;">Juegos Individuales</h3>
     <div id="gameButtons">
+      <button style="background:#3949ab" onclick="startGame('geometria-espacio')">🔷 Geometría en carrera</button>
       <button style="background:#1976d2" onclick="startGame('arkanoid')">Arkanoid</button>
       <button style="background:#388e3c" onclick="startGame('paracaidista')">Bruno el paracaidista</button>
       <button style="background:#e91e63" onclick="startGame('vega-bailarina')">Vega la bailarina</button>
@@ -157,7 +179,6 @@
       <button style="background:#ff5722" onclick="startGame('mario-flappy')">Mario Volador 🍄</button>
       <button style="background:#0288d1" onclick="startGame('atrapa-bola')">Atrapa Bolas 🏀</button>
       <button style="background:#8b4513" onclick="startGame('ajedrez')">Ajedrez ♔♚</button>
-      <button style="background:#0d47a1" onclick="startGame('teclado-rapido')">Teclado Rápido ⌨️</button>
     </div>
     
     <!-- He eliminado los juegos 3D no funcionales del menú principal -->
@@ -191,11 +212,8 @@
 
   <footer>Creado para Bruno y Vega © 2025</footer>
 
+  <script src="game-utils.js"></script>
   <script>
-    // Cargar utilidades
-    const utilScript=document.createElement('script');
-    utilScript.src='game-utils.js?v='+Date.now();
-    document.head.appendChild(utilScript);
 
     let currentScript=null, currentCleanup=null, currentGameSrc=null;
 
@@ -302,11 +320,13 @@
         ['Aire Limpio','aireLimpioPuntos','aireLimpioName'],
         ['Energía Sabia','energiaSabiaPuntos','energiaSabiaName'],
         ['Planeta Azul','planetaAzulPuntos','planetaAzulName'],
-        ['Teclado Rápido','tecladoRapidoHigh','tecladoRapidoHighName']
+        ['Teclado Rápido','tecladoRapidoHigh','tecladoRapidoHighName'],
+        ['Mecanografía','mecanografiaRecordWpm',null],
+        ['Geometría en carrera','geometriaEspacioHighScore','geometriaEspacioHighScoreName']
       ];
       const wrap=document.getElementById('globalScoresContent');
       wrap.innerHTML=map.map(([label,key,keyName])=>{
-        const v=localStorage.getItem(key), n=localStorage.getItem(keyName);
+        const v=localStorage.getItem(key), n=keyName?localStorage.getItem(keyName):'';
         if(!v) return `<div style="opacity:.45;border:1px dashed rgba(255,255,255,0.3);padding:10px 12px;border-radius:12px;"><strong>${label}</strong><br/><em>Sin récord</em></div>`;
         return `<div style="background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.2);padding:10px 12px;border-radius:12px;"><strong>${label}</strong><br/>${n?('👤 '+n):''}<br/>🏆 ${v}</div>`;
       }).join('');
@@ -360,7 +380,9 @@
         'aire-limpio':'script-aire-limpio.js',
         'energia-sabia':'script-energia-sabia.js',
         'planeta-azul':'script-planeta-azul.js',
-        'teclado-rapido':'script-teclado-rapido.js'
+        'teclado-rapido':'script-teclado-rapido.js',
+        'mecanografia':'script-mecanografia.js',
+        'geometria-espacio':'script-geometria-espacio.js'
       };
       loadScript(map[game]);
     }
@@ -371,11 +393,15 @@
       if(currentScript){ document.body.removeChild(currentScript); currentScript=null; }
       const canvas=document.getElementById('gameCanvas');
       const ctx=canvas.getContext('2d');
-      ctx.clearRect(0,0,canvas.width,canvas.height);
+      // Reiniciar dimensiones y estado Canvas (fuente, alpha, transformaciones…).
+      // Cada juego puede elegir después su propio tamaño lógico.
+      canvas.width=800;
+      canvas.height=500;
       console.log('Loading game script:', src);
       const s=document.createElement('script');
       s.src=src+'?v='+Date.now();
       s.onload=()=>{
+        if (currentScript !== s) return;
         console.log('Game script loaded:', src);
         if(typeof window.registerGame==='function'){
           try {
@@ -394,7 +420,6 @@
 
     function restartGame(){
       if(!currentGameSrc) return;
-      if(currentCleanup){ try{ currentCleanup(); }catch(e){} }
       loadScript(currentGameSrc);
     }
 
@@ -409,6 +434,7 @@
       currentGameSrc=null;
       const canvas=document.getElementById('gameCanvas');
       const ctx=canvas.getContext('2d');
+      ctx.setTransform(1,0,0,1,0,0);
       ctx.clearRect(0,0,canvas.width,canvas.height);
       document.getElementById('gameArea').style.display='none';
       document.getElementById('menu').style.display='block';

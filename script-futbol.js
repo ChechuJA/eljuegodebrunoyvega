@@ -34,6 +34,7 @@ function registerGame() {
     { name: 'Los Azules', score: 0, color: '#3989e8', dark: '#103f7c', highlight: '#b8dcff', ink: '#ffffff', direction: -1 }
   ];
   teams.forEach((team, teamIndex) => {
+    team.controlledIndex = 6;
     team.players = formations[teamIndex].map(([x, y], index) => ({
       x, y, homeX: x, homeY: y, radius: 14, speed: 3.6,
       color: team.color, dark: team.dark, highlight: team.highlight, ink: team.ink,
@@ -75,6 +76,7 @@ function registerGame() {
   }
 
   function resetPositions() {
+    teams.forEach(team => { team.controlledIndex = 6; });
     possession = null;
     intendedPassReceiver = null;
     actionMessage = '';
@@ -104,7 +106,7 @@ function registerGame() {
     gameState = state;
     const labels = {
       intro: 'Fútbol 7: elige jugar dos personas o CPU 1 contra CPU 2. Espacio inicia dos personas y 2 inicia CPU.',
-      playing: `Partido de fútbol 7 en curso: ${gameMode === 'cpu' ? 'CPU 1 contra CPU 2' : 'dos jugadores'}, máximo 3 minutos o 5 goles.`,
+      playing: `Partido de fútbol 7 en curso: ${gameMode === 'cpu' ? 'CPU 1 contra CPU 2' : 'dos jugadores'}, máximo 3 minutos o 5 goles.${gameMode === 'humans' ? ' Ctrl izquierdo: cambiar jugador blanco. Ctrl derecho: cambiar jugador azul.' : ''}`,
       gameOver: 'Partido terminado: pulsa R o toca el campo para repetir.'
     };
     canvas.setAttribute('aria-label', `${labels[state]} ${rosterDescription}. Árbitra: Almudena, de negro.`);
@@ -142,13 +144,22 @@ function registerGame() {
     player.kickCooldown = 12;
   }
 
-  function kickWithTeam(team) {
-    const closestPlayer = team.players.reduce((closest, player) => {
+  function closestPlayerToBall(team) {
+    return team.players.reduce((closest, player) => {
       return Math.hypot(ball.x - player.x, ball.y - player.y) < Math.hypot(ball.x - closest.x, ball.y - closest.y)
         ? player
         : closest;
     }, team.players[0]);
-    kick(closestPlayer, team.direction);
+  }
+
+  function kickWithTeam(team) {
+    kick(closestPlayerToBall(team), team.direction);
+  }
+
+  function switchPlayer(team) {
+    const player = closestPlayerToBall(team);
+    team.controlledIndex = player.index;
+    announceAction(`${team.name}: controlas a ${player.name}`);
   }
 
   function attemptTackle(team, defender, carrier) {
@@ -174,7 +185,9 @@ function registerGame() {
 
   function moveTeammates(team, delta) {
     const availablePlayers = team.players.slice(1).filter(player =>
-      player.index !== 6 || (gameMode === 'cpu' && possession && possession.team === team && possession.player !== player)
+      gameMode === 'humans'
+        ? player.index !== team.controlledIndex
+        : player.index !== 6 || (possession && possession.team === team && possession.player !== player)
     ).filter(player => !possession || possession.player !== player);
     const teamHasBall = possession && possession.team === team;
     const nearestPlayer = availablePlayers.reduce((closest, player) => {
@@ -338,8 +351,8 @@ function registerGame() {
   function update(delta) {
     if (gameState !== 'playing') return;
     if (gameMode === 'humans') {
-      movePlayer(teams[0].players[6], 'KeyW', 'KeyS', 'KeyA', 'KeyD', delta);
-      movePlayer(teams[1].players[6], 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', delta);
+      movePlayer(teams[0].players[teams[0].controlledIndex], 'KeyW', 'KeyS', 'KeyA', 'KeyD', delta);
+      movePlayer(teams[1].players[teams[1].controlledIndex], 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', delta);
     } else {
       teams.forEach(team => {
         if (possession && possession.team === team) moveCpuCarrier(team, delta);
@@ -423,6 +436,25 @@ function registerGame() {
       ctx.fillStyle = row % 2 ? '#164477' : '#1b5087';
       ctx.fillRect(18, 18 + row * 7, width - 36, 4);
     }
+    // Grada de barrio original: público y bufandas, fuera del campo de colisión.
+    ctx.save();
+    for (let seat = 0; seat < 48; seat += 1) {
+      const x = 20 + seat * 16;
+      const y = 464 + (seat % 2) * 12;
+      ctx.fillStyle = ['#ffd4aa', '#b97952', '#edb58b'][seat % 3];
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = seat % 3 ? '#f5f9ff' : '#3989e8';
+      ctx.fillRect(x - 4, y + 4, 8, 7);
+      ctx.strokeStyle = '#ffdb70';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y + 1);
+      ctx.lineTo(x + 5, y + 1);
+      ctx.stroke();
+    }
+    ctx.restore();
 
     ctx.save();
     ctx.shadowColor = 'rgba(0,0,0,0.45)';
@@ -493,6 +525,14 @@ function registerGame() {
   function drawPlayer(player) {
     ctx.save();
     ctx.translate(player.x, player.y);
+    if (gameMode === 'humans' && gameState === 'playing' &&
+        teams.some(team => team.players[team.controlledIndex] === player)) {
+      ctx.strokeStyle = '#ffe66d';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(0, 9, 20, 15, 0, 0, Math.PI * 2);
+      ctx.stroke();
+    }
     ctx.fillStyle = 'rgba(5,24,52,0.38)';
     ctx.beginPath();
     ctx.ellipse(2, 17, 12, 5, 0, 0, Math.PI * 2);
@@ -507,7 +547,7 @@ function registerGame() {
     ctx.lineTo(-4, 16);
     ctx.moveTo(3, 7);
     ctx.lineTo(5, 16);
-    ctx.fill();
+    ctx.stroke();
     ctx.strokeStyle = '#f5f8fc';
     ctx.lineWidth = 4;
     ctx.beginPath();
@@ -557,14 +597,15 @@ function registerGame() {
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
-    ctx.fillStyle = '#d99b72';
+    const skin = ['#d99b72', '#f0bc91', '#9c6245', '#c68b61'][player.index % 4];
+    ctx.fillStyle = skin;
     ctx.beginPath();
     ctx.roundRect(-2, -11, 4, 5, 2);
     ctx.fill();
     ctx.beginPath();
     ctx.arc(0, -14, 6, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#35271f';
+    ctx.fillStyle = ['#35271f', '#754624', '#211d29', '#b57b35'][player.index % 4];
     ctx.beginPath();
     ctx.arc(0, -16, 5.7, Math.PI, Math.PI * 2);
     ctx.lineTo(5, -14);
@@ -744,6 +785,8 @@ function registerGame() {
     ctx.fillStyle = '#a9cefa';
     ctx.font = 'bold 14px Arial';
     ctx.fillText('Espacio: dos jugadores  ·  Tecla 2: CPU contra CPU', width / 2, 358);
+    ctx.font = '12px Arial';
+    ctx.fillText('Ctrl izq.: cambiar blanco · Ctrl der.: cambiar azul', width / 2, 382);
     ctx.restore();
   }
 
@@ -812,25 +855,28 @@ function registerGame() {
       ctx.save();
       ctx.fillStyle = 'rgba(8,30,58,0.78)';
       ctx.beginPath();
-      ctx.roundRect(244, 475, 312, 20, 7);
+      ctx.roundRect(100, 475, 600, 20, 7);
       ctx.fill();
       ctx.fillStyle = '#edf6ff';
       ctx.font = '10px Arial';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(gameMode === 'cpu' ? 'CPU 1 VS CPU 2  ·  PARTIDO AUTOMÁTICO' : 'BLANCOS: WASD + F     ·     AZULES: FLECHAS + ENTER', width / 2, 485);
+      ctx.fillText(gameMode === 'cpu' ? 'CPU 1 VS CPU 2  ·  PARTIDO AUTOMÁTICO' : 'BLANCOS: WASD + F + CTRL IZQ.   ·   AZULES: FLECHAS + ENTER + CTRL DER.', width / 2, 485);
       ctx.restore();
     }
   }
 
   function handleKeyDown(event) {
-    const controls = ['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'KeyR'];
+    const controls = ['Space', 'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'KeyR', 'ControlLeft', 'ControlRight'];
     const isSpace = event.code === 'Space' || event.key === ' ';
     if (controls.includes(event.code) || isSpace) event.preventDefault();
     const code = event.code || (isSpace ? 'Space' : event.key);
+    const wasPressed = keys.has(code);
     keys.add(code);
 
-    if (gameState === 'intro' && (isSpace || code === 'Enter')) {
+    if (gameState === 'playing' && gameMode === 'humans' && (code === 'ControlLeft' || code === 'ControlRight')) {
+      if (!event.repeat && !wasPressed) switchPlayer(teams[code === 'ControlRight' ? 1 : 0]);
+    } else if (gameState === 'intro' && (isSpace || code === 'Enter')) {
       startMatch('humans');
     } else if (gameState === 'intro' && (code === 'Digit2' || event.key === '2')) {
       startMatch('cpu');
@@ -845,6 +891,10 @@ function registerGame() {
 
   function handleKeyUp(event) {
     keys.delete(event.code || (event.key === ' ' ? 'Space' : event.key));
+  }
+
+  function handleBlur() {
+    keys.clear();
   }
 
   function handlePointerDown(event) {
@@ -868,6 +918,7 @@ function registerGame() {
 
   window.addEventListener('keydown', handleKeyDown);
   window.addEventListener('keyup', handleKeyUp);
+  window.addEventListener('blur', handleBlur);
   canvas.addEventListener('pointerdown', handlePointerDown);
   randomizeTeams();
   setGameState('intro');
@@ -878,6 +929,7 @@ function registerGame() {
     cancelAnimationFrame(animationFrame);
     window.removeEventListener('keydown', handleKeyDown);
     window.removeEventListener('keyup', handleKeyUp);
+    window.removeEventListener('blur', handleBlur);
     canvas.removeEventListener('pointerdown', handlePointerDown);
     keys.clear();
   };

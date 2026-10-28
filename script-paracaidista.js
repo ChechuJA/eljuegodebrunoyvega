@@ -239,6 +239,7 @@ function characterImgReady(){
 function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.drawImage(backgroundImage, 0, 0, canvas.width, canvas.height);
+  if (window.GameUI) GameUI.scenery(ctx, 'paracaidista');
   ctx.save();
   ctx.globalAlpha = 0.12;
   ctx.font = 'bold 48px Comic Sans MS, Arial';

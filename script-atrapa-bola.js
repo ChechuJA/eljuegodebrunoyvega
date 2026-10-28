@@ -212,6 +212,7 @@ function initAtrapa(canvas) {
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     
+    if (window.GameUI) GameUI.scenery(ctx, 'atrapa-bola');
     // Dibujar líneas de la cancha
     ctx.strokeStyle = "rgba(255,255,255,0.7)";
     ctx.lineWidth = 2;

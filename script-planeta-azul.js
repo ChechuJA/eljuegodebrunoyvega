@@ -174,6 +174,7 @@ function draw(){
 	ctx.fillStyle=gradOcean;
 	ctx.fillRect(0,0,canvas.width,canvas.height);
 	
+	if (window.GameUI) GameUI.scenery(ctx, 'planeta-azul');
 	// Burbujas decorativas
 	ctx.fillStyle='rgba(255,255,255,0.3)';
 	for(let i=0;i<10;i++){

@@ -68,6 +68,7 @@ function draw(){
 	  ctx.fillRect(0, 0, canvas.width, canvas.height);
 	}
 	
+	if (window.GameUI) GameUI.scenery(ctx, 'laberinto');
 	// Barra superior con gradiente
 	if(window.GameUI){
 	  GameUI.gradientBar(ctx, canvas.width, 50, COLORS.header[0], COLORS.header[1]);

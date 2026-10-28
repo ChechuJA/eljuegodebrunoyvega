@@ -271,8 +271,10 @@ function initFlappy(canvas) {
   function drawInfo() {
     try {
       if (ui && typeof ui.gradientBar === "function") {
-        ui.gradientBar(ctx, canvas, { from: '#3949ab', to: '#1a237e' });
-        ui.shadowText(ctx, 'Flappy City', 20, 25, { size: 20 });
+        ui.gradientBar(ctx, canvas.width, 50, '#3949ab', '#1a237e');
+        ctx.font = 'bold 20px Arial';
+        ctx.textAlign = 'left';
+        ui.shadowedText(ctx, 'Flappy City', 20, 25);
       } else {
         const headerGrad = ctx.createLinearGradient(0, 0, 0, 50);
         headerGrad.addColorStop(0, '#3949ab');
@@ -344,6 +346,7 @@ function initFlappy(canvas) {
     bgGradient.addColorStop(1, COLORS.sky[1]);
     ctx.fillStyle = bgGradient;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (window.GameUI) GameUI.scenery(ctx, 'flappy');
     drawClouds();
     drawBuildings();
     drawGround();
@@ -420,10 +423,11 @@ function initFlappy(canvas) {
   }
 
   // Escuchar teclas para ajustar la velocidad
-  document.addEventListener('keydown', (e) => {
+  function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-  });
+  }
+  document.addEventListener('keydown', speedKeydown);
 
   // Bucle principal
   function gameLoop() {
@@ -433,14 +437,17 @@ function initFlappy(canvas) {
     } catch (err) {
       console.error("Error en gameLoop:", err);
     }
-    setTimeout(() => {
+    loopTimer = setTimeout(() => {
       animationFrame = requestAnimationFrame(gameLoop);
     }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
   }
 
+  let loopTimer;
   gameLoop();
 
   return function cleanup() {
+    clearTimeout(loopTimer);
+    document.removeEventListener('keydown', speedKeydown);
     document.removeEventListener('keydown', keyDownListener);
     canvas.removeEventListener('click', clickListener);
     if (animationFrame) cancelAnimationFrame(animationFrame);

@@ -1085,6 +1085,7 @@ function drawFondo() {
   ctx.save();
   ctx.fillStyle = '#000014';
   ctx.fillRect(0,0,canvas.width,canvas.height);
+  if (window.GameUI) GameUI.scenery(ctx, 'nave-exploradora');
   estrellas.forEach(drawStar);
   ctx.restore();
 }

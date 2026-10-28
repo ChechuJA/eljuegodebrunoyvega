@@ -67,7 +67,7 @@ let leftPressed = false;
 
 // Background image loading
 const backgroundImage = new Image();
-backgroundImage.src = 'assets/arkanoid-background.png';
+backgroundImage.src = 'assets/arkanoid-background.svg';
 backgroundImage.onerror = () => { backgroundImage.src = 'assets/arkanoid-background.svg'; };
 
 function backgroundReady() {
@@ -160,6 +160,7 @@ function drawPowerups(){
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     drawBackground();
+    if (window.GameUI) GameUI.scenery(ctx, 'arkanoid');
     drawBlocks();
     drawPaddle();
     drawBall();
@@ -332,25 +333,29 @@ function adjustSpeed(delta) {
 }
 
 // Escuchar teclas para ajustar la velocidad
-document.addEventListener('keydown', (e) => {
+function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-});
+}
+document.addEventListener('keydown', speedKeydown);
 
 // Bucle principal
 function gameLoop() {
     movePaddle();
     moveBall();
     draw();
-    setTimeout(() => {
+    loopTimer = setTimeout(() => {
         af = requestAnimationFrame(gameLoop);
     }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
 }
 
+let loopTimer;
 gameLoop();
 
 // cleanup
 return function cleanup(){
+    clearTimeout(loopTimer);
+    document.removeEventListener('keydown', speedKeydown);
 	if (af) cancelAnimationFrame(af);
 	document.removeEventListener('keydown',keydown);
 	document.removeEventListener('keyup',keyup);

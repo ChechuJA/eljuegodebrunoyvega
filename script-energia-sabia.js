@@ -114,6 +114,7 @@ function draw(){
 	// Suelo
 	ctx.fillStyle='#8bc34a';
 	ctx.fillRect(0,400,canvas.width,canvas.height-400);
+	if (window.GameUI) GameUI.scenery(ctx, 'energia-sabia');
 	
 	if(showInstructions){
 		ctx.fillStyle='rgba(0,0,0,0.7)';

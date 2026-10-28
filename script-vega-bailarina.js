@@ -26,10 +26,10 @@ let objetoActual = 'corazones';
 
 // Assets: fondo y personaje (PNG con fallback a SVG)
 const backgroundImage = new Image();
-backgroundImage.src = 'assets/vega-bailarina-background.png';
+backgroundImage.src = 'assets/vega-bailarina-background.svg';
 backgroundImage.onerror = () => { backgroundImage.src = 'assets/vega-bailarina-background.svg'; };
 const characterImage = new Image();
-characterImage.src = 'assets/vega-bailarina-character.png';
+characterImage.src = 'assets/vega-bailarina-character.svg';
 characterImage.onerror = () => { characterImage.src = 'assets/vega-bailarina-character.svg'; };
 function backgroundReady(){ return backgroundImage.complete && backgroundImage.naturalWidth>0; }
 function characterReady(){ return characterImage.complete && characterImage.naturalWidth>0; }
@@ -241,6 +241,7 @@ function draw() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   // Fondo de escenario personalizado según nivel
   dibujarFondo();
+  if (window.GameUI) GameUI.scenery(ctx, 'vega-bailarina');
   
   // Barra superior
   if(window.GameUI) GameUI.gradientBar(ctx,canvas.width,60,'#ad1457','#d81b60'); else { ctx.fillStyle='#d81b60'; ctx.fillRect(0,0,canvas.width,60);}

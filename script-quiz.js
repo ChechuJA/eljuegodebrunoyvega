@@ -231,6 +231,7 @@ function initQuiz(canvas, cleanupBag) {
     // Fondo y barra superior
     if (ui && typeof ui.softBg === 'function') {
       ui.softBg(ctx, canvas.width, canvas.height, ['#00695c', '#004d40']);
+      ui.scenery(ctx, 'quiz');
       ui.gradientBar(ctx, canvas.width, 70, '#00897b', '#00695c');
     } else {
       // Fallback si GameUI no está disponible

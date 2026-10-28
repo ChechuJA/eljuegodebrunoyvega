@@ -239,8 +239,12 @@
   }
 
   // Input
-  window.addEventListener('keydown',(e)=>{ keys[e.key]=true; if(e.key==='p') paused=!paused; });
-  window.addEventListener('keyup',(e)=>{ keys[e.key]=false; });
+  function keydown(e) {
+    keys[e.key] = true;
+    if (e.key === 'p' && !e.repeat) paused = !paused;
+    if (e.key === ' ' && gameOver && !e.repeat) loadLevel(0);
+  }
+  function keyup(e) { keys[e.key] = false; }
 
   // Game loop
   function update(dt){
@@ -336,6 +340,7 @@
   // Drawing
   function draw(){
     ctx.fillStyle = '#7ec0ee'; ctx.fillRect(0,0,width,height);
+    if (window.GameUI) GameUI.scenery(ctx, 'mario-flappy');
     // sky clouds
     ctx.fillStyle='#fff'; ctx.globalAlpha=0.6;
     for(let i=0;i<5;i++) ctx.fillRect((i*158 - (cameraX*0.2 % 800)), 40 + (i%2)*20, 60,20);
@@ -395,12 +400,8 @@
   ctx.save();
   ctx.translate(player.x - cameraX + player.w/2, player.y + player.h/2);
   if(player.facing<0) ctx.scale(-1,1);
-  // body
-  ctx.fillStyle='#d32f2f'; ctx.fillRect(-player.w/2+4, -player.h/2+8, player.w-8, player.h-16);
-  // head
-  ctx.fillStyle='#ffd6a5'; ctx.fillRect(-player.w/2+6, -player.h/2+2, player.w-12, 12);
-  // cap
-  ctx.fillStyle='#b71c1c'; ctx.fillRect(-player.w/2+2, -player.h/2, player.w-4, 8);
+  // Explorador original de pañuelo amarillo; mismo rectángulo de colisión.
+  if (window.GameUI) GameUI.explorer(ctx, -player.w/2, -player.h/2, player.w, player.h);
   ctx.restore();
 
     // HUD
@@ -439,29 +440,34 @@
 
   // Main loop
   let lastTime = 0;
+  let animationFrame;
   function loop(ts){
     if(!lastTime) lastTime = ts; const dt = (ts - lastTime)/16.666; lastTime = ts;
     update(dt);
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   // Start/stop
   function start(canvasEl){
     canvas = canvasEl; ctx = canvas.getContext('2d'); width = canvas.width = CANVAS_W; height = canvas.height = CANVAS_H;
     loadLevel(0);
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
     // controls: space to jump, +/- speed not necessary here but keep p to pause
-    window.addEventListener('keydown', function onKey(e){
-      if(e.key===' ' && gameOver){ loadLevel(0); }
-    });
+    window.addEventListener('keydown', keydown);
+    window.addEventListener('keyup', keyup);
   }
 
   // register to global loader used by index.html
   window.registerGame = function registerGame(){
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
-    return function cleanup(){ /* remove listeners if needed */ };
+    return function cleanup(){
+      cancelAnimationFrame(animationFrame);
+      keys = {};
+      window.removeEventListener('keydown', keydown);
+      window.removeEventListener('keyup', keyup);
+    };
   };
 
 })();

@@ -32,6 +32,7 @@ function update(t){ if(gameOver) return; if(!lastDrop) lastDrop=t; const delta=t
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);
  if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#0d0d12','#1e1e29']); else { ctx.fillStyle='#111'; ctx.fillRect(0,0,canvas.width,canvas.height);} 
+ if(window.GameUI) GameUI.scenery(ctx, 'bloques');
  if(window.GameUI){ GameUI.gradientBar(ctx, canvas.width, 60, '#0d47a1','#1976d2'); } else { ctx.fillStyle='#0d47a1'; ctx.fillRect(0,0,canvas.width,60);} 
  ctx.fillStyle='#fff'; ctx.font='20px Arial'; ctx.textAlign='left'; ctx.fillText('Bloques mágicos', 12,38);
  ctx.font='14px Arial'; ctx.textAlign='right'; ctx.fillText('Puntos: '+score+'  Nivel: '+level, canvas.width- (PANEL_W+12), 22); ctx.fillText('Récord: '+high+' ('+highName+')', canvas.width- (PANEL_W+12), 44);
@@ -55,22 +56,24 @@ function adjustSpeed(delta) {
 }
 
 // Escuchar teclas para ajustar la velocidad
-document.addEventListener('keydown', (e) => {
+function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-});
+}
+document.addEventListener('keydown', speedKeydown);
 
 function loop(t) {
     update(t);
     draw();
-    setTimeout(() => {
+    loopTimer = setTimeout(() => {
         af = requestAnimationFrame(loop);
     }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
 }
 function key(e){ if(gameOver && e.key.toLowerCase()==='r'){ grid=Array.from({length:ROWS},()=>Array(COLS).fill(0)); score=0; level=1; dropInterval=700; gameOver=false; newPiece(); return; }
  if(e.key==='ArrowLeft'&&!collide(-1,0,current)) x--; else if(e.key==='ArrowRight'&&!collide(1,0,current)) x++; else if(e.key==='ArrowDown'){ if(!collide(0,1,current)) y++; } else if(e.key==='ArrowUp'){ const rot=rotate(current); if(!collide(0,0,rot)) current=rot; } else if(e.key===' '){ while(!collide(0,1,current)) y++; merge(); clearLines(); spawn(); }
 }
-window.addEventListener('keydown',key); spawn(); requestAnimationFrame(loop);
-return function cleanup(){ if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',key); };
+let loopTimer;
+window.addEventListener('keydown',key); spawn(); af = requestAnimationFrame(loop);
+return function cleanup(){ clearTimeout(loopTimer); if(af) cancelAnimationFrame(af); window.removeEventListener('keydown',key); document.removeEventListener('keydown',speedKeydown); };
 }
 window.registerGame=registerGame;

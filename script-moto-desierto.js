@@ -231,8 +231,11 @@
       ctx.stroke();
     }
     
+    if (window.GameUI) GameUI.scenery(ctx, 'moto-desierto');
     // Jugador (moto) con efectos mejorados
-    if (charReady()) {
+    if (window.GameUI) {
+      GameUI.vehicle(ctx, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT, 'bike');
+    } else if (charReady()) {
       ctx.drawImage(characterImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
     } else {
       // Sombra de la moto
@@ -656,7 +659,7 @@
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   function keydown(e) {
@@ -669,6 +672,7 @@
     keys[e.key] = false;
   }
 
+  let animationFrame;
   function start(canvasElement) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
@@ -676,10 +680,10 @@
     height = canvas.height;
   // Carga de imágenes
   backgroundImage = new Image();
-  backgroundImage.src = 'assets/moto-desierto-background.png';
+  backgroundImage.src = 'assets/moto-desierto-background.svg';
   backgroundImage.onerror = () => { backgroundImage.src = 'assets/moto-desierto-background.svg'; };
   characterImage = new Image();
-  characterImage.src = 'assets/moto-desierto-character.png';
+  characterImage.src = 'assets/moto-desierto-character.svg';
   characterImage.onerror = () => { characterImage.src = 'assets/moto-desierto-character.svg'; };
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
@@ -691,6 +695,8 @@
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
     return function cleanup() {
+      cancelAnimationFrame(animationFrame);
+      keys = {};
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
     };

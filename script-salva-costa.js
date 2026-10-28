@@ -149,6 +149,7 @@ function draw(){
 	ctx.fillStyle=grad;
 	ctx.fillRect(0,0,canvas.width,canvas.height);
 	
+	if (window.GameUI) GameUI.scenery(ctx, 'salva-costa');
 	// Cielo
 	ctx.fillStyle='rgba(135,206,235,0.5)';
 	ctx.fillRect(0,0,canvas.width,100);

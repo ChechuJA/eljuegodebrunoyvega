@@ -31,6 +31,7 @@ CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){ this.beginPath
 function drawHUD(){
  ctx.save();
  ctx.clearRect(0,0,canvas.width,canvas.height);
+ if(window.GameUI) GameUI.scenery(ctx, 'memoria');
  if(window.GameUI){ GameUI.gradientBar(ctx, canvas.width, 64); }
  ctx.font='bold 28px Arial'; ctx.textAlign='center';
  if(window.GameUI){ GameUI.shadowedText(ctx,'Memoria de Animales', canvas.width/2,42,'#fff'); }

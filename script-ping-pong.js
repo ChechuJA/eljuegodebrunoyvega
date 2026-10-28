@@ -46,7 +46,7 @@ function registerGame(){
 
   // Background image loading
   const backgroundImage = new Image();
-  backgroundImage.src = 'assets/ping-pong-background.png';
+  backgroundImage.src = 'assets/ping-pong-background.svg';
   backgroundImage.onerror = () => { backgroundImage.src = 'assets/ping-pong-background.svg'; };
 
   function backgroundReady() {
@@ -157,6 +157,7 @@ function registerGame(){
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    if (window.GameUI) GameUI.scenery(ctx, 'ping-pong');
     // Semi-transparent overlay for better text readability
     ctx.save();
     ctx.globalAlpha = 0.7;
@@ -245,6 +246,7 @@ function registerGame(){
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
 
+    if (window.GameUI) GameUI.scenery(ctx, 'ping-pong');
     // Center line
     ctx.setLineDash([10, 10]);
     ctx.strokeStyle = '#444';

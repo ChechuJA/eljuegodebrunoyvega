@@ -309,6 +309,7 @@ function registerGame(){
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
+    if (window.GameUI) GameUI.scenery(ctx, 'ajedrez');
     // Draw board squares
     for (let row = 0; row < 8; row++) {
       for (let col = 0; col < 8; col++) {
@@ -471,6 +472,7 @@ function registerGame(){
       ctx.fillRect(0, 0, canvas.width, canvas.height);
     }
     
+    if (window.GameUI) GameUI.scenery(ctx, 'ajedrez');
     // Title
     ctx.fillStyle = '#8b4513';
     ctx.font = 'bold 48px Arial';
@@ -621,14 +623,16 @@ function registerGame(){
   window.addEventListener('keydown', handleKeyDown);
   
   // Start the game loop
+  let animationFrame;
   function loop() {
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
   loop();
   
   // Cleanup function
   return function cleanup() {
+    cancelAnimationFrame(animationFrame);
     canvas.removeEventListener('click', handleClick);
     window.removeEventListener('keydown', handleKeyDown);
   };

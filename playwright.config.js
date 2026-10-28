@@ -19,7 +19,7 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: 'python3 -m http.server 8000',
+    command: 'node tests/static-server.cjs',
     port: 8000,
     reuseExistingServer: !process.env.CI,
   },

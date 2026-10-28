@@ -347,6 +347,7 @@ function draw(){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
   
+  if (window.GameUI) GameUI.scenery(ctx, 'bubble');
   // Área de juego con borde redondeado
   const gridWidth = GRID_COLS * R * 2 + 20;
   const gridHeight = GRID_ROWS * R * 2 + 20;
@@ -384,15 +385,17 @@ function adjustSpeed(delta) {
 }
 
 // Escuchar teclas para ajustar la velocidad
-document.addEventListener('keydown', (e) => {
+function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-});
-function loop(){ update(); draw(); setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
+}
+document.addEventListener('keydown', speedKeydown);
+let loopTimer;
+function loop(){ update(); draw(); loopTimer = setTimeout(() => { af = requestAnimationFrame(loop); }, 1000 / (60 * gameSpeed)); }
 function key(e){ if(showIntro){ showIntro=false; return; } }
 function mouseMove(e){ const rect=canvas.getBoundingClientRect(); const mx=e.clientX-rect.left; const my=e.clientY-rect.top; const ang=Math.atan2(shooter.y - my, mx - shooter.x); shooter.angle = ang; }
 function mouseClick(e){ if(showIntro) return; if(currentBall.moving) return; currentBall.moving=true; const speed=10; const ang=shooter.angle; currentBall.vx = Math.cos(ang)*speed; currentBall.vy = -Math.sin(ang)*speed; }
-canvas.addEventListener('mousemove',mouseMove); canvas.addEventListener('click',mouseClick); window.addEventListener('keydown',key); requestAnimationFrame(loop);
-return function cleanup(){ if(af) cancelAnimationFrame(af); canvas.removeEventListener('mousemove',mouseMove); canvas.removeEventListener('click',mouseClick); window.removeEventListener('keydown',key); };
+canvas.addEventListener('mousemove',mouseMove); canvas.addEventListener('click',mouseClick); window.addEventListener('keydown',key); af = requestAnimationFrame(loop);
+return function cleanup(){ clearTimeout(loopTimer); if(af) cancelAnimationFrame(af); canvas.removeEventListener('mousemove',mouseMove); canvas.removeEventListener('click',mouseClick); window.removeEventListener('keydown',key); document.removeEventListener('keydown',speedKeydown); };
 }
 window.registerGame=registerGame;

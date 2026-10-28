@@ -6,7 +6,7 @@ let dir={x:1,y:0}; let snake=[{x:5,y:10},{x:4,y:10},{x:3,y:10}]; let food=spawn(
 
 // Background image loading
 const backgroundImage = new Image();
-backgroundImage.src = 'assets/serpiente-background.png';
+backgroundImage.src = 'assets/serpiente-background.svg';
 backgroundImage.onerror = () => { backgroundImage.src = 'assets/serpiente-background.svg'; };
 
 function backgroundReady() {
@@ -35,6 +35,7 @@ function draw(){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
   }
   
+  if (window.GameUI) GameUI.scenery(ctx, 'serpiente');
   // Top bar
   if(window.GameUI){ 
     GameUI.gradientBar(ctx,canvas.width,60,'#1b5e20','#2e7d32'); 

@@ -161,6 +161,7 @@ function draw(){
 	ctx.globalAlpha=1-opacity*0.7;
 	ctx.fillRect(0,0,canvas.width,150);
 	ctx.globalAlpha=1;
+	if (window.GameUI) GameUI.scenery(ctx, 'aire-limpio');
 	
 	// Ciudad (edificios simples)
 	ctx.fillStyle='#546e7a';

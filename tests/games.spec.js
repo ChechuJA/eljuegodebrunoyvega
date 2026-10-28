@@ -4,7 +4,7 @@ test.describe('Bruno y Vega Games', () => {
   test('main page loads correctly', async ({ page }) => {
     await page.goto('/');
     await expect(page).toHaveTitle(/El juego de Bruno y Vega/);
-    await expect(page.locator('h2')).toContainText('Elige tu juego');
+    await expect(page.locator('#menu h2')).toContainText('Elige tu juego');
   });
 
   test('player name input works', async ({ page }) => {
@@ -40,7 +40,7 @@ test.describe('Bruno y Vega Games', () => {
     await expect(page.locator('#gameCanvas')).toBeVisible();
   });
 
-  test('multiplayer ping pong game loads', async ({ page }) => {
+  test('multiplayer ping pong requests player names and loads', async ({ page }) => {
     await page.goto('/');
     
     // Set player name if needed
@@ -50,15 +50,21 @@ test.describe('Bruno y Vega Games', () => {
       await page.locator('#savePlayerNameBtn').click();
     }
 
-    // Look for ping pong game button (will be added)
+    const prompts = [];
+    page.on('dialog', async dialog => {
+      prompts.push(dialog.message());
+      await dialog.accept('Jugador de prueba');
+    });
+
     const pingPongButton = page.locator('button[onclick*="ping-pong"]');
-    if (await pingPongButton.isVisible()) {
-      await pingPongButton.click();
-      
-      // Should show multiplayer name inputs
-      const multiplayerOverlay = page.locator('#multiplayerOverlay');
-      await expect(multiplayerOverlay).toBeVisible({ timeout: 5000 });
-    }
+    await expect(pingPongButton).toBeVisible();
+    await pingPongButton.click();
+    const canvas = page.locator('#gameCanvas');
+    await expect(canvas).toBeVisible();
+    await canvas.focus();
+    await page.keyboard.press('Space');
+    await expect.poll(() => prompts.length).toBe(2);
+    await expect(page.locator('#menu')).toBeHidden();
   });
 
   test('multiplayer football game loads and starts', async ({ page }) => {

@@ -10,6 +10,7 @@ function registerGame(){
   let turn = 1; // 1=jugador, 2=IA
   let winner = 0;
   let showIntro = true;
+  let animationFrame, aiTimer;
   // Variable global para controlar la velocidad del juego
   let gameSpeed = 1;
   function reset(){
@@ -61,7 +62,7 @@ function registerGame(){
     if(row<0) return;
     if(checkWin(1)){ winner=1; return; }
     turn=2;
-    setTimeout(()=>{
+    aiTimer = setTimeout(()=>{
       let aiCol = aiMove();
       if(aiCol!==undefined){
         let aiRow = drop(aiCol,2);
@@ -74,14 +75,19 @@ function registerGame(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle='#1976d2';
     ctx.fillRect(0,0,canvas.width,canvas.height);
+    if (window.GameUI) GameUI.scenery(ctx, '4enraya');
     for(let r=0;r<ROWS;r++){
       for(let c=0;c<COLS;c++){
-        let x=margin+c*(cell+margin), y=margin+r*(cell+margin);
+        const rowHeight = (canvas.height - 65) / ROWS;
+        let x=margin+c*(cell+margin), y=65+r*rowHeight+(rowHeight-cell)/2;
         ctx.beginPath();
         ctx.arc(x+cell/2,y+cell/2,cell/2-6,0,Math.PI*2);
         ctx.fillStyle=board[r][c]===0?'#fff':(board[r][c]===1?'#fbc02d':'#d32f2f');
         ctx.fill();
         ctx.strokeStyle='#333'; ctx.lineWidth=2; ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(x+cell/2-9, y+cell/2-11, 8, 0, Math.PI*2);
+        ctx.fillStyle='rgba(255,255,255,0.4)'; ctx.fill();
       }
     }
   }
@@ -142,24 +148,21 @@ function registerGame(){
   }
 
   // Escuchar teclas para ajustar la velocidad
-  document.addEventListener('keydown', (e) => {
+  function speedKeydown(e) {
       if (e.key === '+') adjustSpeed(0.1);
       if (e.key === '-') adjustSpeed(-0.1);
-  });
+  }
+  document.addEventListener('keydown', speedKeydown);
 
   canvas.addEventListener('click',handleClick);
   window.addEventListener('keydown',keydown);
   reset();
-  function loop(){ draw(); requestAnimationFrame(loop); }
-  function gameLoop() {
-    setTimeout(() => {
-        // ...existing game logic...
-        gameLoop();
-    }, 1000 / gameSpeed);
-}
-
-  gameLoop();
+  function loop(){ draw(); animationFrame = requestAnimationFrame(loop); }
+  loop();
   return function cleanup(){
+    cancelAnimationFrame(animationFrame);
+    clearTimeout(aiTimer);
+    document.removeEventListener('keydown', speedKeydown);
     canvas.removeEventListener('click',handleClick);
     window.removeEventListener('keydown',keydown);
   };

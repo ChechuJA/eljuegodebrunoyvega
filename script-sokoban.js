@@ -207,6 +207,7 @@ function registerGame(){
 		ctx.fillStyle = bgGradient;
 		ctx.fillRect(0, 0, canvas.width, canvas.height);
 		
+		if (window.GameUI) GameUI.scenery(ctx, 'sokoban');
 		// Dibujar nubes decorativas
 		drawClouds();
 		

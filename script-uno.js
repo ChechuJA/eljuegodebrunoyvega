@@ -269,7 +269,7 @@ function registerGame() {
     
     aiIsThinking = true; // Marcar que la IA está pensando
     
-    setTimeout(() => {
+    defer(() => {
       const topCard = discardPile[discardPile.length - 1];
       
       // Si debe robar cartas
@@ -309,7 +309,7 @@ function registerGame() {
         // Verificar si la carta robada se puede jugar
         const drawnCard = aiHand[aiHand.length - 1];
         if (canPlayCard(drawnCard, topCard)) {
-          setTimeout(() => {
+          defer(() => {
             playCard(drawnCard, aiHand);
             aiIsThinking = false;
           }, 1500);
@@ -399,6 +399,7 @@ function registerGame() {
     // Fondo
     ctx.fillStyle = '#2e7d32';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (window.GameUI) GameUI.scenery(ctx, 'uno');
     
     if (showIntro) {
       drawIntro();
@@ -608,7 +609,7 @@ function registerGame() {
       
       // Turno de IA si es su turno
       if (currentPlayer === 'ai' && !winner) {
-        setTimeout(() => aiTurn(), 500);
+        defer(() => aiTurn(), 500);
       }
     } else {
       setMessage('¡No puedes jugar esa carta!');
@@ -630,7 +631,7 @@ function registerGame() {
       
       // Turno de IA
       if (currentPlayer === 'ai' && !winner) {
-        setTimeout(() => aiTurn(), 500);
+        defer(() => aiTurn(), 500);
       }
     } else {
       drawCard(playerHand);
@@ -648,7 +649,7 @@ function registerGame() {
         
         // Turno de IA
         if (currentPlayer === 'ai' && !winner) {
-          setTimeout(() => aiTurn(), 500);
+          defer(() => aiTurn(), 500);
         }
       }
     }
@@ -697,9 +698,15 @@ function registerGame() {
       aiTurn();
     }
     
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
   
+  let animationFrame;
+  const pendingTimers = new Set();
+  function defer(callback, delay) {
+    const timer = setTimeout(() => { pendingTimers.delete(timer); callback(); }, delay);
+    pendingTimers.add(timer);
+  }
   // Inicializar
   canvas.addEventListener('click', handleClick);
   window.addEventListener('keydown', handleKeyDown);
@@ -708,6 +715,9 @@ function registerGame() {
   
   // Cleanup
   return function cleanup() {
+    cancelAnimationFrame(animationFrame);
+    pendingTimers.forEach(timer => clearTimeout(timer));
+    pendingTimers.clear();
     canvas.removeEventListener('click', handleClick);
     window.removeEventListener('keydown', handleKeyDown);
   };

@@ -163,6 +163,7 @@ function registerGame() {
   function draw(){
     updateParticles();
     drawBackground();
+    if (window.GameUI) GameUI.scenery(ctx, 'ahorcado');
 
     // Score y récord
     ctx.fillStyle='#fff';
@@ -231,10 +232,11 @@ function registerGame() {
   }
 
   // Escuchar teclas para ajustar la velocidad
-  document.addEventListener('keydown', (e) => {
+  function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-  });
+  }
+  document.addEventListener('keydown', speedKeydown);
 
   // Modificar el bucle principal para incluir la velocidad
   function gameLoop() {
@@ -248,10 +250,13 @@ function registerGame() {
   window.addEventListener('keydown', keyHandler);
   canvas.addEventListener('click', clickHandler);
 
-  function loop(){ draw(); requestAnimationFrame(loop);}
+  let animationFrame;
+  function loop(){ draw(); animationFrame = requestAnimationFrame(loop);}
   loop();
 
   return function cleanup(){
+    cancelAnimationFrame(animationFrame);
+    document.removeEventListener('keydown', speedKeydown);
     window.removeEventListener('keydown',keyHandler);
     canvas.removeEventListener('click',clickHandler);
   };

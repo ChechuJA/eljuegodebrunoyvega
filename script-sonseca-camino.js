@@ -41,6 +41,7 @@
     // Fondo
     ctx.fillStyle = '#e0e0e0';
     ctx.fillRect(0,0,width,height);
+    if (window.GameUI) GameUI.scenery(ctx, 'sonseca-camino');
     // Camino con costura
     for(let i=0; i<camino.length; i++) {
       if(camino[i].visible) {
@@ -60,11 +61,11 @@
       }
     }
     // Jugador
-    ctx.fillStyle = '#1976d2';
-    ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
-    ctx.fillStyle = '#fff';
-    ctx.font = '15px Arial';
-    ctx.fillText('Tú', player.x+7, player.y+24);
+    if (window.GameUI) GameUI.explorer(ctx, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE, '#b96760');
+    else {
+      ctx.fillStyle = '#1976d2';
+      ctx.fillRect(player.x, player.y, PLAYER_SIZE, PLAYER_SIZE);
+    }
     // Frase
     if(showFrase) {
       ctx.fillStyle = 'rgba(0,0,0,0.7)';
@@ -138,16 +139,19 @@
     loop();
   }
 
+  let animationFrame;
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   window.registerGame = function() {
     const canvas = document.getElementById('gameCanvas');
     start(canvas);
     return function cleanup() {
+      cancelAnimationFrame(animationFrame);
+      keys = {};
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
     };

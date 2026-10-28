@@ -83,6 +83,7 @@
       ctx.fillRect(0, 0, width, height);
     }
     
+    if (window.GameUI) GameUI.scenery(ctx, 'alcala-canas-tapas');
     // Si estamos en la intro, mostramos la pantalla de inicio
     if(showIntro) {
       drawIntro();
@@ -159,6 +160,10 @@
   
   // Función para dibujar el jugador
   function drawPlayer() {
+    if (window.GameUI) {
+      GameUI.explorer(ctx, player.x, player.y, PLAYER_SIZE, PLAYER_SIZE, '#bc6b4c');
+      return;
+    }
     ctx.save();
     
     // Sombra
@@ -604,7 +609,7 @@
   function loop() {
     update();
     draw();
-    requestAnimationFrame(loop);
+    animationFrame = requestAnimationFrame(loop);
   }
 
   function keydown(e) {
@@ -636,10 +641,12 @@
     loop();
   }
 
-  window.registerGame = function registerGame(){
+  let animationFrame;
+  window.registerGame = function registerGame() {
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
     return function cleanup(){
+      cancelAnimationFrame(animationFrame);
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
       if(timer) clearInterval(timer);

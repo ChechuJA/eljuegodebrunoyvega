@@ -39,8 +39,10 @@
   // Fondo
   if(bgReady()) ctx.drawImage(backgroundImage, 0, 0, width, height);
   else { ctx.fillStyle = '#b3e5fc'; ctx.fillRect(0,0,width,height); }
+  if (window.GameUI) GameUI.scenery(ctx, 'canaveras');
   // Jugador (niño/a)
-  if(playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
+  if(window.GameUI) GameUI.explorer(ctx, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT, '#e3a534');
+  else if(playerReady()) ctx.drawImage(playerImage, player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT);
   else { ctx.fillStyle = '#ffb300'; ctx.fillRect(player.x, player.y, PLAYER_WIDTH, PLAYER_HEIGHT); }
     // Cañas
     for(let cana of canas) {
@@ -114,8 +116,8 @@
   function loop() {
     update();
     draw();
-    setTimeout(() => {
-      requestAnimationFrame(loop);
+    loopTimer = setTimeout(() => {
+      animationFrame = requestAnimationFrame(loop);
     }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
   }
 
@@ -129,15 +131,16 @@
     keys[e.key] = false;
   }
 
+  let animationFrame, loopTimer;
   function start(canvasElement) {
     canvas = canvasElement;
     ctx = canvas.getContext('2d');
     width = canvas.width;
     height = canvas.height;
   // Carga de imágenes
-  backgroundImage = new Image(); backgroundImage.src = 'assets/canaveras-background.png'; backgroundImage.onerror = ()=>{ backgroundImage.src = 'assets/canaveras-background.svg'; };
-  playerImage = new Image(); playerImage.src = 'assets/canaveras-player.png'; playerImage.onerror = ()=>{ playerImage.src = 'assets/canaveras-player.svg'; };
-  canaImage = new Image(); canaImage.src = 'assets/canaveras-cana.png'; canaImage.onerror = ()=>{ canaImage.src = 'assets/canaveras-cana.svg'; };
+  backgroundImage = new Image(); backgroundImage.src = 'assets/canaveras-background.svg';
+  playerImage = new Image(); playerImage.src = 'assets/canaveras-player.svg';
+  canaImage = new Image(); canaImage.src = 'assets/canaveras-cana.svg';
     canvas.style.zIndex = '10';
     document.addEventListener('keydown', keydown);
     document.addEventListener('keyup', keyup);
@@ -149,6 +152,10 @@
     const canvasEl = document.getElementById('gameCanvas');
     start(canvasEl);
     return function cleanup(){
+      cancelAnimationFrame(animationFrame);
+      clearTimeout(loopTimer);
+      keys = {};
+      document.removeEventListener('keydown', speedKeydown);
       document.removeEventListener('keydown', keydown);
       document.removeEventListener('keyup', keyup);
       if(timer) clearInterval(timer);
@@ -162,8 +169,9 @@
   }
 
   // Escuchar teclas para ajustar la velocidad
-  document.addEventListener('keydown', (e) => {
+  function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-  });
+  }
+  document.addEventListener('keydown', speedKeydown);
 })();

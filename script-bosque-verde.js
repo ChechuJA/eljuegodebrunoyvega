@@ -174,6 +174,7 @@ function draw(){
 	// Suelo
 	ctx.fillStyle='#8b7355';
 	ctx.fillRect(0,280,canvas.width,canvas.height-280);
+	if (window.GameUI) GameUI.scenery(ctx, 'bosque-verde');
 	
 	if(showInstructions){
 		ctx.fillStyle='rgba(0,0,0,0.75)';

@@ -510,6 +510,7 @@ function registerGame() {
       grad.addColorStop(1, '#e0f7fa');
       ctx.fillStyle = grad;
       ctx.fillRect(0, 0, W, GROUND_Y);
+      if (window.GameUI) GameUI.scenery(ctx, 'teclado-rapido');
 
       // Nubes en movimiento
       ctx.fillStyle = 'rgba(255,255,255,0.75)';

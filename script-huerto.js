@@ -80,6 +80,7 @@ function drawParcel(c){
 function draw(){
  ctx.clearRect(0,0,canvas.width,canvas.height);
  if(window.GameUI) GameUI.softBg(ctx,canvas.width,canvas.height,['#e8f5e9','#f1f8e9']);
+ if(window.GameUI) GameUI.scenery(ctx, 'huerto');
  // Cabecera degradada
  if(window.GameUI) GameUI.gradientBar(ctx,canvas.width,70,'#2e7d32','#43a047'); else { ctx.fillStyle='#2e7d32'; ctx.fillRect(0,0,canvas.width,70);} 
  ctx.save();

@@ -82,6 +82,7 @@ function drawFondo(){
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
+  if (window.GameUI) GameUI.scenery(ctx, 'constelaciones');
   // Dibujar nebulosas
   for (const nebulosa of nebulosas) {
     const grd = ctx.createRadialGradient(
@@ -567,10 +568,11 @@ function adjustSpeed(delta) {
 }
 
 // Escuchar teclas para ajustar la velocidad
-document.addEventListener('keydown', (e) => {
+function speedKeydown(e) {
     if (e.key === '+') adjustSpeed(0.1);
     if (e.key === '-') adjustSpeed(-0.1);
-});
+}
+document.addEventListener('keydown', speedKeydown);
 
 // Modificar el bucle principal para incluir la velocidad
 function loop() {
@@ -592,7 +594,7 @@ function loop() {
       }
     }
     
-    setTimeout(() => {
+    loopTimer = setTimeout(() => {
         af = requestAnimationFrame(loop);
     }, 1000 / (60 * gameSpeed)); // Ajusta la velocidad del juego
 }
@@ -673,7 +675,8 @@ function click(e){
     }
   }
 }
+let loopTimer;
 canvas.addEventListener('click',click); loop();
-return function cleanup(){ if(af) cancelAnimationFrame(af); canvas.removeEventListener('click',click); };
+return function cleanup(){ clearTimeout(loopTimer); if(af) cancelAnimationFrame(af); canvas.removeEventListener('click',click); document.removeEventListener('keydown',speedKeydown); };
 }
 window.registerGame=registerGame;
