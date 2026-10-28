@@ -61,6 +61,55 @@ test.describe('Bruno y Vega Games', () => {
     }
   });
 
+  test('multiplayer football game loads and starts', async ({ page }) => {
+    await page.goto('/');
+
+    const nameInput = page.locator('#playerNameInput');
+    if (await nameInput.isVisible()) {
+      await nameInput.fill('TestPlayer');
+      await page.locator('#savePlayerNameBtn').click();
+    }
+
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    await page.locator('button[onclick*="futbol"]').click();
+    await expect(page.locator('#gameArea')).toBeVisible();
+    await expect(page.locator('#gameCanvas')).toBeVisible();
+    const canvas = page.locator('#gameCanvas');
+    await expect(canvas).toHaveAttribute('aria-label', /Fútbol 7.*Almudena, de negro/);
+    const roster = await canvas.getAttribute('aria-label');
+    const captains = [...roster.matchAll(/([A-Za-z]+) \(Portero y capitán\)/g)].map(([, name]) => name).sort();
+    expect(captains).toEqual(['Julia', 'Mateo']);
+    await expect(canvas).toHaveAttribute('aria-label', /elige jugar dos personas o CPU 1 contra CPU 2/);
+    await canvas.focus();
+    await page.keyboard.press('Space');
+    await expect(canvas).toHaveAttribute('aria-label', /Partido de fútbol 7 en curso/);
+    await expect(canvas).toHaveAttribute('aria-label', /máximo 3 minutos o 5 goles/);
+    await page.waitForTimeout(100);
+    expect(pageErrors).toEqual([]);
+  });
+
+  test('football CPU mode starts an automatic match', async ({ page }) => {
+    await page.goto('/');
+
+    const nameInput = page.locator('#playerNameInput');
+    if (await nameInput.isVisible()) {
+      await nameInput.fill('TestPlayer');
+      await page.locator('#savePlayerNameBtn').click();
+    }
+
+    const pageErrors = [];
+    page.on('pageerror', error => pageErrors.push(error.message));
+    await page.locator('button[onclick*="futbol"]').click();
+    const canvas = page.locator('#gameCanvas');
+    await expect(canvas).toHaveAttribute('aria-label', /elige jugar dos personas o CPU 1 contra CPU 2/);
+    await canvas.focus();
+    await page.keyboard.press('2');
+    await expect(canvas).toHaveAttribute('aria-label', /CPU 1 contra CPU 2/);
+    await page.waitForTimeout(100);
+    expect(pageErrors).toEqual([]);
+  });
+
   test('back to menu works', async ({ page }) => {
     await page.goto('/');
     

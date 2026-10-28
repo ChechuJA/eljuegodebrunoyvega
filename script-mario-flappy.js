@@ -117,11 +117,11 @@
 
     // place flag at rightmost ground column if not present
     if (!entities.find(e => e.type === 'flag')) {
-      for (let x = cols - 1; x >= 0; x--) {
-        for (let y = 0; y < rows; y++) {
-          const ch = map[y][x];
+      for (let x = raw.widthTiles - 1; x >= 0; x--) {
+        for (let y = 0; y < raw.heightTiles; y++) {
+          const ch = raw.tiles[y][x];
           if (ch === 'G' || ch === '#') {
-            entities.push({type: 'flag', x: x * tileSize + 8, y: y * tileSize - tileSize, w: 10, h: 24});
+            entities.push({type: 'flag', x: x * TILE + 8, y: y * TILE - TILE, w: 10, h: 24});
             x = -1; // break outer
             break;
           }
